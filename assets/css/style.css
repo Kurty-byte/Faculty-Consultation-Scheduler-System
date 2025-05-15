@@ -518,4 +518,302 @@ textarea.form-control {
         flex: 0 0 calc(50% - 10px);
         margin-bottom: 10px;
     }
+
+    .notification-permission-request {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        border-radius: 4px;
+        padding: 15px;
+        width: 300px;
+        z-index: 1000;
+        animation: slide-in 0.3s ease-out;
+    }
+    
+    .notification-permission-request p {
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+    
+    .notification-permission-request button {
+        margin-right: 8px;
+    }
+    
+    @keyframes slide-in {
+        0% {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Create simple placeholder images for notification icons */
+    .icon-placeholder {
+        width: 24px;
+        height: 24px;
+        background-color: #f0f0f0;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 12px;
+        color: #999;
+    }
+
+    .notification-permission-request {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    padding: 15px;
+    width: 300px;
+    z-index: 1000;
+    animation: slide-in 0.3s ease-out;
+}
+
+.notification-permission-request p {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.notification-permission-request button {
+    margin-right: 8px;
+}
+
+@keyframes slide-in {
+    0% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Create simple placeholder images for notification icons */
+.icon-placeholder {
+    width: 24px;
+    height: 24px;
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    color: #999;
+}
+/* Notification Styles */
+.notifications-container {
+    position: relative;
+    margin-left: 20px;
+}
+
+.notifications-icon {
+    position: relative;
+    cursor: pointer;
+    padding: 5px;
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.notifications-icon i {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="white" d="M224 0c-17.7 0-32 14.3-32 32v19.2C119 66 64 130.6 64 208v18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416H416c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8V208c0-77.4-55-142-128-156.8V32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3H160c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg>') no-repeat center center;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 4px 6px;
+    font-size: 10px;
+    line-height: 1;
+    min-width: 15px;
+    text-align: center;
+    box-shadow: 0 0 0 2px #2c3e50;
+}
+
+.notifications-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 300px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: none;
+    max-height: 400px;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.notifications-dropdown.show {
+    display: flex;
+}
+
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.notifications-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.notifications-count {
+    background-color: #3498db;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+.notifications-list {
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.notification-item {
+    display: flex;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f5f5f5;
+}
+
+.notification-item.unread {
+    background-color: #f0f7ff;
+}
+
+.notification-item.unread:hover {
+    background-color: #e6f2ff;
+}
+
+.notification-icon {
+    margin-right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-item.unread .notification-icon {
+    background-color: #e6f2ff;
+}
+
+.notification-icon i {
+    width: 24px;
+    height: 24px;
+    background-size: contain;
+}
+
+.notification-icon i.icon-calendar-plus {
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="%233498db" d="M96 0C78.3 0 64 14.3 64 32v32H32C14.3 64 0 78.3 0 96v32H448V96c0-17.7-14.3-32-32-32H384V32c0-17.7-14.3-32-32-32s-32 14.3-32 32v32H128V32c0-17.7-14.3-32-32-32zM448 192H0v255.8c0 35.2 28.7 64.2 64 64.2h320c35.3 0 64-28.7 64-64V192zM224 320v96c0 8.8-7.2 16-16 16s-16-7.2-16-16V320c0-8.8 7.2-16 16-16s16 7.2 16 16zm64-16c8.8 0 16 7.2 16 16v96c0 8.8-7.2 16-16 16s-16-7.2-16-16V320c0-8.8 7.2-16 16-16zm64 16v96c0 8.8-7.2 16-16 16s-16-7.2-16-16V320c0-8.8 7.2-16 16-16s16 7.2 16 16zm64-16c8.8 0 16 7.2 16 16v96c0 8.8-7.2 16-16 16s-16-7.2-16-16V320c0-8.8 7.2-16 16-16z"/></svg>') no-repeat center center;
+}
+
+.notification-icon i.icon-check-circle {
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%232ecc71" d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm106.5 150.5L228.8 332.8h-.1c-1.7 1.7-6.3 5.5-11.6 5.5-3.8 0-8.1-2.1-11.7-5.7l-56-56c-1.6-1.6-1.6-4.1 0-5.7l17.8-17.8c.8-.8 1.8-1.2 2.8-1.2 1 0 2 .4 2.8 1.2l44.4 44.4 122-122.9c.8-.8 1.8-1.2 2.8-1.2 1.1 0 2.1.4 2.8 1.2l17.5 18.1c1.8 1.7 1.8 4.2.2 5.8z"/></svg>') no-repeat center center;
+}
+
+.notification-icon i.icon-times-circle {
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23e74c3c" d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm68.2 275.6c4.8 4.8 4.8 12.6 0 17.4l-17.4 17.4c-4.8 4.8-12.6 4.8-17.4 0L256 307.3l-33.4 33.4c-4.8 4.8-12.6 4.8-17.4 0l-17.4-17.4c-4.8-4.8-4.8-12.6 0-17.4l33.4-33.4-33.4-33.4c-4.8-4.8-4.8-12.6 0-17.4l17.4-17.4c4.8-4.8 12.6-4.8 17.4 0l33.4 33.4 33.4-33.4c4.8-4.8 12.6-4.8 17.4 0l17.4 17.4c4.8 4.8 4.8 12.6 0 17.4L273.4 256l50.8 67.6z"/></svg>') no-repeat center center;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notification-details {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 5px;
+    max-height: 36px;
+    overflow: hidden;
+}
+
+.notification-time {
+    color: #999;
+    font-size: 11px;
+}
+
+.notification-empty {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+}
+
+.notifications-footer {
+    padding: 10px 15px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+.notifications-footer a {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.notifications-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Ensure the notification dropdown appears properly on mobile */
+@media (max-width: 768px) {
+    .notifications-container {
+        position: static;
+    }
+    
+    .notifications-dropdown {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: 80vh;
+    }
+    
+    .notifications-list {
+        max-height: calc(80vh - 110px);
+    }
+}
 }
