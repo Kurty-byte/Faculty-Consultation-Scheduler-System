@@ -1,0 +1,145 @@
+<?php
+// Include config file
+require_once '../../config.php';
+
+// Check if user is logged in and has faculty role
+requireRole('faculty');
+
+// Include required functions
+require_once '../../includes/appointment_functions.php';
+
+// Check if appointment ID is provided
+if (!isset($_GET['id']) || empty($_GET['id'])) {
+    setFlashMessage('danger', 'Appointment ID is required.');
+    redirect('pages/faculty/view_appointments.php');
+}
+
+// Get appointment ID
+$appointmentId = (int)$_GET['id'];
+
+// Get appointment details
+$appointment = getAppointmentDetails($appointmentId);
+
+// Get faculty ID
+$facultyId = getFacultyIdFromUserId($_SESSION['user_id']);
+
+// Check if appointment exists and belongs to this faculty
+if (!$appointment || $appointment['faculty_id'] != $facultyId) {
+    setFlashMessage('danger', 'Appointment not found or you do not have permission to reject it.');
+    redirect('pages/faculty/view_appointments.php');
+}
+
+// Check if appointment is already approved or cancelled
+if ($appointment['is_approved'] || $appointment['is_cancelled']) {
+    setFlashMessage('danger', 'This appointment is already ' . ($appointment['is_approved'] ? 'approved' : 'cancelled') . '.');
+    redirect('pages/faculty/view_appointments.php');
+}
+
+// Process rejection
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Get reason from form
+    $notes = isset($_POST['notes']) ? sanitize($_POST['notes']) : null;
+    
+    if (empty($notes)) {
+        setFlashMessage('danger', 'Please provide a reason for rejecting this appointment.');
+        redirect('pages/faculty/reject_appointment.php?id=' . $appointmentId);
+    }
+    
+    try {
+        $result = rejectAppointment($appointmentId, $notes);
+        
+        setFlashMessage('success', 'Appointment rejected successfully.');
+        redirect('pages/faculty/view_appointments.php');
+    } catch (Exception $e) {
+        setFlashMessage('danger', 'Failed to reject appointment: ' . $e->getMessage());
+        redirect('pages/faculty/appointment_details.php?id=' . $appointmentId);
+    }
+} else {
+    // Display rejection form
+    $pageTitle = 'Reject Appointment';
+    include '../../includes/header.php';
+?>
+
+<div class="page-header">
+    <h1>Reject Appointment</h1>
+    <a href="appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Back to Appointment</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h2>Appointment Details</h2>
+        <table class="detail-table">
+            <tr>
+                <th>Student:</th>
+                <td><?php echo $appointment['student_first_name'] . ' ' . $appointment['student_last_name']; ?></td>
+            </tr>
+            <tr>
+                <th>Date:</th>
+                <td><?php echo formatDate($appointment['appointment_date']); ?></td>
+            </tr>
+            <tr>
+                <th>Time:</th>
+                <td><?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?></td>
+            </tr>
+            <tr>
+                <th>Modality:</th>
+                <td><?php echo ucfirst($appointment['modality']); ?></td>
+            </tr>
+        </table>
+        
+        <form action="" method="POST" class="mt-4">
+            <div class="form-group">
+                <label for="notes">Reason for Rejection (Required):</label>
+                <textarea name="notes" id="notes" class="form-control" rows="4" placeholder="Provide a reason for rejecting this appointment" required></textarea>
+            </div>
+            
+            <div class="form-group text-right">
+                <button type="submit" class="btn btn-danger">Reject Appointment</button>
+                <a href="appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.detail-table {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.detail-table th {
+    width: 30%;
+    text-align: right;
+    padding: 8px 15px 8px 0;
+    vertical-align: top;
+    color: #666;
+}
+
+.detail-table td {
+    padding: 8px 0;
+}
+
+.mt-4 {
+    margin-top: 20px;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.card {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.card-body {
+    padding: 20px;
+}
+</style>
+
+<?php
+    include '../../includes/footer.php';
+}
+?>
