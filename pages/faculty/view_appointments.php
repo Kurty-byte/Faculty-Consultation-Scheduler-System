@@ -134,61 +134,6 @@ include '../../includes/header.php';
     </table>
 <?php endif; ?>
 
-<style>
-.appointment-stats {
-    display: flex;
-    margin-bottom: 20px;
-}
-
-.stat-box {
-    flex: 1;
-    padding: 15px;
-    margin-right: 10px;
-    background-color: #f4f4f4;
-    border-radius: 4px;
-    text-align: center;
-    text-decoration: none;
-    color: #333;
-    transition: all 0.3s;
-}
-
-.stat-box:hover, .stat-box.active {
-    background-color: #e0e0e0;
-}
-
-.stat-box h3 {
-    margin-top: 0;
-    font-size: 16px;
-}
-
-.stat-number {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 0;
-}
-
-.badge {
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-}
-
-.badge-success {
-    background-color: #2ecc71;
-    color: white;
-}
-
-.badge-warning {
-    background-color: #f39c12;
-    color: white;
-}
-
-.badge-danger {
-    background-color: #e74c3c;
-    color: white;
-}
-</style>
-
 <?php
 // Include footer
 include '../../includes/footer.php';

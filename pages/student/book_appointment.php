@@ -105,27 +105,6 @@ include '../../includes/header.php';
     </form>
 </div>
 
-<style>
-.appointment-details {
-    background: #f9f9f9;
-    padding: 15px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-}
-
-.booking-form {
-    background: white;
-    padding: 20px;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.form-text {
-    font-size: 0.85rem;
-    color: #666;
-}
-</style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle modality fields

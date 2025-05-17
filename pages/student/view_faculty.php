@@ -78,56 +78,6 @@ include '../../includes/header.php';
     </div>
 <?php endif; ?>
 
-<style>
-.filter-section {
-    margin-bottom: 30px;
-    padding: 15px;
-    background: #f4f4f4;
-    border-radius: 4px;
-}
-
-.filter-section .form-group {
-    margin-right: 15px;
-}
-
-.faculty-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.faculty-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.faculty-info h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-}
-
-.faculty-info p {
-    margin: 5px 0;
-}
-
-@media (max-width: 768px) {
-    .faculty-card {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .faculty-actions {
-        margin-top: 15px;
-        align-self: flex-end;
-    }
-}
-</style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Auto-submit form when department changes

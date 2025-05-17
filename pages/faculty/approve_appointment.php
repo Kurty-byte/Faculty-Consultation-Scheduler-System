@@ -96,44 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<style>
-.detail-table {
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.detail-table th {
-    width: 30%;
-    text-align: right;
-    padding: 8px 15px 8px 0;
-    vertical-align: top;
-    color: #666;
-}
-
-.detail-table td {
-    padding: 8px 0;
-}
-
-.mt-4 {
-    margin-top: 20px;
-}
-
-.text-right {
-    text-align: right;
-}
-
-.card {
-    background: white;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.card-body {
-    padding: 20px;
-}
-</style>
-
 <?php
     include '../../includes/footer.php';
 }
