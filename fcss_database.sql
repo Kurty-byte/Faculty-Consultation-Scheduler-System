@@ -20,7 +20,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 -- Table structure for appointment_history
 -- ----------------------------
-DROP TABLE IF EXISTS `appointment_history`;
 CREATE TABLE `appointment_history`  (
   `history_id` int NOT NULL AUTO_INCREMENT,
   `appointment_id` int NOT NULL,
@@ -38,7 +37,6 @@ CREATE TABLE `appointment_history`  (
 -- ----------------------------
 -- Table structure for appointments
 -- ----------------------------
-DROP TABLE IF EXISTS `appointments`;
 CREATE TABLE `appointments`  (
   `appointment_id` int NOT NULL AUTO_INCREMENT,
   `schedule_id` int NOT NULL,
@@ -65,7 +63,6 @@ CREATE TABLE `appointments`  (
 -- ----------------------------
 -- Table structure for availability_schedules
 -- ----------------------------
-DROP TABLE IF EXISTS `availability_schedules`;
 CREATE TABLE `availability_schedules`  (
   `schedule_id` int NOT NULL AUTO_INCREMENT,
   `faculty_id` int NOT NULL,
@@ -85,7 +82,6 @@ CREATE TABLE `availability_schedules`  (
 -- ----------------------------
 -- Table structure for departments
 -- ----------------------------
-DROP TABLE IF EXISTS `departments`;
 CREATE TABLE `departments`  (
   `department_id` int NOT NULL AUTO_INCREMENT,
   `department_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -98,7 +94,6 @@ CREATE TABLE `departments`  (
 -- ----------------------------
 -- Table structure for faculty
 -- ----------------------------
-DROP TABLE IF EXISTS `faculty`;
 CREATE TABLE `faculty`  (
   `faculty_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -118,7 +113,6 @@ CREATE TABLE `faculty`  (
 -- ----------------------------
 -- Table structure for students
 -- ----------------------------
-DROP TABLE IF EXISTS `students`;
 CREATE TABLE `students`  (
   `student_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -138,7 +132,6 @@ CREATE TABLE `students`  (
 -- ----------------------------
 -- Table structure for users
 -- ----------------------------
-DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users`  (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
