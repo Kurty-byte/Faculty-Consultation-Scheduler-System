@@ -58,7 +58,9 @@ include '../../includes/header.php';
                                 <span class="badge badge-info">New</span>
                             </div>
                             <div class="notification-time">
-                                <?php echo $notification['time_ago']; ?>
+                                <span class="time-ago" data-timestamp="<?php echo $notification['timestamp']; ?>">
+                                    <?php echo $notification['time_ago']; ?>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -307,9 +309,10 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .notification-time {
-    font-size: 0.9em;
-    color: #6c757d;
-    font-weight: 500;
+    text-align: right;
+    font-size: 1em;
+    color: #495057;
+    font-weight: 600;
 }
 
 .notification-title {
@@ -406,6 +409,11 @@ document.addEventListener('DOMContentLoaded', function() {
     .notification-meta {
         flex-direction: column;
         align-items: flex-start;
+    }
+    
+    .notification-time {
+        text-align: left;
+        margin-top: 8px;
     }
     
     .notification-actions {

@@ -58,9 +58,9 @@ include '../../includes/header.php';
                                 <span class="badge badge-info">New</span>
                             </div>
                             <div class="notification-time">
-                                <span class="time-ago"><?php echo $notification['time_ago']; ?></span>
-                                <br>
-                                <small class="exact-time"><?php echo $notification['formatted_time']; ?></small>
+                                <span class="time-ago" data-timestamp="<?php echo $notification['timestamp']; ?>">
+                                    <?php echo $notification['time_ago']; ?>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -115,36 +115,6 @@ include '../../includes/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Update time displays every minute
-    setInterval(updateTimeDisplays, 60000);
-    
-    function updateTimeDisplays() {
-        document.querySelectorAll('.time-ago').forEach(function(element) {
-            const exactTimeElement = element.parentNode.querySelector('.exact-time');
-            if (exactTimeElement) {
-                const exactTime = exactTimeElement.textContent;
-                // You could implement AJAX call here to get updated time ago
-                // For now, we'll just refresh the relative time
-                const timestamp = new Date(exactTime).getTime();
-                const now = new Date().getTime();
-                const diff = Math.floor((now - timestamp) / 1000);
-                
-                if (diff < 60) {
-                    element.textContent = 'Just now';
-                } else if (diff < 3600) {
-                    const minutes = Math.floor(diff / 60);
-                    element.textContent = minutes + ' minute' + (minutes > 1 ? 's' : '') + ' ago';
-                } else if (diff < 86400) {
-                    const hours = Math.floor(diff / 3600);
-                    element.textContent = hours + ' hour' + (hours > 1 ? 's' : '') + ' ago';
-                } else {
-                    const days = Math.floor(diff / 86400);
-                    element.textContent = days + ' day' + (days > 1 ? 's' : '') + ' ago';
-                }
-            }
-        });
-    }
-    
     // Mark individual notification as read
     document.querySelectorAll('.mark-read-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -326,22 +296,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .notification-time {
     text-align: right;
-    font-size: 0.9em;
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.notification-time .time-ago {
-    display: block;
-    font-weight: 600;
+    font-size: 1em;
     color: #495057;
-}
-
-.notification-time .exact-time {
-    display: block;
-    font-size: 0.75em;
-    color: #6c757d;
-    margin-top: 2px;
+    font-weight: 600;
 }
 
 .notification-title {

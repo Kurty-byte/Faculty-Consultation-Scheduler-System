@@ -1,6 +1,6 @@
 <?php
 /**
- * New Notification System
+ * New Notification System with Dynamic Time Display
  * Simple and clean notification management
  */
 
@@ -34,14 +34,16 @@ function createNotification($userId, $appointmentId, $type, $message) {
     return $result;
 }
 
-// Get unread notifications for a user
+// Get unread notifications for a user with timestamp data for dynamic display
 function getUnreadNotifications($userId, $limit = 50) {
     if (!$userId) {
         return [];
     }
     
     $notifications = fetchRows(
-        "SELECT n.*, a.appointment_date, a.start_time, a.end_time, a.modality, a.platform, a.location
+        "SELECT n.*, a.appointment_date, a.start_time, a.end_time, a.modality, a.platform, a.location,
+                UNIX_TIMESTAMP(n.created_at) as timestamp,
+                n.created_at as raw_timestamp
          FROM notifications n
          JOIN appointments a ON n.appointment_id = a.appointment_id
          WHERE n.user_id = ? AND n.is_read = 0
@@ -50,10 +52,9 @@ function getUnreadNotifications($userId, $limit = 50) {
         [$userId, $limit]
     );
     
-    // Add formatted time ago and links
+    // Add dynamic time display data
     foreach ($notifications as &$notification) {
-        $notification['time_ago'] = getTimeAgo($notification['created_at']);
-        $notification['formatted_time'] = date('M j, Y g:i A', strtotime($notification['created_at']));
+        $notification['time_ago'] = getTimeAgo($notification['raw_timestamp']);
         $notification['link'] = getNotificationLink($notification);
     }
     
@@ -241,7 +242,7 @@ function createCancellationNotification($appointmentId) {
     );
 }
 
-// Enhanced time ago function - FIXED VERSION
+// Enhanced time ago function - Returns dynamic time strings
 function getTimeAgo($timestamp) {
     // Ensure we're working with a proper timestamp
     $time = strtotime($timestamp);
@@ -249,7 +250,7 @@ function getTimeAgo($timestamp) {
     
     // If timestamp is invalid, return error message
     if ($time === false) {
-        return 'Invalid time';
+        return 'Unknown time';
     }
     
     $diff = $now - $time;
@@ -299,9 +300,30 @@ function getTimeAgo($timestamp) {
     return $years . ' year' . ($years > 1 ? 's' : '') . ' ago';
 }
 
-// Get exact formatted time
-function getExactTime($timestamp) {
-    return date('F j, Y \a\t g:i A', strtotime($timestamp));
+// Get appointments with dynamic time display for dashboards
+function getAppointmentsWithTimeDisplay($query, $params = []) {
+    $appointments = fetchRows($query, $params);
+    
+    // Add dynamic time display for each appointment
+    foreach ($appointments as &$appointment) {
+        // Use the most recent timestamp (updated_on or appointed_on)
+        $activityTime = null;
+        if (!empty($appointment['updated_on'])) {
+            $activityTime = $appointment['updated_on'];
+        } elseif (!empty($appointment['appointed_on'])) {
+            $activityTime = $appointment['appointed_on'];
+        }
+        
+        if ($activityTime) {
+            $appointment['time_ago'] = getTimeAgo($activityTime);
+            $appointment['timestamp'] = strtotime($activityTime);
+        } else {
+            $appointment['time_ago'] = 'Unknown time';
+            $appointment['timestamp'] = 0;
+        }
+    }
+    
+    return $appointments;
 }
 
 // Clean old notifications (older than 30 days)
@@ -311,26 +333,5 @@ function cleanOldNotifications() {
     );
     
     return $result;
-}
-
-// Debug function to check notification timestamps
-function debugNotificationTime($notificationId) {
-    $notification = fetchRow(
-        "SELECT *, UNIX_TIMESTAMP(created_at) as unix_timestamp FROM notifications WHERE notification_id = ?",
-        [$notificationId]
-    );
-    
-    if ($notification) {
-        return [
-            'created_at' => $notification['created_at'],
-            'unix_timestamp' => $notification['unix_timestamp'],
-            'current_time' => date('Y-m-d H:i:s'),
-            'current_unix' => time(),
-            'time_ago' => getTimeAgo($notification['created_at']),
-            'formatted_time' => getExactTime($notification['created_at'])
-        ];
-    }
-    
-    return null;
 }
 ?>

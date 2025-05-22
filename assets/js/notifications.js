@@ -1,6 +1,6 @@
 /**
- * New Notification System JavaScript
- * Simple and clean notification management
+ * Dynamic Notification System JavaScript
+ * Handles real-time time updates and notification management
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -9,6 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update badge every 30 seconds
     setInterval(updateNotificationBadge, 30000);
+    
+    // Update time displays every 30 seconds for better responsiveness
+    if (document.querySelectorAll('[data-timestamp]').length > 0 || 
+        document.querySelectorAll('.time-ago').length > 0) {
+        updateTimeDisplays();
+        setInterval(updateTimeDisplays, 30000);
+    }
     
     // Function to update notification badge count
     function updateNotificationBadge() {
@@ -42,6 +49,94 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error updating notification count:', error);
         });
+    }
+    
+    // Function to update all time displays dynamically
+    function updateTimeDisplays() {
+        // Update elements with data-timestamp attribute
+        document.querySelectorAll('[data-timestamp]').forEach(function(element) {
+            const timestamp = parseInt(element.dataset.timestamp);
+            if (timestamp && timestamp > 0) {
+                const timeAgo = calculateTimeAgo(timestamp);
+                
+                // Handle different prefixes for different contexts
+                const originalText = element.textContent;
+                if (originalText.includes('Approved ')) {
+                    element.textContent = 'Approved ' + timeAgo;
+                } else if (originalText.includes('Requested ')) {
+                    element.textContent = 'Requested ' + timeAgo;
+                } else if (originalText.includes('Cancelled ')) {
+                    element.textContent = 'Cancelled ' + timeAgo;
+                } else if (originalText.includes('Rejected ')) {
+                    element.textContent = 'Rejected ' + timeAgo;
+                } else {
+                    element.textContent = timeAgo;
+                }
+            }
+        });
+        
+        // Update generic time-ago elements
+        document.querySelectorAll('.time-ago:not([data-timestamp])').forEach(function(element) {
+            // Try to get timestamp from a hidden element or data attribute
+            const timestampElement = element.parentNode.querySelector('.timestamp-data');
+            if (timestampElement) {
+                const timestamp = parseInt(timestampElement.textContent);
+                if (timestamp && timestamp > 0) {
+                    const timeAgo = calculateTimeAgo(timestamp);
+                    element.textContent = timeAgo;
+                }
+            }
+        });
+    }
+    
+    // Calculate time ago from Unix timestamp
+    function calculateTimeAgo(timestamp) {
+        const now = Math.floor(Date.now() / 1000);
+        const diff = now - timestamp;
+        
+        // Handle future dates or invalid timestamps
+        if (diff < 0 || isNaN(diff)) {
+            return 'Just now';
+        }
+        
+        // Less than a minute
+        if (diff < 60) {
+            return 'Just now';
+        }
+        
+        // Minutes
+        if (diff < 3600) {
+            const minutes = Math.floor(diff / 60);
+            return minutes + ' minute' + (minutes > 1 ? 's' : '') + ' ago';
+        }
+        
+        // Hours
+        if (diff < 86400) {
+            const hours = Math.floor(diff / 3600);
+            return hours + ' hour' + (hours > 1 ? 's' : '') + ' ago';
+        }
+        
+        // Days
+        if (diff < 604800) {
+            const days = Math.floor(diff / 86400);
+            return days + ' day' + (days > 1 ? 's' : '') + ' ago';
+        }
+        
+        // Weeks
+        if (diff < 2592000) {
+            const weeks = Math.floor(diff / 604800);
+            return weeks + ' week' + (weeks > 1 ? 's' : '') + ' ago';
+        }
+        
+        // Months
+        if (diff < 31536000) {
+            const months = Math.floor(diff / 2592000);
+            return months + ' month' + (months > 1 ? 's' : '') + ' ago';
+        }
+        
+        // Years
+        const years = Math.floor(diff / 31536000);
+        return years + ' year' + (years > 1 ? 's' : '') + ' ago';
     }
     
     // Helper function to get base URL
@@ -151,10 +246,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle page visibility change to update notifications when user returns
     document.addEventListener('visibilitychange', function() {
         if (!document.hidden) {
-            // User returned to page, update badge
-            setTimeout(updateNotificationBudge, 1000);
+            // User returned to page, update badge and time displays
+            setTimeout(() => {
+                updateNotificationBadge();
+                updateTimeDisplays();
+            }, 1000);
         }
     });
+    
+    // Expose updateTimeDisplays function globally for manual updates
+    window.updateTimeDisplays = updateTimeDisplays;
+    window.calculateTimeAgo = calculateTimeAgo;
     
     // Debug function (only available in development)
     if (window.location.hostname === 'localhost') {
@@ -163,6 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Current badge:', document.getElementById('notificationBadge'));
             console.log('Notification icon:', document.querySelector('.notifications-icon'));
             console.log('Base URL:', getBaseUrl());
+            console.log('Time display elements:', document.querySelectorAll('[data-timestamp], .time-ago').length);
             
             // Test notification count
             fetch(getBaseUrl() + 'ajax/get_notification_count.php')
@@ -174,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// CSS for success messages
+// CSS for success messages and animations
 const style = document.createElement('style');
 style.textContent = `
 .alert {
@@ -189,6 +292,24 @@ style.textContent = `
     color: #0f5132;
     background-color: #d1e7dd;
     border-color: #badbcc;
+}
+
+.time-ago {
+    transition: opacity 0.3s ease;
+}
+
+.time-ago.updating {
+    opacity: 0.7;
+}
+
+@keyframes timeUpdate {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.time-ago.animate-update {
+    animation: timeUpdate 0.5s ease;
 }
 `;
 document.head.appendChild(style);
