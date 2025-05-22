@@ -7,6 +7,7 @@ requireRole('student');
 
 // Include required functions
 require_once '../../includes/appointment_functions.php';
+require_once '../../includes/notification_system.php';
 
 // Check if appointment ID is provided
 if (!isset($_GET['id']) || empty($_GET['id'])) {
@@ -56,7 +57,14 @@ $notes = "Cancelled by student: " . $_SESSION['first_name'] . ' ' . $_SESSION['l
 try {
     $result = cancelAppointment($appointmentId, $notes);
     
-    setFlashMessage('success', 'Appointment cancelled successfully.');
+    // Create notification for faculty using new system
+    $notificationResult = createCancellationNotification($appointmentId);
+    
+    if ($notificationResult) {
+        setFlashMessage('success', 'Appointment cancelled successfully. The faculty member has been notified of the cancellation and the time slot is now available for other students.');
+    } else {
+        setFlashMessage('success', 'Appointment cancelled successfully. The time slot is now available for other students.');
+    }
 } catch (Exception $e) {
     setFlashMessage('danger', 'Failed to cancel appointment: ' . $e->getMessage());
 }

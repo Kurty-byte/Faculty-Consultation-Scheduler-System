@@ -1,4 +1,4 @@
-s<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,7 @@ s<!DOCTYPE html>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/dashboard.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/forms.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/calendar.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/icons.css">
     <?php if (isset($extraCSS)): ?>
     <?php foreach ($extraCSS as $css): ?>
         <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/' . $css; ?>">
@@ -41,72 +42,28 @@ s<!DOCTYPE html>
                     Welcome, <?php echo $_SESSION['first_name']; ?>
 
                     <?php if (isLoggedIn()): ?>
-    <div class="notifications-container">
-        <div class="notifications-icon" id="notificationsToggle">
-            <i class="icon-bell"></i>
-            <?php 
-            // Include notification functions if not already included
-            if (!function_exists('countUnreadNotifications')) {
-                require_once 'notification_functions.php';
-            }
-            
-            $unreadCount = countUnreadNotifications();
-            if ($unreadCount > 0): 
-            ?>
-                <span class="notification-badge"><?php echo $unreadCount; ?></span>
-            <?php endif; ?>
-        </div>
-        
-        <div class="notifications-dropdown" id="notificationsDropdown">
-            <div class="notifications-header">
-                <h3>Notifications</h3>
-                <?php if ($unreadCount > 0): ?>
-                    <span class="notifications-count"><?php echo $unreadCount; ?> new</span>
-                <?php endif; ?>
-            </div>
-            
-            <div class="notifications-list">
-                <?php 
-                $notifications = getUserNotifications();
-                if (empty($notifications)): 
-                ?>
-                    <div class="notification-empty">
-                        <p>No notifications yet</p>
-                    </div>
-                <?php else: ?>
-                    <?php foreach ($notifications as $notification): ?>
-                        <a href="<?php echo $notification['link']; ?>" 
-                           class="notification-item <?php echo !$notification['is_read'] ? 'unread' : ''; ?>"
-                           data-id="<?php echo $notification['id']; ?>">
-                            <div class="notification-icon">
-                                <?php if ($notification['type'] == 'appointment_request'): ?>
-                                    <i class="icon-calendar-plus"></i>
-                                <?php elseif ($notification['type'] == 'appointment_approved'): ?>
-                                    <i class="icon-check-circle"></i>
-                                <?php elseif ($notification['type'] == 'appointment_rejected'): ?>
-                                    <i class="icon-times-circle"></i>
-                                <?php endif; ?>
-                            </div>
-                            <div class="notification-content">
-                                <div class="notification-title"><?php echo htmlspecialchars($notification['message']); ?></div>
-                                <?php if (!empty($notification['details'])): ?>
-                                    <div class="notification-details"><?php echo htmlspecialchars(substr($notification['details'], 0, 50)); ?><?php echo (strlen($notification['details']) > 50) ? '...' : ''; ?></div>
-                                <?php endif; ?>
-                                <div class="notification-time"><?php echo getTimeAgo($notification['timestamp']); ?></div>
-                            </div>
+                    <div class="notifications-container">
+                        <!-- Clickable notification icon -->
+                        <a href="<?php echo BASE_URL; ?>pages/<?php echo $_SESSION['role']; ?>/notifications.php" class="notifications-icon" title="View Notifications">
+                            🔔
+                            <?php 
+                            // Include new notification system
+                            $unreadCount = 0;
+                            
+                            // Check if notification system file exists
+                            if (file_exists(__DIR__ . '/notification_system.php')) {
+                                require_once __DIR__ . '/notification_system.php';
+                                $unreadCount = countUnreadNotifications($_SESSION['user_id']);
+                            }
+                            
+                            // Only show badge if there are unread notifications
+                            if ($unreadCount > 0): 
+                            ?>
+                                <span class="notification-badge" id="notificationBadge"><?php echo $unreadCount; ?></span>
+                            <?php endif; ?>
                         </a>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-            
-            <?php if (!empty($notifications)): ?>
-                <div class="notifications-footer">
-                    <a href="<?php echo BASE_URL; ?>pages/<?php echo $_SESSION['role']; ?>/view_appointments.php">View all</a>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-<?php endif; ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>

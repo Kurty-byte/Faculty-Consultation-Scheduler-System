@@ -7,6 +7,7 @@ requireRole('faculty');
 
 // Include required functions
 require_once '../../includes/appointment_functions.php';
+require_once '../../includes/notification_system.php';
 
 // Check if appointment ID is provided
 if (!isset($_GET['id']) || empty($_GET['id'])) {
@@ -43,7 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $result = approveAppointment($appointmentId, $notes);
         
-        setFlashMessage('success', 'Appointment approved successfully.');
+        // Create notification for student using new system
+        $notificationResult = createApprovalNotification($appointmentId);
+        
+        if ($notificationResult) {
+            setFlashMessage('success', 'Appointment approved successfully. The student has been notified of the approval.');
+        } else {
+            setFlashMessage('success', 'Appointment approved successfully.');
+        }
+        
         redirect('pages/faculty/view_appointments.php');
     } catch (Exception $e) {
         setFlashMessage('danger', 'Failed to approve appointment: ' . $e->getMessage());
@@ -80,12 +89,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <th>Modality:</th>
                 <td><?php echo ucfirst($appointment['modality']); ?></td>
             </tr>
+            <?php if ($appointment['modality'] === 'virtual' && $appointment['platform']): ?>
+                <tr>
+                    <th>Platform:</th>
+                    <td><?php echo $appointment['platform']; ?></td>
+                </tr>
+            <?php endif; ?>
+            <?php if ($appointment['modality'] === 'physical' && $appointment['location']): ?>
+                <tr>
+                    <th>Location:</th>
+                    <td><?php echo $appointment['location']; ?></td>
+                </tr>
+            <?php endif; ?>
+            <tr>
+                <th>Student's Reason:</th>
+                <td><?php echo nl2br(htmlspecialchars($appointment['remarks'])); ?></td>
+            </tr>
         </table>
         
         <form action="" method="POST" class="mt-4">
             <div class="form-group">
-                <label for="notes">Notes (Optional):</label>
-                <textarea name="notes" id="notes" class="form-control" rows="4" placeholder="Add any notes or instructions for the student"></textarea>
+                <label for="notes">Approval Notes (Optional):</label>
+                <textarea name="notes" id="notes" class="form-control" rows="4" placeholder="Add any notes or instructions for the student (meeting link, room details, etc.)"></textarea>
+                <small class="form-text text-muted">These notes will be visible to the student and included in their notification.</small>
             </div>
             
             <div class="form-group text-right">

@@ -1,0 +1,444 @@
+/* Simple CSS Icons for FCSS */
+
+/* Notification Badge */
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--danger);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  z-index: 1;
+  border: 2px solid white;
+}
+
+/* Notifications Container */
+.notifications-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 15px;
+}
+
+.notifications-icon {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  position: relative;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  display: inline-block;
+  font-size: 18px;
+}
+
+.notifications-icon:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+}
+
+/* Notifications Dropdown */
+.notifications-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  max-height: 400px;
+  background-color: white;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  display: none;
+}
+
+.notifications-dropdown.show {
+  display: block;
+}
+
+.notifications-header {
+  padding: 15px;
+  border-bottom: 1px solid var(--gray-light);
+  background-color: var(--light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--dark);
+}
+
+.notifications-count {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.notifications-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--gray-light);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background-color: var(--light);
+  text-decoration: none;
+  color: inherit;
+}
+
+.notification-item.unread {
+  background-color: rgba(78, 115, 223, 0.05);
+  border-left: 3px solid var(--primary);
+}
+
+.notification-icon {
+  margin-right: 10px;
+  font-size: 14px;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark);
+  margin-bottom: 3px;
+}
+
+.notification-details {
+  font-size: 12px;
+  color: var(--gray);
+  margin-bottom: 3px;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: var(--secondary);
+}
+
+.notification-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--gray);
+  font-style: italic;
+}
+
+.notifications-footer {
+  padding: 12px 15px;
+  border-top: 1px solid var(--gray-light);
+  text-align: center;
+  background-color: var(--light);
+}
+
+.notifications-footer a {
+  font-size: 14px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.notifications-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notifications-dropdown {
+    width: 280px;
+    right: -20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .notifications-dropdown {
+    width: calc(100vw - 40px);
+    right: -150px;
+  }
+}/* Simple CSS Icons for FCSS */
+
+/* Base icon styles */
+[class^="icon-"], [class*=" icon-"] {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  position: relative;
+  vertical-align: middle;
+}
+
+/* Bell Icon */
+.icon-bell::before {
+  content: "🔔";
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Calendar Plus Icon */
+.icon-calendar-plus::before {
+  content: "📅";
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Check Circle Icon */
+.icon-check-circle::before {
+  content: "✅";
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Times Circle Icon */
+.icon-times-circle::before {
+  content: "❌";
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Cancel/Cancellation Icon */
+.icon-cancel::before {
+  content: "⚠️";
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Alternative CSS-only icons */
+.icon-bell-css {
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  position: relative;
+}
+
+.icon-bell-css::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 3px;
+  background-color: currentColor;
+  border-radius: 0 0 3px 3px;
+}
+
+/* Notification Badge */
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--danger);
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  z-index: 1;
+}
+
+/* Notifications Container */
+.notifications-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 15px;
+}
+
+.notifications-icon {
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.notifications-icon:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Notifications Dropdown */
+.notifications-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  max-height: 400px;
+  background-color: white;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  display: none;
+}
+
+.notifications-dropdown.show {
+  display: block;
+}
+
+.notifications-header {
+  padding: 15px;
+  border-bottom: 1px solid var(--gray-light);
+  background-color: var(--light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--dark);
+}
+
+.notifications-count {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.notifications-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--gray-light);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background-color: var(--light);
+  text-decoration: none;
+  color: inherit;
+}
+
+.notification-item.unread {
+  background-color: rgba(78, 115, 223, 0.05);
+  border-left: 3px solid var(--primary);
+}
+
+.notification-icon {
+  margin-right: 10px;
+  font-size: 14px;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark);
+  margin-bottom: 3px;
+}
+
+.notification-details {
+  font-size: 12px;
+  color: var(--gray);
+  margin-bottom: 3px;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: var(--secondary);
+}
+
+.notification-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--gray);
+  font-style: italic;
+}
+
+.notifications-footer {
+  padding: 12px 15px;
+  border-top: 1px solid var(--gray-light);
+  text-align: center;
+  background-color: var(--light);
+}
+
+.notifications-footer a {
+  font-size: 14px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.notifications-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Permission Request Banner */
+.notification-permission-request {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: white;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  padding: 15px;
+  max-width: 300px;
+  z-index: 2000;
+}
+
+.notification-permission-request p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--dark);
+}
+
+.notification-permission-request .btn {
+  margin-right: 5px;
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notifications-dropdown {
+    width: 280px;
+    right: -20px;
+  }
+  
+  .notification-permission-request {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .notifications-dropdown {
+    width: calc(100vw - 40px);
+    right: -150px;
+  }
+}

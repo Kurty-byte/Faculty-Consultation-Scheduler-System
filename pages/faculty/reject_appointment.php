@@ -7,6 +7,7 @@ requireRole('faculty');
 
 // Include required functions
 require_once '../../includes/appointment_functions.php';
+require_once '../../includes/notification_system.php';
 
 // Check if appointment ID is provided
 if (!isset($_GET['id']) || empty($_GET['id'])) {
@@ -48,7 +49,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $result = rejectAppointment($appointmentId, $notes);
         
-        setFlashMessage('success', 'Appointment rejected successfully.');
+        // Create notification for student using new system
+        $notificationResult = createRejectionNotification($appointmentId);
+        
+        if ($notificationResult) {
+            setFlashMessage('success', 'Appointment rejected successfully. The student has been notified with your reason for rejection.');
+        } else {
+            setFlashMessage('success', 'Appointment rejected successfully.');
+        }
+        
         redirect('pages/faculty/view_appointments.php');
     } catch (Exception $e) {
         setFlashMessage('danger', 'Failed to reject appointment: ' . $e->getMessage());
@@ -85,12 +94,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <th>Modality:</th>
                 <td><?php echo ucfirst($appointment['modality']); ?></td>
             </tr>
+            <?php if ($appointment['modality'] === 'virtual' && $appointment['platform']): ?>
+                <tr>
+                    <th>Platform:</th>
+                    <td><?php echo $appointment['platform']; ?></td>
+                </tr>
+            <?php endif; ?>
+            <?php if ($appointment['modality'] === 'physical' && $appointment['location']): ?>
+                <tr>
+                    <th>Location:</th>
+                    <td><?php echo $appointment['location']; ?></td>
+                </tr>
+            <?php endif; ?>
+            <tr>
+                <th>Student's Reason:</th>
+                <td><?php echo nl2br(htmlspecialchars($appointment['remarks'])); ?></td>
+            </tr>
         </table>
+        
+        <div class="alert alert-warning mt-3">
+            <strong>Important:</strong> Please provide a clear reason for rejecting this appointment. The student will receive this explanation in their notification.
+        </div>
         
         <form action="" method="POST" class="mt-4">
             <div class="form-group">
-                <label for="notes">Reason for Rejection (Required):</label>
-                <textarea name="notes" id="notes" class="form-control" rows="4" placeholder="Provide a reason for rejecting this appointment" required></textarea>
+                <label for="notes" class="required">Reason for Rejection:</label>
+                <textarea name="notes" id="notes" class="form-control" rows="4" placeholder="Please explain why you're rejecting this appointment (scheduling conflict, need more information, etc.)" required></textarea>
+                <small class="form-text text-muted">This message will be sent to the student along with the rejection notification.</small>
             </div>
             
             <div class="form-group text-right">

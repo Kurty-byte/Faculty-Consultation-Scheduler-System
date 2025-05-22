@@ -7,7 +7,8 @@ requireRole('student');
 
 // Include required functions
 require_once '../../includes/appointment_functions.php';
-require_once '../../includes/faculty_functions.php';  // Make sure this is included
+require_once '../../includes/faculty_functions.php';
+require_once '../../includes/notification_system.php';
 
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -47,7 +48,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $appointmentId = createAppointment($studentId, $scheduleId, $date, $startTime, $endTime, $remarks, $modality, $platform, $location);
         
-        setFlashMessage('success', 'Your appointment request has been submitted successfully. Please wait for the faculty member to approve it.');
+        // Create notification for faculty using new system
+        $notificationResult = createBookingNotification($appointmentId);
+        
+        if ($notificationResult) {
+            setFlashMessage('success', 'Your appointment request has been submitted successfully. The faculty member has been notified and will review your request.');
+        } else {
+            setFlashMessage('success', 'Your appointment request has been submitted successfully.');
+        }
+        
         redirect('pages/student/view_appointments.php');
     } catch (Exception $e) {
         setFlashMessage('danger', 'Failed to book appointment: ' . $e->getMessage());
