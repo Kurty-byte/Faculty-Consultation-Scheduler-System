@@ -53,6 +53,7 @@ function getUnreadNotifications($userId, $limit = 50) {
     // Add formatted time ago and links
     foreach ($notifications as &$notification) {
         $notification['time_ago'] = getTimeAgo($notification['created_at']);
+        $notification['formatted_time'] = date('M j, Y g:i A', strtotime($notification['created_at']));
         $notification['link'] = getNotificationLink($notification);
     }
     
@@ -240,37 +241,67 @@ function createCancellationNotification($appointmentId) {
     );
 }
 
-// Enhanced time ago function
+// Enhanced time ago function - FIXED VERSION
 function getTimeAgo($timestamp) {
-    $now = new DateTime();
-    $time = new DateTime($timestamp);
-    $diff = $now->diff($time);
+    // Ensure we're working with a proper timestamp
+    $time = strtotime($timestamp);
+    $now = time();
     
-    if ($diff->y > 0) {
-        return $diff->y . ' year' . ($diff->y > 1 ? 's' : '') . ' ago';
+    // If timestamp is invalid, return error message
+    if ($time === false) {
+        return 'Invalid time';
     }
     
-    if ($diff->m > 0) {
-        return $diff->m . ' month' . ($diff->m > 1 ? 's' : '') . ' ago';
+    $diff = $now - $time;
+    
+    // Handle future dates
+    if ($diff < 0) {
+        return 'Just now';
     }
     
-    if ($diff->d > 0) {
-        if ($diff->d >= 7) {
-            $weeks = floor($diff->d / 7);
-            return $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ago';
-        }
-        return $diff->d . ' day' . ($diff->d > 1 ? 's' : '') . ' ago';
+    // Less than a minute
+    if ($diff < 60) {
+        return 'Just now';
     }
     
-    if ($diff->h > 0) {
-        return $diff->h . ' hour' . ($diff->h > 1 ? 's' : '') . ' ago';
+    // Minutes
+    if ($diff < 3600) {
+        $minutes = floor($diff / 60);
+        return $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
     }
     
-    if ($diff->i > 0) {
-        return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
+    // Hours
+    if ($diff < 86400) {
+        $hours = floor($diff / 3600);
+        return $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
     }
     
-    return 'Just now';
+    // Days
+    if ($diff < 604800) {
+        $days = floor($diff / 86400);
+        return $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+    }
+    
+    // Weeks
+    if ($diff < 2592000) {
+        $weeks = floor($diff / 604800);
+        return $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ago';
+    }
+    
+    // Months
+    if ($diff < 31536000) {
+        $months = floor($diff / 2592000);
+        return $months . ' month' . ($months > 1 ? 's' : '') . ' ago';
+    }
+    
+    // Years
+    $years = floor($diff / 31536000);
+    return $years . ' year' . ($years > 1 ? 's' : '') . ' ago';
+}
+
+// Get exact formatted time
+function getExactTime($timestamp) {
+    return date('F j, Y \a\t g:i A', strtotime($timestamp));
 }
 
 // Clean old notifications (older than 30 days)
@@ -280,5 +311,26 @@ function cleanOldNotifications() {
     );
     
     return $result;
+}
+
+// Debug function to check notification timestamps
+function debugNotificationTime($notificationId) {
+    $notification = fetchRow(
+        "SELECT *, UNIX_TIMESTAMP(created_at) as unix_timestamp FROM notifications WHERE notification_id = ?",
+        [$notificationId]
+    );
+    
+    if ($notification) {
+        return [
+            'created_at' => $notification['created_at'],
+            'unix_timestamp' => $notification['unix_timestamp'],
+            'current_time' => date('Y-m-d H:i:s'),
+            'current_unix' => time(),
+            'time_ago' => getTimeAgo($notification['created_at']),
+            'formatted_time' => getExactTime($notification['created_at'])
+        ];
+    }
+    
+    return null;
 }
 ?>
