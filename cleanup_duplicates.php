@@ -62,6 +62,6 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
     cleanDuplicateNotifications();
     echo "</pre>";
     echo "<p><strong>Database cleanup completed!</strong></p>";
-    echo "<p><a href='pages/faculty/notifications.php'>Go back to notifications</a></p>";
+    echo "<p><a href='" . BASE_URL . "pages/faculty/notifications.php'>Go back to notifications</a></p>";
 }
 ?>

@@ -32,23 +32,23 @@ include '../../includes/header.php';
 
 <div class="page-header">
     <h1>My Appointments</h1>
-    <a href="view_faculty.php" class="btn btn-primary">Book New Appointment</a>
+    <a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" class="btn btn-primary">Book New Appointment</a>
 </div>
 
 <div class="appointment-stats">
-    <a href="view_appointments.php?status=pending" class="stat-box <?php echo $statusFilter === 'pending' ? 'active' : ''; ?>">
+    <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=pending" class="stat-box <?php echo $statusFilter === 'pending' ? 'active' : ''; ?>">
         <h3>Pending</h3>
         <p class="stat-number"><?php echo $pendingCount; ?></p>
     </a>
-    <a href="view_appointments.php?status=approved" class="stat-box <?php echo $statusFilter === 'approved' ? 'active' : ''; ?>">
+    <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=approved" class="stat-box <?php echo $statusFilter === 'approved' ? 'active' : ''; ?>">
         <h3>Approved</h3>
         <p class="stat-number"><?php echo $approvedCount; ?></p>
     </a>
-    <a href="view_appointments.php?status=cancelled" class="stat-box <?php echo $statusFilter === 'cancelled' ? 'active' : ''; ?>">
+    <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=cancelled" class="stat-box <?php echo $statusFilter === 'cancelled' ? 'active' : ''; ?>">
         <h3>Cancelled/Rejected</h3>
         <p class="stat-number"><?php echo $cancelledCount; ?></p>
     </a>
-    <a href="view_appointments.php" class="stat-box <?php echo $statusFilter === null ? 'active' : ''; ?>">
+    <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" class="stat-box <?php echo $statusFilter === null ? 'active' : ''; ?>">
         <h3>All</h3>
         <p class="stat-number"><?php echo $pendingCount + $approvedCount + $cancelledCount; ?></p>
     </a>
@@ -89,7 +89,7 @@ include '../../includes/header.php';
                         <?php endif; ?>
                     </td>
                     <td>
-                        <a href="appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-primary">View</a>
+                        <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-primary">View</a>
                         
                         <?php
                         // Show cancel button only for approved or pending appointments that haven't passed
@@ -100,7 +100,7 @@ include '../../includes/header.php';
                             
                             if ($canCancel):
                             ?>
-                                <a href="cancel_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
+                                <a href="<?php echo BASE_URL; ?>pages/student/cancel_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
                             <?php else: ?>
                                 <button class="btn btn-sm btn-secondary" disabled title="Cannot cancel appointments less than <?php echo MIN_CANCEL_HOURS; ?> hours before the scheduled time">Cancel</button>
                             <?php endif; ?>

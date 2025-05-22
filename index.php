@@ -20,7 +20,7 @@ include 'includes/header.php';
     <div class="login-box">
         <h2>Login</h2>
         
-        <form action="pages/auth/login_process.php" method="POST">
+        <form action="<?php echo BASE_URL; ?>pages/auth/login_process.php" method="POST">
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" name="email" id="email" required>

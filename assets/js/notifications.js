@@ -141,11 +141,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Helper function to get base URL
     function getBaseUrl() {
+        const protocol = window.location.protocol;
+        const host = window.location.host;
         const path = window.location.pathname;
+        
+        // Extract the base path dynamically
+        let basePath = '/';
         if (path.includes('/fcss/')) {
-            return window.location.origin + '/fcss/';
+            basePath = '/fcss/';
         }
-        return window.location.origin + '/';
+        
+        return protocol + '//' + host + basePath;
     }
     
     // Global functions for marking notifications (used by notification pages)

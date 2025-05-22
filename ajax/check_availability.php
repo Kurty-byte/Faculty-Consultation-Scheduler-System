@@ -1,6 +1,10 @@
 <?php
 // Include config file
-require_once '../config.php';
+$configPath = dirname(__FILE__) . '/../config.php';
+if (!file_exists($configPath)) {
+    $configPath = '../config.php';
+}
+require_once $configPath;
 
 // Check if user is logged in
 if (!isLoggedIn()) {

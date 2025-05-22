@@ -23,12 +23,12 @@ include '../../includes/header.php';
 
 <div class="page-header">
     <h1>Add New Consultation Schedule</h1>
-    <a href="manage_schedules.php" class="btn btn-secondary">Back to Schedules</a>
+    <a href="<?php echo BASE_URL; ?>pages/faculty/manage_schedules.php" class="btn btn-secondary">Back to Schedules</a>
 </div>
 
 <div class="card">
     <div class="card-body">
-        <form action="add_schedule_process.php" method="POST">
+        <form action="<?php echo BASE_URL; ?>pages/faculty/add_schedule_process.php" method="POST">
             <div class="form-group">
                 <label for="day_of_week">Day of Week</label>
                 <select name="day_of_week" id="day_of_week" class="form-control" required>

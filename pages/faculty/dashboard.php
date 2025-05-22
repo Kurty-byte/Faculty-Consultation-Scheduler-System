@@ -71,7 +71,7 @@ include '../../includes/header.php';
             <p class="stat-text">Need your approval</p>
         </div>
         <div class="stat-icon">📋</div>
-        <a href="view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All</a>
+        <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All</a>
     </div>
     
     <div class="stat-box success">
@@ -86,7 +86,7 @@ include '../../includes/header.php';
             <p class="stat-text">Scheduled for today</p>
         </div>
         <div class="stat-icon">📅</div>
-        <a href="view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
+        <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
     </div>
 </div>
 
@@ -94,7 +94,7 @@ include '../../includes/header.php';
     <div class="dashboard-section-header">
         <h2>Pending Appointment Requests</h2>
         <?php if (count($pendingAppointments) > 0): ?>
-            <a href="view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All Pending</a>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All Pending</a>
         <?php endif; ?>
     </div>
     
@@ -129,9 +129,9 @@ include '../../includes/header.php';
                             <?php endif; ?>
                         </div>
                         <div class="appointment-actions">
-                            <a href="approve_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-success btn-sm">Approve</a>
-                            <a href="reject_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-danger btn-sm">Reject</a>
-                            <a href="appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
+                            <a href="<?php echo BASE_URL; ?>pages/faculty/approve_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-success btn-sm">Approve</a>
+                            <a href="<?php echo BASE_URL; ?>pages/faculty/reject_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-danger btn-sm">Reject</a>
+                            <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -189,7 +189,7 @@ include '../../includes/header.php';
                             </div>
                         </div>
                         <div class="appointment-actions">
-                            <a href="appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
+                            <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
                         </div>
                     </div>
                 <?php endforeach; ?>

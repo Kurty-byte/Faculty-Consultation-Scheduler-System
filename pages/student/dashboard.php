@@ -73,7 +73,7 @@ include '../../includes/header.php';
             <p class="stat-text">Awaiting faculty response</p>
         </div>
         <div class="stat-icon">📋</div>
-        <a href="view_appointments.php?status=pending" class="btn btn-warning btn-sm">View All</a>
+        <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All</a>
     </div>
     
     <div class="stat-box success">
@@ -88,7 +88,7 @@ include '../../includes/header.php';
             <p class="stat-text">Scheduled for today</p>
         </div>
         <div class="stat-icon">📅</div>
-        <a href="view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
+        <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
     </div>
 </div>
 
@@ -96,7 +96,7 @@ include '../../includes/header.php';
     <div class="dashboard-section-header">
         <h2>Pending Appointments</h2>
         <?php if (count($pendingAppointments) > 0): ?>
-            <a href="view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All Pending</a>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All Pending</a>
         <?php endif; ?>
     </div>
     
@@ -106,7 +106,7 @@ include '../../includes/header.php';
                 <div class="empty-state-icon">📝</div>
                 <div class="empty-state-text">No pending requests</div>
                 <p>You don't have any appointment requests waiting for approval.</p>
-                <a href="view_faculty.php" class="btn btn-primary">Book New Appointment</a>
+                <a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" class="btn btn-primary">Book New Appointment</a>
             </div>
         <?php else: ?>
             <div class="appointments-list">
@@ -132,7 +132,7 @@ include '../../includes/header.php';
                             <?php endif; ?>
                         </div>
                         <div class="appointment-actions">
-                            <a href="appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
+                            <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
                             <?php
                             // Check if can be canceled (24 hours before)
                             $appointmentTime = $appointment['appointment_date'] . ' ' . $appointment['start_time'];
@@ -140,7 +140,7 @@ include '../../includes/header.php';
                             
                             if ($hoursDifference >= MIN_CANCEL_HOURS):
                             ?>
-                                <a href="cancel_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" 
+                                <a href="<?php echo BASE_URL; ?>pages/student/cancel_appointment.php?id=<?php echo $appointment['appointment_id']; ?>"
                                    class="btn btn-danger btn-sm" 
                                    onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
                             <?php endif; ?>

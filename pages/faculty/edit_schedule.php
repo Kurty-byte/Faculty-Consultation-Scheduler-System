@@ -41,12 +41,12 @@ include '../../includes/header.php';
 
 <div class="page-header">
     <h1>Edit Consultation Schedule</h1>
-    <a href="manage_schedules.php" class="btn btn-secondary">Back to Schedules</a>
+    <a href="<?php echo BASE_URL; ?>pages/faculty/manage_schedules.php" class="btn btn-secondary">Back to Schedules</a>
 </div>
 
 <div class="card">
     <div class="card-body">
-        <form action="edit_schedule_process.php" method="POST">
+        <form action="<?php echo BASE_URL; ?>pages/faculty/edit_schedule_process.php" method="POST">
             <input type="hidden" name="schedule_id" value="<?php echo $schedule['schedule_id']; ?>">
             
             <div class="form-group">

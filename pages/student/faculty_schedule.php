@@ -83,7 +83,7 @@ include '../../includes/header.php';
 
 <div class="page-header">
     <h1>Available Consultation Times</h1>
-    <a href="view_faculty.php" class="btn btn-secondary">Back to Faculty Directory</a>
+    <a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" class="btn btn-secondary">Back to Faculty Directory</a>
 </div>
 
 <div class="faculty-profile">
@@ -113,13 +113,13 @@ include '../../includes/header.php';
 <div class="schedule-tabs">
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="nav-link <?php echo $activeTab == 'recurring' ? 'active' : ''; ?>" href="faculty_schedule.php?id=<?php echo $facultyId; ?>&from=<?php echo $fromDate; ?>&to=<?php echo $toDate; ?>&tab=recurring">
+            <a class="nav-link <?php echo $activeTab == 'recurring' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>pages/student/faculty_schedule.php?id=<?php echo $facultyId; ?>&from=<?php echo $fromDate; ?>&to=<?php echo $toDate; ?>&tab=recurring">
                 Weekly Schedules 
                 <span class="badge"><?php echo count($recurringSchedules); ?></span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link <?php echo $activeTab == 'non-recurring' ? 'active' : ''; ?>" href="faculty_schedule.php?id=<?php echo $facultyId; ?>&from=<?php echo $fromDate; ?>&to=<?php echo $toDate; ?>&tab=non-recurring">
+            <a class="nav-link <?php echo $activeTab == 'non-recurring' ? 'active' : ''; ?>" href="<?php echo BASE_URL; ?>pages/student/faculty_schedule.php?id=<?php echo $facultyId; ?>&from=<?php echo $fromDate; ?>&to=<?php echo $toDate; ?>&tab=non-recurring">
                 One-time Schedules 
                 <span class="badge"><?php echo count($nonRecurringSchedules); ?></span>
             </a>
@@ -149,7 +149,7 @@ include '../../includes/header.php';
                     <?php foreach ($schedules as $schedule): ?>
                         <div class="time-slot">
                             <span class="time"><?php echo formatTime($schedule['start_time']) . ' - ' . formatTime($schedule['end_time']); ?></span>
-                            <a href="book_appointment.php?schedule_id=<?php echo $schedule['schedule_id']; ?>&date=<?php echo $date; ?>&start=<?php echo $schedule['start_time']; ?>&end=<?php echo $schedule['end_time']; ?>" class="btn btn-primary">Book</a>
+                            <a href="<?php echo BASE_URL; ?>pages/student/book_appointment.php?schedule_id=<?php echo $schedule['schedule_id']; ?>&date=<?php echo $date; ?>&start=<?php echo $schedule['start_time']; ?>&end=<?php echo $schedule['end_time']; ?>" class="btn btn-primary">Book</a>
                         </div>
                     <?php endforeach; ?>
                 </div>

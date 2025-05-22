@@ -66,8 +66,8 @@ include '../../includes/header.php';
                         <?php endif; ?>
                     </td>
                     <td>
-                        <a href="edit_schedule.php?id=<?php echo $schedule['schedule_id']; ?>" class="btn btn-sm btn-primary">Edit</a>
-                        <a href="delete_schedule.php?id=<?php echo $schedule['schedule_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this schedule?')">Delete</a>
+                        <a href="<?php echo BASE_URL; ?>pages/faculty/edit_schedule.php?id=<?php echo $schedule['schedule_id']; ?>" class="btn btn-sm btn-primary">Edit</a>
+                        <a href="<?php echo BASE_URL; ?>pages/faculty/delete_schedule.php?id=<?php echo $schedule['schedule_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this schedule?')">Delete</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

@@ -25,7 +25,7 @@ include '../../includes/header.php';
         <?php if (!empty($notifications)): ?>
             <button id="markAllReadBtn" class="btn btn-sm btn-secondary">Mark All as Read</button>
         <?php endif; ?>
-        <a href="dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
+        <a href="<?php echo BASE_URL; ?>pages/student/dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
     </div>
 </div>
 
@@ -106,13 +106,13 @@ include '../../includes/header.php';
                     
                     <div class="notification-card-footer">
                         <div class="notification-actions">
-                            <a href="appointment_details.php?id=<?php echo $notification['appointment_id']; ?>" 
+                            <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $notification['appointment_id']; ?>"
                                class="btn btn-sm btn-primary">View Details</a>
                             <?php if ($notification['notification_type'] == 'appointment_approved'): ?>
-                                <a href="view_appointments.php" 
+                                <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php"
                                    class="btn btn-sm btn-success">View All Appointments</a>
                             <?php elseif ($notification['notification_type'] == 'appointment_rejected'): ?>
-                                <a href="view_faculty.php" 
+                                <a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php"
                                    class="btn btn-sm btn-warning">Book New Appointment</a>
                             <?php endif; ?>
                             <button class="btn btn-sm btn-secondary mark-read-btn" 

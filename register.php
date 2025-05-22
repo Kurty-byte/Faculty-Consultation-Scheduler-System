@@ -23,7 +23,7 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
     <div class="login-box">
         <h2>Create an Account</h2>
         
-        <form action="pages/auth/register_process.php" method="POST">
+        <form action="<?php echo BASE_URL; ?>pages/auth/register_process.php" method="POST">
             <div class="form-group">
                 <label for="role">Role</label>
                 <select name="role" id="role" required>

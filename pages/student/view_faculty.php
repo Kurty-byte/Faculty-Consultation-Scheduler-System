@@ -47,7 +47,7 @@ include '../../includes/header.php';
         </div>
         <button type="submit" class="btn btn-primary">Filter</button>
         <?php if ($departmentFilter): ?>
-            <a href="view_faculty.php" class="btn btn-secondary">Clear Filter</a>
+            <a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" class="btn btn-secondary">Clear Filter</a>
         <?php endif; ?>
     </form>
 </div>
@@ -71,7 +71,7 @@ include '../../includes/header.php';
                     <p><strong>Phone:</strong> <?php echo $member['office_phone_number']; ?></p>
                 </div>
                 <div class="faculty-actions">
-                    <a href="faculty_schedule.php?id=<?php echo $member['faculty_id']; ?>" class="btn btn-primary">View Schedule</a>
+                    <a href="<?php echo BASE_URL; ?>pages/student/faculty_schedule.php?id=<?php echo $member['faculty_id']; ?>" class="btn btn-primary">View Schedule</a>
                 </div>
             </div>
         <?php endforeach; ?>

@@ -41,7 +41,7 @@ include '../../includes/header.php';
 
 <div class="page-header">
     <h1>Appointment Details</h1>
-    <a href="view_appointments.php" class="btn btn-secondary">Back to Appointments</a>
+    <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" class="btn btn-secondary">Back to Appointments</a>
 </div>
 
 <div class="appointment-detail-card">
@@ -143,8 +143,8 @@ include '../../includes/header.php';
     
     <?php if (!$appointment['is_approved'] && !$appointment['is_cancelled']): ?>
     <div class="card-actions">
-        <a href="approve_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-success">Approve Appointment</a>
-        <a href="reject_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this appointment?')">Reject Appointment</a>
+        <a href="<?php echo BASE_URL; ?>pages/faculty/approve_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-success">Approve Appointment</a>
+        <a href="<?php echo BASE_URL; ?>pages/faculty/reject_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this appointment?')">Reject Appointment</a>
     </div>
     <?php endif; ?>
 </div>

@@ -52,7 +52,7 @@ include '../../includes/header.php';
 
 <div class="page-header">
     <h1>Book Consultation Appointment</h1>
-    <a href="faculty_schedule.php?id=<?php echo $facultyId; ?>" class="btn btn-secondary">Back to Schedule</a>
+    <a href="<?php echo BASE_URL; ?>pages/student/faculty_schedule.php?id=<?php echo $facultyId; ?>" class="btn btn-secondary">Back to Schedule</a>
 </div>
 
 <div class="appointment-details">
@@ -64,7 +64,7 @@ include '../../includes/header.php';
 </div>
 
 <div class="booking-form">
-    <form action="booking_process.php" method="POST">
+    <form action="<?php echo BASE_URL; ?>pages/student/booking_process.php" method="POST">
         <input type="hidden" name="schedule_id" value="<?php echo $scheduleId; ?>">
         <input type="hidden" name="date" value="<?php echo $date; ?>">
         <input type="hidden" name="start_time" value="<?php echo $startTime; ?>">

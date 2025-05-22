@@ -98,7 +98,7 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
     echo "<li>⚠️ You can safely delete this cleanup script after testing</li>";
     echo "</ul>";
     
-    echo "<p><a href='pages/faculty/notifications.php'>Test Faculty Notifications</a> | ";
-    echo "<a href='pages/student/notifications.php'>Test Student Notifications</a></p>";
+    echo "<p><a href='" . BASE_URL . "pages/faculty/notifications.php'>Test Faculty Notifications</a> | ";
+    echo "<a href='" . BASE_URL . "pages/student/notifications.php'>Test Student Notifications</a></p>";
 }
 ?>

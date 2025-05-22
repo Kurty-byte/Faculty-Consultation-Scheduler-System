@@ -8,9 +8,20 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'fcss_database');
 
-// Site configuration
+// Site configuration - Updated for network access
 define('SITE_NAME', 'Faculty Consultation Scheduler System');
-define('BASE_URL', 'http://localhost/fcss/');
+
+// Dynamic Base URL Configuration
+function getBaseUrl() {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'];
+    $path = '/'. basename(__DIR__) .'/';
+    
+    return $protocol . $host . $path;
+}
+
+define('BASE_URL', getBaseUrl());
+
 define('MIN_CANCEL_HOURS', 24); // Minimum hours before appointment that allows cancellation
 
 // Time formats

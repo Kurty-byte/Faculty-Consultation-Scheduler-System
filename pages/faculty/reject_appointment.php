@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <div class="page-header">
     <h1>Reject Appointment</h1>
-    <a href="appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Back to Appointment</a>
+    <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Back to Appointment</a>
 </div>
 
 <div class="card">
@@ -116,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <strong>Important:</strong> Please provide a clear reason for rejecting this appointment. The student will receive this explanation in their notification.
         </div>
         
-        <form action="" method="POST" class="mt-4">
+        <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="POST" class="mt-4">
             <div class="form-group">
                 <label for="notes" class="required">Reason for Rejection:</label>
                 <textarea name="notes" id="notes" class="form-control" rows="4" placeholder="Please explain why you're rejecting this appointment (scheduling conflict, need more information, etc.)" required></textarea>
@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <div class="form-group text-right">
                 <button type="submit" class="btn btn-danger">Reject Appointment</button>
-                <a href="appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Cancel</a>
+                <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>
