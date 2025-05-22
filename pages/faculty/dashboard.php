@@ -10,11 +10,19 @@ $pageTitle = 'Faculty Dashboard';
 
 // Include notification system for time formatting
 require_once '../../includes/notification_system.php';
+require_once '../../includes/appointment_functions.php';
+require_once '../../includes/timeslot_functions.php';
 
 // Get faculty ID
 $facultyId = getFacultyIdFromUserId($_SESSION['user_id']);
 
-// Get pending appointments with dynamic time display
+// Check if faculty has consultation hours set up
+$hasConsultationHours = hasConsultationHoursSetup($facultyId);
+
+// Get appointment statistics
+$appointmentStats = getAppointmentStatistics($_SESSION['user_id'], 'faculty');
+
+// Get recent appointments with dynamic time display
 $pendingAppointments = getAppointmentsWithTimeDisplay(
     "SELECT a.*, s.day_of_week, u.first_name, u.last_name,
             CASE 
@@ -35,7 +43,6 @@ $pendingAppointments = getAppointmentsWithTimeDisplay(
     [$facultyId]
 );
 
-// Get upcoming appointments with dynamic time display
 $upcomingAppointments = getAppointmentsWithTimeDisplay(
     "SELECT a.*, s.day_of_week, u.first_name, u.last_name,
             CASE 
@@ -57,151 +64,241 @@ $upcomingAppointments = getAppointmentsWithTimeDisplay(
     [$facultyId]
 );
 
+// Get today's appointments
+$todayAppointments = array_filter($upcomingAppointments, function($apt) {
+    return $apt['appointment_date'] === date('Y-m-d');
+});
+
 // Include header
 include '../../includes/header.php';
 ?>
 
 <h1>Faculty Dashboard</h1>
 
-<div class="dashboard-stats">
-    <div class="stat-box primary">
-        <div class="stat-content">
-            <h3>Pending Requests</h3>
-            <p class="stat-number"><?php echo count($pendingAppointments); ?></p>
-            <p class="stat-text">Need your approval</p>
-        </div>
-        <div class="stat-icon">📋</div>
-        <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All</a>
-    </div>
-    
-    <div class="stat-box success">
-        <div class="stat-content">
-            <h3>Upcoming Today</h3>
-            <?php
-            $todayAppointments = array_filter($upcomingAppointments, function($apt) {
-                return $apt['appointment_date'] === date('Y-m-d');
-            });
-            ?>
-            <p class="stat-number"><?php echo count($todayAppointments); ?></p>
-            <p class="stat-text">Scheduled for today</p>
-        </div>
-        <div class="stat-icon">📅</div>
-        <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
-    </div>
-</div>
-
-<div class="dashboard-section">
-    <div class="dashboard-section-header">
-        <h2>Pending Appointment Requests</h2>
-        <?php if (count($pendingAppointments) > 0): ?>
-            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All Pending</a>
-        <?php endif; ?>
-    </div>
-    
-    <div class="dashboard-section-body">
-        <?php if (empty($pendingAppointments)): ?>
-            <div class="empty-state">
-                <div class="empty-state-icon">✅</div>
-                <div class="empty-state-text">No pending requests</div>
-                <p>All appointment requests have been reviewed.</p>
+<?php if (!$hasConsultationHours): ?>
+    <div class="setup-consultation-hours">
+        <div class="setup-banner">
+            <div class="setup-content">
+                <div class="setup-icon">⏰</div>
+                <div class="setup-text">
+                    <h2>Set Up Your Consultation Hours</h2>
+                    <p>Welcome! To start receiving appointment requests from students, you need to set up your consultation hours first.</p>
+                </div>
+                <div class="setup-actions">
+                    <a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" class="btn btn-primary btn-lg">
+                        Get Started
+                    </a>
+                </div>
             </div>
-        <?php else: ?>
-            <div class="appointments-list">
-                <?php foreach ($pendingAppointments as $appointment): ?>
-                    <div class="appointment-item pending">
-                        <div class="appointment-status-indicator pending"></div>
-                        <div class="appointment-info">
-                            <div class="appointment-header">
-                                <h4 class="appointment-title"><?php echo $appointment['first_name'] . ' ' . $appointment['last_name']; ?></h4>
-                                <span class="appointment-time-ago" data-timestamp="<?php echo isset($appointment['activity_timestamp']) ? $appointment['activity_timestamp'] : $appointment['timestamp']; ?>">
-                                    Requested <?php echo $appointment['time_ago']; ?>
-                                </span>
-                            </div>
-                            <div class="appointment-details">
-                                <span class="appointment-date"><?php echo formatDate($appointment['appointment_date']); ?></span>
-                                <span class="appointment-time"><?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?></span>
-                                <span class="appointment-type"><?php echo ucfirst($appointment['modality']); ?></span>
-                            </div>
-                            <?php if (!empty($appointment['remarks'])): ?>
-                                <div class="appointment-reason">
-                                    <strong>Reason:</strong> <?php echo htmlspecialchars(substr($appointment['remarks'], 0, 100)) . (strlen($appointment['remarks']) > 100 ? '...' : ''); ?>
+        </div>
+    </div>
+<?php else: ?>
+    <div class="dashboard-stats">
+        <div class="stat-box primary">
+            <div class="stat-content">
+                <h3>Pending Requests</h3>
+                <p class="stat-number"><?php echo $appointmentStats['pending']; ?></p>
+                <p class="stat-text">Need your approval</p>
+            </div>
+            <div class="stat-icon">📋</div>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All</a>
+        </div>
+        
+        <div class="stat-box success">
+            <div class="stat-content">
+                <h3>Today's Appointments</h3>
+                <p class="stat-number"><?php echo count($todayAppointments); ?></p>
+                <p class="stat-text">Scheduled for today</p>
+            </div>
+            <div class="stat-icon">📅</div>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
+        </div>
+        
+        <div class="stat-box info">
+            <div class="stat-content">
+                <h3>Total Appointments</h3>
+                <p class="stat-number"><?php echo $appointmentStats['total']; ?></p>
+                <p class="stat-text">All time</p>
+            </div>
+            <div class="stat-icon">📊</div>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" class="btn btn-info btn-sm">View All</a>
+        </div>
+        
+        <div class="stat-box warning">
+            <div class="stat-content">
+                <h3>Consultation Hours</h3>
+                <p class="stat-number">
+                    <?php
+                    $consultationHours = getFacultyConsultationHours($facultyId);
+                    echo count(array_unique(array_column($consultationHours, 'day_of_week')));
+                    ?>
+                </p>
+                <p class="stat-text">Days per week</p>
+            </div>
+            <div class="stat-icon">⏰</div>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" class="btn btn-warning btn-sm">Manage Hours</a>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php if ($hasConsultationHours): ?>
+    <div class="dashboard-section">
+        <div class="dashboard-section-header">
+            <h2>Pending Appointment Requests</h2>
+            <?php if (count($pendingAppointments) > 0): ?>
+                <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All Pending</a>
+            <?php endif; ?>
+        </div>
+        
+        <div class="dashboard-section-body">
+            <?php if (empty($pendingAppointments)): ?>
+                <div class="empty-state">
+                    <div class="empty-state-icon">✅</div>
+                    <div class="empty-state-text">No pending requests</div>
+                    <p>All appointment requests have been reviewed.</p>
+                </div>
+            <?php else: ?>
+                <div class="appointments-list">
+                    <?php foreach ($pendingAppointments as $appointment): ?>
+                        <div class="appointment-item pending">
+                            <div class="appointment-status-indicator pending"></div>
+                            <div class="appointment-info">
+                                <div class="appointment-header">
+                                    <h4 class="appointment-title"><?php echo $appointment['first_name'] . ' ' . $appointment['last_name']; ?></h4>
+                                    <span class="appointment-time-ago" data-timestamp="<?php echo isset($appointment['activity_timestamp']) ? $appointment['activity_timestamp'] : $appointment['timestamp']; ?>">
+                                        Requested <?php echo $appointment['time_ago']; ?>
+                                    </span>
                                 </div>
-                            <?php endif; ?>
+                                <div class="appointment-details">
+                                    <span class="appointment-date"><?php echo formatDate($appointment['appointment_date']); ?></span>
+                                    <span class="appointment-time"><?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?></span>
+                                    <span class="appointment-type"><?php echo ucfirst($appointment['modality']); ?></span>
+                                </div>
+                                <?php if (!empty($appointment['remarks'])): ?>
+                                    <div class="appointment-reason">
+                                        <strong>Reason:</strong> <?php echo htmlspecialchars(substr($appointment['remarks'], 0, 100)) . (strlen($appointment['remarks']) > 100 ? '...' : ''); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="appointment-actions">
+                                <a href="<?php echo BASE_URL; ?>pages/faculty/approve_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-success btn-sm">Approve</a>
+                                <a href="<?php echo BASE_URL; ?>pages/faculty/reject_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-danger btn-sm">Reject</a>
+                                <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
+                            </div>
                         </div>
-                        <div class="appointment-actions">
-                            <a href="<?php echo BASE_URL; ?>pages/faculty/approve_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-success btn-sm">Approve</a>
-                            <a href="<?php echo BASE_URL; ?>pages/faculty/reject_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-danger btn-sm">Reject</a>
-                            <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
-</div>
 
-<div class="dashboard-section">
-    <div class="dashboard-section-header">
-        <h2>Upcoming Appointments</h2>
-        <?php if (count($upcomingAppointments) > 0): ?>
-            <a href="view_appointments.php?status=approved" class="btn btn-primary btn-sm">View All Upcoming</a>
-        <?php endif; ?>
-    </div>
-    
-    <div class="dashboard-section-body">
-        <?php if (empty($upcomingAppointments)): ?>
-            <div class="empty-state">
-                <div class="empty-state-icon">📅</div>
-                <div class="empty-state-text">No upcoming appointments</div>
-                <p>Your schedule is currently clear.</p>
-            </div>
-        <?php else: ?>
-            <div class="appointments-list">
-                <?php foreach ($upcomingAppointments as $appointment): ?>
-                    <div class="appointment-item approved">
-                        <div class="appointment-status-indicator approved"></div>
-                        <div class="appointment-info">
-                            <div class="appointment-header">
-                                <h4 class="appointment-title"><?php echo $appointment['first_name'] . ' ' . $appointment['last_name']; ?></h4>
-                                <span class="appointment-time-ago" data-timestamp="<?php echo isset($appointment['activity_timestamp']) ? $appointment['activity_timestamp'] : $appointment['timestamp']; ?>">
-                                    Approved <?php echo $appointment['time_ago']; ?>
-                                </span>
+    <div class="dashboard-section">
+        <div class="dashboard-section-header">
+            <h2>Upcoming Appointments</h2>
+            <?php if (count($upcomingAppointments) > 0): ?>
+                <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=approved" class="btn btn-primary btn-sm">View All Upcoming</a>
+            <?php endif; ?>
+        </div>
+        
+        <div class="dashboard-section-body">
+            <?php if (empty($upcomingAppointments)): ?>
+                <div class="empty-state">
+                    <div class="empty-state-icon">📅</div>
+                    <div class="empty-state-text">No upcoming appointments</div>
+                    <p>Your schedule is currently clear.</p>
+                </div>
+            <?php else: ?>
+                <div class="appointments-list">
+                    <?php foreach ($upcomingAppointments as $appointment): ?>
+                        <div class="appointment-item approved">
+                            <div class="appointment-status-indicator approved"></div>
+                            <div class="appointment-info">
+                                <div class="appointment-header">
+                                    <h4 class="appointment-title"><?php echo $appointment['first_name'] . ' ' . $appointment['last_name']; ?></h4>
+                                    <span class="appointment-time-ago" data-timestamp="<?php echo isset($appointment['activity_timestamp']) ? $appointment['activity_timestamp'] : $appointment['timestamp']; ?>">
+                                        Approved <?php echo $appointment['time_ago']; ?>
+                                    </span>
+                                </div>
+                                <div class="appointment-details">
+                                    <span class="appointment-date 
+                                        <?php echo ($appointment['appointment_date'] === date('Y-m-d')) ? 'today' : ''; ?>">
+                                        <?php 
+                                        if ($appointment['appointment_date'] === date('Y-m-d')) {
+                                            echo 'Today';
+                                        } else {
+                                            echo formatDate($appointment['appointment_date']);
+                                        }
+                                        ?>
+                                    </span>
+                                    <span class="appointment-time"><?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?></span>
+                                    <span class="appointment-type"><?php echo ucfirst($appointment['modality']); ?>
+                                        <?php if ($appointment['modality'] === 'virtual' && $appointment['platform']): ?>
+                                            (<?php echo $appointment['platform']; ?>)
+                                        <?php elseif ($appointment['modality'] === 'physical' && $appointment['location']): ?>
+                                            (<?php echo $appointment['location']; ?>)
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
                             </div>
-                            <div class="appointment-details">
-                                <span class="appointment-date 
-                                    <?php echo ($appointment['appointment_date'] === date('Y-m-d')) ? 'today' : ''; ?>">
-                                    <?php 
-                                    if ($appointment['appointment_date'] === date('Y-m-d')) {
-                                        echo 'Today';
-                                    } else {
-                                        echo formatDate($appointment['appointment_date']);
-                                    }
-                                    ?>
-                                </span>
-                                <span class="appointment-time"><?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?></span>
-                                <span class="appointment-type"><?php echo ucfirst($appointment['modality']); ?>
-                                    <?php if ($appointment['modality'] === 'virtual' && $appointment['platform']): ?>
-                                        (<?php echo $appointment['platform']; ?>)
-                                    <?php elseif ($appointment['modality'] === 'physical' && $appointment['location']): ?>
-                                        (<?php echo $appointment['location']; ?>)
-                                    <?php endif; ?>
-                                </span>
+                            <div class="appointment-actions">
+                                <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
                             </div>
                         </div>
-                        <div class="appointment-actions">
-                            <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
-</div>
+<?php endif; ?>
 
 <style>
+.setup-consultation-hours {
+    margin-bottom: 2rem;
+}
+
+.setup-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.setup-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.setup-icon {
+    font-size: 4rem;
+    flex-shrink: 0;
+}
+
+.setup-text {
+    flex: 1;
+}
+
+.setup-text h2 {
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.setup-text p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.setup-actions {
+    flex-shrink: 0;
+}
+
 .dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -227,6 +324,14 @@ include '../../includes/header.php';
 
 .stat-box.success {
     border-left-color: var(--success);
+}
+
+.stat-box.info {
+    border-left-color: var(--info);
+}
+
+.stat-box.warning {
+    border-left-color: var(--warning);
 }
 
 .stat-content h3 {
@@ -381,6 +486,11 @@ include '../../includes/header.php';
 }
 
 @media (max-width: 768px) {
+    .setup-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
     .dashboard-stats {
         grid-template-columns: 1fr;
     }
