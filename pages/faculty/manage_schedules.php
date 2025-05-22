@@ -5,10 +5,12 @@ require_once '../../config.php';
 // Check if user is logged in and has faculty role
 requireRole('faculty');
 
-// Redirect to new consultation hours system
-setFlashMessage('info', 'Schedule management has been updated! You can now set consultation hours and manage breaks more efficiently.');
-redirect('pages/faculty/consultation_hours.php');
+// Set page title for SEO/accessibility
+$pageTitle = 'Schedule Management - Redirecting';
 
-// This file now serves as a redirect to the new consultation hours system
-// The old schedule management has been replaced with a more comprehensive system
+// Improved redirect message
+setFlashMessage('info', 'Schedule management has been moved! You can now manage your consultation hours and breaks from the new system.');
+
+// Redirect to the new consultation hours page
+redirect('pages/faculty/consultation_hours.php');
 ?>

@@ -83,15 +83,11 @@ define('FEATURE_EXPORT_DATA', true); // Enable data export functionality
 
 // Development and Debug Configuration
 define('DEBUG_MODE', true); // Enable/disable debug mode (set to false in production)
-define('LOG_ERRORS', true); // Enable error logging
-define('LOG_LEVEL', 'INFO'); // Log level (DEBUG, INFO, WARNING, ERROR)
 
 // Error reporting (set to 0 in production)
 if (DEBUG_MODE) {
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
-    ini_set('log_errors', 1);
-    ini_set('error_log', 'error.log');
 } else {
     error_reporting(0);
     ini_set('display_errors', 0);
@@ -142,31 +138,6 @@ function isFeatureEnabled($feature) {
     return isset($featureMap[$feature]) ? $featureMap[$feature] : false;
 }
 
-// Function to log system events (for debugging and monitoring)
-function logSystemEvent($event, $details = '', $level = 'INFO') {
-    if (!LOG_ERRORS) {
-        return;
-    }
-    
-    $timestamp = date('Y-m-d H:i:s');
-    $userId = getCurrentUserId() ?? 'guest';
-    $userRole = getCurrentUserRole() ?? 'unknown';
-    
-    $logEntry = "[$timestamp] [$level] User: $userId ($userRole) | Event: $event";
-    
-    if (!empty($details)) {
-        $logEntry .= " | Details: $details";
-    }
-    
-    // Log to file
-    error_log($logEntry . PHP_EOL, 3, 'system.log');
-    
-    // In debug mode, also log to error log
-    if (DEBUG_MODE && $level === 'ERROR') {
-        error_log($logEntry);
-    }
-}
-
 // Function to validate system requirements
 function validateSystemRequirements() {
     $requirements = [
@@ -181,7 +152,6 @@ function validateSystemRequirements() {
     foreach ($requirements as $requirement => $met) {
         if (!$met) {
             $allMet = false;
-            logSystemEvent('System Requirement Failed', $requirement, 'ERROR');
         }
     }
     
@@ -220,21 +190,6 @@ function getDatabaseStatus() {
             'connected' => false,
             'error' => $e->getMessage()
         ];
-    }
-}
-
-// Initialize system on config load
-if (DEBUG_MODE) {
-    logSystemEvent('System Initialized', 'Config loaded, version ' . SYSTEM_VERSION);
-}
-
-// Auto-cleanup old logs if they get too large (keep last 1000 lines)
-$logFile = 'system.log';
-if (file_exists($logFile) && filesize($logFile) > 1024 * 1024) { // 1MB
-    $lines = file($logFile);
-    if (count($lines) > 1000) {
-        $lines = array_slice($lines, -1000);
-        file_put_contents($logFile, implode('', $lines));
     }
 }
 ?>
