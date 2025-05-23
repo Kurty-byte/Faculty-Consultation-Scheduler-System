@@ -8,6 +8,7 @@ requireRole('student');
 // Include required functions
 require_once '../../includes/faculty_functions.php';
 require_once '../../includes/timeslot_functions.php';
+require_once '../../includes/appointment_functions.php'; // ADD THIS LINE - This was missing!
 
 // Check if required parameters are provided
 if (!isset($_GET['faculty_id']) || !isset($_GET['date']) || !isset($_GET['start']) || !isset($_GET['end'])) {

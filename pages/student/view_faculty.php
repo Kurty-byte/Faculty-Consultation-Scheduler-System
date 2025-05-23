@@ -88,7 +88,11 @@ include '../../includes/header.php';
                     <p><strong>Phone:</strong> <?php echo isset($member['office_phone_number']) ? $member['office_phone_number'] : 'N/A'; ?></p>
                 </div>
                 <div class="faculty-actions">
-                    <a href="<?php echo BASE_URL; ?>pages/student/faculty_schedule.php?id=<?php echo $member['faculty_id']; ?>" class="btn btn-primary">View Schedule</a>
+                    <?php if (hasConsultationHoursSetup($member['faculty_id'])): ?>
+                        <a href="<?php echo BASE_URL; ?>pages/student/faculty_schedule.php?id=<?php echo $member['faculty_id']; ?>" class="btn btn-primary">View Schedule</a>
+                    <?php else: ?>
+                        <button class="btn btn-secondary" disabled title="Faculty has not set up consultation hours yet">View Schedule</button>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endforeach; ?>
