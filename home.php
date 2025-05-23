@@ -15,6 +15,67 @@ $isLandingPage = true;
 include 'includes/header.php';
 ?>
 
+<!-- Custom CSS for 2x2 Grid -->
+<style>
+    /* Force 2x2 grid layout for features */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        width: 100%;
+        min-height: 380px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        background: #1a202c;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    /* Make feature section visible with proper background */
+    .features-section {
+        background: #141b2d !important;
+        color: white;
+        padding: 60px 0;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .section-header {
+        opacity: 1 !important;
+        transform: none !important;
+        margin-bottom: 3rem;
+    }
+
+    .section-header h2,
+    .feature-card h3 {
+        color: white;
+    }
+
+    .section-header p,
+    .feature-card p,
+    .feature-list li {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Fix for responsiveness */
+    @media (max-width: 768px) {
+        .features-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .feature-card {
+            min-height: auto;
+        }
+    }
+</style>
+
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="hero-overlay"></div>
@@ -52,18 +113,18 @@ include 'includes/header.php';
 </section>
 
 <!-- Features Section -->
-<section class="features-section">
+<section class="features-section animate-in">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header animate-in">
             <h2>Why Choose Our Consultation System?</h2>
             <p>Designed specifically for academic institutions to enhance student-faculty interactions</p>
         </div>
         
         <div class="features-grid">
-            <div class="feature-card">
+            <div class="feature-card animate-in">
                 <div class="feature-icon">📅</div>
                 <h3>Smart Scheduling</h3>
-                <p>Faculty set their availability, students book 30-minute slots that work for everyone. Real-time availability prevents double-bookings.</p>
+                <p>Faculty set their availability, students book 30-minute slots that work for everyone.</p>
                 <ul class="feature-list">
                     <li>✓ Flexible consultation hours</li>
                     <li>✓ Automatic conflict detection</li>
@@ -71,18 +132,18 @@ include 'includes/header.php';
                 </ul>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-card animate-in">
                 <div class="feature-icon">🔔</div>
                 <h3>Instant Notifications</h3>
-                <p>Stay informed with real-time notifications for appointment requests, approvals, and updates. Never miss an important consultation.</p>
+                <p>Stay informed with on-refresh notifications for appointment requests, approvals, and updates. Never miss an important consultation.</p>
                 <ul class="feature-list">
-                    <li>✓ Real-time status updates</li>
+                    <li>✓ On-refresh status updates</li>
                     <li>✓ Email & in-app notifications</li>
                     <li>✓ Appointment reminders</li>
                 </ul>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-card animate-in">
                 <div class="feature-icon">💻</div>
                 <h3>Flexible Consultation</h3>
                 <p>Support for both in-person and virtual consultations. Choose the format that works best for your academic needs.</p>
@@ -93,7 +154,7 @@ include 'includes/header.php';
                 </ul>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-card animate-in">
                 <div class="feature-icon">📊</div>
                 <h3>Comprehensive Dashboard</h3>
                 <p>Track your appointments, view upcoming schedules, and manage your consultation preferences from one central dashboard.</p>
@@ -108,9 +169,9 @@ include 'includes/header.php';
 </section>
 
 <!-- How It Works Section -->
-<section class="how-it-works-section">
+<section class="how-it-works-section animate-in">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header animate-in">
             <h2>How It Works</h2>
             <p>Simple steps to get started with academic consultations</p>
         </div>
@@ -189,17 +250,17 @@ include 'includes/header.php';
 </section>
 
 <!-- CTA Section -->
-<section class="cta-section">
+<section class="cta-section animate-in">
     <div class="container">
         <div class="cta-content">
             <h2>Ready to Transform Your Academic Consultations?</h2>
-            <p>Join hundreds of faculty and students who are already using our platform to enhance their academic collaboration.</p>
+            <p>Join now! And enhance your academic collaboration</p>
             <div class="cta-actions">
                 <a href="<?php echo BASE_URL; ?>register.php" class="btn btn-primary btn-lg">
                     <span class="btn-icon">🚀</span>
                     Get Started Today
                 </a>
-                <a href="<?php echo BASE_URL; ?>index.php" class="btn btn-outline-primary btn-lg">
+                <a href="<?php echo BASE_URL; ?>login.php" class="btn btn-outline-primary btn-lg">
                     <span class="btn-icon">🔑</span>
                     Already have an account?
                 </a>
@@ -220,64 +281,17 @@ function showSteps(userType) {
     document.getElementById(userType + '-steps').classList.add('active');
 }
 
-// Animated counter for statistics
-function animateCounters() {
-    const counters = document.querySelectorAll('.stat-number');
-    const speed = 50; // Lower is faster
-    
-    counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-target'));
-        const count = +counter.innerText;
-        const inc = target / speed;
-        
-        if (count < target) {
-            counter.innerText = Math.ceil(count + inc);
-            setTimeout(() => animateCounters(), 50);
-        } else {
-            counter.innerText = target;
-        }
-    });
-}
-
-// Intersection Observer for animations
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('animate-in');
-            
-            // Start counter animation when stats section is visible
-            if (entry.target.classList.contains('stats-section')) {
-                animateCounters();
-            }
-        }
-    });
-}, observerOptions);
-
-// Observe all sections for animations
+// Smooth scrolling for hero scroll indicator
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('section').forEach(section => {
-        observer.observe(section);
-    });
-    
-    // Smooth scrolling for hero scroll indicator
     document.querySelector('.hero-scroll-indicator').addEventListener('click', function() {
-        document.querySelector('.how-it-works-section').scrollIntoView({ 
+        document.querySelector('.features-section').scrollIntoView({ 
             behavior: 'smooth' 
         });
     });
     
-    // Add parallax effect to hero section
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset;
-        const heroSection = document.querySelector('.hero-section');
-        if (heroSection) {
-            heroSection.style.transform = `translateY(${scrolled * 0.5}px)`;
-        }
+    // Fix for visibility - Make sure all sections are visible by default
+    document.querySelectorAll('section').forEach(section => {
+        section.classList.add('animate-in');
     });
 });
 </script>
