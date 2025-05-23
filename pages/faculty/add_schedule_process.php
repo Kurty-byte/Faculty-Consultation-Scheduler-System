@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dayOfWeek = sanitize($_POST['day_of_week']);
     $startTime = sanitize($_POST['start_time']);
     $endTime = sanitize($_POST['end_time']);
-    $isRecurring = isset($_POST['is_recurring']) ? (int)$_POST['is_recurring'] : 1;
     
     // Validate time inputs
     if ($startTime >= $endTime) {
@@ -26,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $facultyId = getFacultyIdFromUserId($_SESSION['user_id']);
     
     // Create the schedule
-    $result = createSchedule($facultyId, $dayOfWeek, $startTime, $endTime, $isRecurring);
+    $result = createSchedule($facultyId, $dayOfWeek, $startTime, $endTime);
     
     if ($result) {
         setFlashMessage('success', 'Schedule created successfully.');

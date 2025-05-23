@@ -15,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dayOfWeek = sanitize($_POST['day_of_week']);
     $startTime = sanitize($_POST['start_time']);
     $endTime = sanitize($_POST['end_time']);
-    $isRecurring = isset($_POST['is_recurring']) ? (int)$_POST['is_recurring'] : 1;
     $isActive = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 1;
     
     // Validate time inputs
@@ -37,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     // Update the schedule
-    $result = updateSchedule($scheduleId, $dayOfWeek, $startTime, $endTime, $isRecurring, $isActive);
+    $result = updateSchedule($scheduleId, $dayOfWeek, $startTime, $endTime, $isActive);
     
     if ($result) {
         setFlashMessage('success', 'Schedule updated successfully.');

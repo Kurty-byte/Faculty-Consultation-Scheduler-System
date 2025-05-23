@@ -19,21 +19,21 @@ function getScheduleById($scheduleId) {
 }
 
 // Create a new schedule
-function createSchedule($facultyId, $dayOfWeek, $startTime, $endTime, $isRecurring = 1) {
+function createSchedule($facultyId, $dayOfWeek, $startTime, $endTime) {
     // Validate time (end time must be after start time)
     if (strtotime($endTime) <= strtotime($startTime)) {
         return false;
     }
     
     return insertData(
-        "INSERT INTO availability_schedules (faculty_id, day_of_week, start_time, end_time, is_recurring, is_active) 
-         VALUES (?, ?, ?, ?, ?, 1)",
-        [$facultyId, $dayOfWeek, $startTime, $endTime, $isRecurring]
+        "INSERT INTO availability_schedules (faculty_id, day_of_week, start_time, end_time, is_active) 
+         VALUES (?, ?, ?, ?, 1)",
+        [$facultyId, $dayOfWeek, $startTime, $endTime]
     );
 }
 
 // Update an existing schedule
-function updateSchedule($scheduleId, $dayOfWeek, $startTime, $endTime, $isRecurring, $isActive) {
+function updateSchedule($scheduleId, $dayOfWeek, $startTime, $endTime, $isActive) {
     // Validate time (end time must be after start time)
     if (strtotime($endTime) <= strtotime($startTime)) {
         return false;
@@ -41,9 +41,9 @@ function updateSchedule($scheduleId, $dayOfWeek, $startTime, $endTime, $isRecurr
     
     return updateOrDeleteData(
         "UPDATE availability_schedules 
-         SET day_of_week = ?, start_time = ?, end_time = ?, is_recurring = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP 
+         SET day_of_week = ?, start_time = ?, end_time = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP 
          WHERE schedule_id = ?",
-        [$dayOfWeek, $startTime, $endTime, $isRecurring, $isActive, $scheduleId]
+        [$dayOfWeek, $startTime, $endTime, $isActive, $scheduleId]
     );
 }
 

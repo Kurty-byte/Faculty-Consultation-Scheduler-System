@@ -71,14 +71,6 @@ include '../../includes/header.php';
             </div>
             
             <div class="form-group">
-                <label for="is_recurring">Repeat Weekly</label>
-                <select name="is_recurring" id="is_recurring" class="form-control">
-                    <option value="1" <?php echo ($schedule['is_recurring'] == 1) ? 'selected' : ''; ?>>Yes (Recurring Weekly)</option>
-                    <option value="0" <?php echo ($schedule['is_recurring'] == 0) ? 'selected' : ''; ?>>No (One-time Only)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
                 <label for="is_active">Status</label>
                 <select name="is_active" id="is_active" class="form-control">
                     <option value="1" <?php echo ($schedule['is_active'] == 1) ? 'selected' : ''; ?>>Active</option>

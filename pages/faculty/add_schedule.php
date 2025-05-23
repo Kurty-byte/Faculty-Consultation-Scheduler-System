@@ -49,14 +49,6 @@ include '../../includes/header.php';
             </div>
             
             <div class="form-group">
-                <label for="is_recurring">Repeat Weekly</label>
-                <select name="is_recurring" id="is_recurring" class="form-control">
-                    <option value="1" selected>Yes (Recurring Weekly)</option>
-                    <option value="0">No (One-time Only)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
                 <button type="submit" class="btn btn-primary">Create Schedule</button>
             </div>
         </form>

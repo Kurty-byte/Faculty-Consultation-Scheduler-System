@@ -237,8 +237,8 @@ function createTemporaryScheduleImproved($facultyId, $date, $startTime, $endTime
     
     // Create new temporary schedule with better metadata
     $scheduleId = insertData(
-        "INSERT INTO availability_schedules (faculty_id, day_of_week, start_time, end_time, is_recurring, is_active) 
-         VALUES (?, ?, ?, ?, 0, 1)",
+        "INSERT INTO availability_schedules (faculty_id, day_of_week, start_time, end_time, is_active) 
+         VALUES (?, ?, ?, ?, 1)",
         [$facultyId, $dayOfWeek, $startTime, $endTime]
     );
     
@@ -258,7 +258,7 @@ function deleteTemporaryScheduleImproved($scheduleId) {
     if ($appointmentCount['count'] == 0) {
         updateOrDeleteData(
             "DELETE FROM availability_schedules 
-             WHERE schedule_id = ? AND is_recurring = 0",
+             WHERE schedule_id = ?",
             [$scheduleId]
         );
     }
