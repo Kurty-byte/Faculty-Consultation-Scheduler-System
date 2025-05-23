@@ -4,22 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' . SITE_NAME : SITE_NAME; ?></title>
+    <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>assets/images/favicon.png">
+    <meta name="description" content="Faculty Consultation Scheduler System - Streamline academic consultations with efficient scheduling">
+    <meta name="keywords" content="faculty, consultation, scheduler, academic, university, appointments">
+    
+    <!-- CSS Files -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/dashboard.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/forms.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/calendar.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/icons.css">
+    
+    <?php if (isset($isLandingPage) && $isLandingPage): ?>
+        <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/landing.css">
+    <?php endif; ?>
+    
     <?php if (isset($extraCSS)): ?>
-    <?php foreach ($extraCSS as $css): ?>
-        <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/' . $css; ?>">
-    <?php endforeach; ?>
-<?php endif; ?>
+        <?php foreach ($extraCSS as $css): ?>
+            <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/' . $css; ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
 </head>
-<body>
-    <header>
+<body<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-page"' : ''; ?>>
+    <header<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-header"' : ''; ?>>
         <div class="container">
             <div class="logo">
-                <h1><?php echo SITE_NAME; ?></h1>
+                <a href="<?php echo BASE_URL; ?><?php echo isLoggedIn() ? (hasRole('faculty') ? 'pages/faculty/dashboard.php' : 'pages/student/dashboard.php') : 'home.php'; ?>">
+                    <h1><?php echo SITE_NAME; ?></h1>
+                </a>
             </div>
             
             <?php if (isLoggedIn()): ?>
@@ -41,7 +53,6 @@
                 <div class="user-info">
                     Welcome, <?php echo $_SESSION['first_name']; ?>
 
-                    <?php if (isLoggedIn()): ?>
                     <div class="notifications-container">
                         <!-- Clickable notification icon -->
                         <a href="<?php echo BASE_URL; ?>pages/<?php echo $_SESSION['role']; ?>/notifications.php" class="notifications-icon" title="View Notifications">
@@ -63,17 +74,93 @@
                             <?php endif; ?>
                         </a>
                     </div>
-                    <?php endif; ?>
                 </div>
+            <?php else: ?>
+                <!-- Navigation for non-logged in users (landing page) -->
+                <?php if (isset($isLandingPage) && $isLandingPage): ?>
+                    <nav class="landing-nav">
+                        <ul>
+                            <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                            <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                        </ul>
+                    </nav>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </header>
     
-    <main>
-        <div class="container">
+    <main<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-main"' : ''; ?>>
+        <?php if (!isset($isLandingPage) || !$isLandingPage): ?>
+            <div class="container">
+                <?php displayFlashMessage(); ?>
+        <?php else: ?>
             <?php displayFlashMessage(); ?>
+        <?php endif; ?>
 
 <style>
+/* Landing page specific header styles */
+.landing-header {
+    position: fixed !important;
+    background: rgba(255,255,255,0.1) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+
+.landing-header.scrolled {
+    background: rgba(26, 32, 44, 0.95) !important;
+    backdrop-filter: blur(20px);
+}
+
+.landing-header .logo a {
+    text-decoration: none;
+}
+
+.landing-header .logo h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #ffffff, #f0f0f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    transition: all 0.3s ease;
+}
+
+.landing-header .logo h1:hover {
+    transform: scale(1.05);
+}
+
+.landing-nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 1rem;
+}
+
+.landing-nav ul li a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.landing-nav ul li a:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.landing-main {
+    padding: 0 !important;
+}
+
 /* Active state for navigation */
 nav ul li a.active {
     color: var(--primary) !important;
@@ -118,10 +205,16 @@ nav ul li a.active::after {
         background-color: var(--dark);
         border-top: 1px solid rgba(255,255,255,0.1);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: none;
+    }
+    
+    nav.show {
+        display: block;
     }
     
     nav ul {
         padding: 1rem 0;
+        flex-direction: column;
     }
     
     nav ul li {
@@ -152,6 +245,20 @@ nav ul li a.active::after {
     
     nav ul li a.active::after {
         display: none;
+    }
+    
+    .landing-header .container {
+        flex-wrap: wrap;
+    }
+    
+    .landing-nav {
+        width: 100%;
+        margin-top: 1rem;
+    }
+    
+    .landing-nav ul {
+        justify-content: center;
+        flex-wrap: wrap;
     }
 }
 
@@ -186,14 +293,23 @@ nav ul li a.active::after {
         box-shadow: 0 0 0 0 rgba(231, 74, 59, 0);
     }
 }
+
+/* Header scroll effect for landing page */
+.landing-header-scroll-effect {
+    background: rgba(26, 32, 44, 0.95) !important;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
 </style>
 
 <script>
-// Enhanced mobile navigation
+// Enhanced mobile navigation and landing page effects
 document.addEventListener('DOMContentLoaded', function() {
     const navToggle = document.querySelector('.nav-toggle');
     const nav = document.querySelector('nav');
+    const landingHeader = document.querySelector('.landing-header');
     
+    // Mobile navigation toggle
     if (navToggle && nav) {
         navToggle.addEventListener('click', function() {
             nav.classList.toggle('show');
@@ -204,7 +320,18 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('click', function(e) {
             if (!nav.contains(e.target) && !navToggle.contains(e.target)) {
                 nav.classList.remove('show');
-                navToggle.setAttribute('aria-expanded', 'false');
+                if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+    
+    // Landing page header scroll effect
+    if (landingHeader) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 100) {
+                landingHeader.classList.add('landing-header-scroll-effect');
+            } else {
+                landingHeader.classList.remove('landing-header-scroll-effect');
             }
         });
     }
@@ -214,5 +341,19 @@ document.addEventListener('DOMContentLoaded', function() {
         updateNotificationBadge();
         setInterval(updateNotificationBadge, 30000);
     }
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
 });
 </script>

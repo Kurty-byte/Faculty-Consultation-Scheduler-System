@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             // Set success message
             setFlashMessage('success', 'Registration successful! You can now log in.');
-            redirect('index.php');
+            redirect('login.php');
         } catch (Exception $e) {
             // Rollback transaction
             mysqli_rollback($conn);

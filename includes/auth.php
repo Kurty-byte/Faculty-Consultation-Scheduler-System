@@ -50,7 +50,7 @@ function logoutUser() {
 function requireLogin() {
     if (!isLoggedIn()) {
         setFlashMessage('danger', 'You must be logged in to access this page.');
-        redirect('index.php');
+        redirect('home.php');
     }
 }
 
@@ -66,7 +66,7 @@ function requireRole($role) {
         } else if (hasRole('student')) {
             redirect('pages/student/dashboard.php');
         } else {
-            redirect('index.php');
+            redirect('home.php');
         }
     }
 }
@@ -83,7 +83,7 @@ function redirectToDashboard() {
     } else if (hasRole('student')) {
         redirect('pages/student/dashboard.php');
     } else {
-        redirect('index.php');
+        redirect('home.php');
     }
 }
 ?>

@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate form data
     if (empty($_POST['email']) || empty($_POST['password'])) {
         setFlashMessage('danger', 'Please enter both email and password.');
-        redirect('index.php');
+        redirect('home.php');
     }
     
     // Sanitize inputs
@@ -26,10 +26,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         // Authentication failed
         setFlashMessage('danger', 'Invalid email or password. Please try again.');
-        redirect('index.php');
+        redirect('home.php');
     }
 } else {
     // Not a POST request, redirect to login page
-    redirect('index.php');
+    redirect('home.php');
 }
 ?>

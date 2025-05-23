@@ -8,9 +8,9 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'fcss_database');
 
-// Site configuration - Updated for network access
+// Site configuration - Updated for network access and landing page
 define('SITE_NAME', 'Faculty Consultation Scheduler System');
-define('SYSTEM_VERSION', '2.0.0'); // Updated for consultation hours system
+define('SYSTEM_VERSION', '2.1.0'); // Updated for landing page implementation
 
 // Dynamic Base URL Configuration
 function getBaseUrl() {
@@ -22,6 +22,11 @@ function getBaseUrl() {
 }
 
 define('BASE_URL', getBaseUrl());
+
+// Landing Page Configuration
+define('ENABLE_LANDING_PAGE', true); // Set to false to disable landing page
+define('LANDING_PAGE_REDIRECT', true); // Redirect root to landing page
+define('DEFAULT_LANDING_ROUTE', 'home.php'); // Default landing page file
 
 // Appointment and Consultation Configuration
 define('MIN_CANCEL_HOURS', 24); // Minimum hours before appointment that allows cancellation
@@ -80,6 +85,8 @@ define('FEATURE_RECURRING_APPOINTMENTS', false); // Enable recurring appointment
 define('FEATURE_APPOINTMENT_REMINDERS', true); // Enable appointment reminders
 define('FEATURE_ANALYTICS_DASHBOARD', true); // Enable analytics dashboard
 define('FEATURE_EXPORT_DATA', true); // Enable data export functionality
+define('FEATURE_LANDING_PAGE', true); // Enable landing page
+define('FEATURE_ENHANCED_UI', true); // Enable enhanced UI components
 
 // Development and Debug Configuration
 define('DEBUG_MODE', true); // Enable/disable debug mode (set to false in production)
@@ -104,6 +111,15 @@ function redirect($page) {
     exit;
 }
 
+// Function to redirect to landing page
+function redirectToLanding() {
+    if (ENABLE_LANDING_PAGE) {
+        redirect(DEFAULT_LANDING_ROUTE);
+    } else {
+        redirect('index.php');
+    }
+}
+
 // Function to get system configuration
 function getSystemConfig() {
     return [
@@ -113,13 +129,16 @@ function getSystemConfig() {
         'min_cancel_hours' => MIN_CANCEL_HOURS,
         'max_booking_days' => MAX_BOOKING_DAYS_AHEAD,
         'notification_retention' => NOTIFICATION_RETENTION_DAYS,
+        'landing_page_enabled' => ENABLE_LANDING_PAGE,
         'features' => [
             'email_notifications' => FEATURE_EMAIL_NOTIFICATIONS,
             'sms_notifications' => FEATURE_SMS_NOTIFICATIONS,
             'recurring_appointments' => FEATURE_RECURRING_APPOINTMENTS,
             'appointment_reminders' => FEATURE_APPOINTMENT_REMINDERS,
             'analytics_dashboard' => FEATURE_ANALYTICS_DASHBOARD,
-            'export_data' => FEATURE_EXPORT_DATA
+            'export_data' => FEATURE_EXPORT_DATA,
+            'landing_page' => FEATURE_LANDING_PAGE,
+            'enhanced_ui' => FEATURE_ENHANCED_UI
         ]
     ];
 }
@@ -132,10 +151,27 @@ function isFeatureEnabled($feature) {
         'recurring_appointments' => FEATURE_RECURRING_APPOINTMENTS,
         'appointment_reminders' => FEATURE_APPOINTMENT_REMINDERS,
         'analytics_dashboard' => FEATURE_ANALYTICS_DASHBOARD,
-        'export_data' => FEATURE_EXPORT_DATA
+        'export_data' => FEATURE_EXPORT_DATA,
+        'landing_page' => FEATURE_LANDING_PAGE,
+        'enhanced_ui' => FEATURE_ENHANCED_UI
     ];
     
     return isset($featureMap[$feature]) ? $featureMap[$feature] : false;
+}
+
+// Function to check if landing page should be shown
+function shouldShowLandingPage() {
+    return ENABLE_LANDING_PAGE && !isLoggedIn();
+}
+
+// Function to get landing page statistics (for demo purposes)
+function getLandingPageStats() {
+    return [
+        'appointments_scheduled' => 500,
+        'active_faculty' => 50,
+        'registered_students' => 200,
+        'satisfaction_rate' => 98
+    ];
 }
 
 // Function to validate system requirements
@@ -145,7 +181,8 @@ function validateSystemRequirements() {
         'mysqli_extension' => extension_loaded('mysqli'),
         'session_support' => function_exists('session_start'),
         'upload_dir_writable' => is_writable(dirname(__FILE__) . '/' . UPLOAD_PATH),
-        'log_dir_writable' => is_writable(dirname(__FILE__))
+        'log_dir_writable' => is_writable(dirname(__FILE__)),
+        'assets_readable' => is_readable(dirname(__FILE__) . '/assets/')
     ];
     
     $allMet = true;
@@ -171,7 +208,7 @@ function getDatabaseStatus() {
     
     try {
         // Test basic queries
-        $tables = ['users', 'appointments', 'consultation_hours', 'consultation_breaks', 'notifications'];
+        $tables = ['users', 'appointments', 'consultation_hours', 'notifications'];
         $tableStatus = [];
         
         foreach ($tables as $table) {
@@ -191,5 +228,26 @@ function getDatabaseStatus() {
             'error' => $e->getMessage()
         ];
     }
+}
+
+// Function to handle root directory access
+function handleRootAccess() {
+    if (LANDING_PAGE_REDIRECT && ENABLE_LANDING_PAGE && !isLoggedIn()) {
+        // Redirect to landing page if not logged in
+        redirectToLanding();
+    } elseif (isLoggedIn()) {
+        // Redirect logged-in users to their dashboard
+        redirectToDashboard();
+    } else {
+        // Fallback to login page
+        redirect('home.php');
+    }
+}
+
+// Add this at the end of config.php to handle direct access to root
+if (basename($_SERVER['PHP_SELF']) === 'config.php') {
+    // Prevent direct access to config file
+    header('HTTP/1.0 403 Forbidden');
+    exit('Direct access not allowed');
 }
 ?>

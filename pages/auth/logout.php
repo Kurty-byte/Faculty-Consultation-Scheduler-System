@@ -12,5 +12,5 @@ if (isLoggedIn()) {
 }
 
 // Redirect to login page
-redirect('index.php');
+redirect('home.php');
 ?>
