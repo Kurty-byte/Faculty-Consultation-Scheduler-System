@@ -233,7 +233,7 @@ include '../../includes/header.php';
 
 .day-header {
     background-color: var(--primary);
-    color: white;
+    color: #ffffff;
     padding: 0.75rem;
     text-align: center;
 }
@@ -242,6 +242,7 @@ include '../../includes/header.php';
     margin: 0;
     font-size: 0.9rem;
     font-weight: 600;
+    color: white;
 }
 
 .day-content {

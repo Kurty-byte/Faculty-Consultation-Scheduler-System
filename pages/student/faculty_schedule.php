@@ -44,8 +44,8 @@ if ($fromDate < date('Y-m-d')) {
     $fromDate = date('Y-m-d');
 }
 
-// Get available consultation slots (30-minute appointments)
-$availableSlots = getAvailableConsultationSlots($facultyId, $fromDate, $toDate);
+// Get available consultation slots (30-minute appointments) - IMPROVED to filter booked slots and past times
+$availableSlots = getAvailableConsultationSlotsImproved($facultyId, $fromDate, $toDate);
 
 // Include header
 include '../../includes/header.php';
@@ -56,12 +56,23 @@ include '../../includes/header.php';
     <a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" class="btn btn-secondary">Back to Faculty Directory</a>
 </div>
 
-<div class="faculty-profile">
-    <div class="faculty-info">
+<div class="faculty-profile-enhanced">
+    <div class="faculty-info-enhanced">
         <h2><?php echo $faculty['first_name'] . ' ' . $faculty['last_name']; ?></h2>
-        <p><strong>Department:</strong> <?php echo $faculty['department_name']; ?></p>
-        <p><strong>Email:</strong> <?php echo $faculty['office_email']; ?></p>
-        <p><strong>Phone:</strong> <?php echo $faculty['office_phone_number']; ?></p>
+        <div class="faculty-details-grid">
+            <div class="detail-item">
+                <span class="detail-label">Department:</span>
+                <span class="detail-value"><?php echo $faculty['department_name']; ?></span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value"><?php echo $faculty['office_email']; ?></span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Phone:</span>
+                <span class="detail-value"><?php echo $faculty['office_phone_number']; ?></span>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -71,10 +82,10 @@ include '../../includes/header.php';
         <p>Select a date and time that works for you. Each appointment is 30 minutes long.</p>
     </div>
     
-    <div class="date-filter">
-        <form action="" method="GET" class="date-range-form">
+    <div class="date-filter-centered">
+        <form action="" method="GET" class="date-range-form-centered">
             <input type="hidden" name="id" value="<?php echo $facultyId; ?>">
-            <div class="date-inputs">
+            <div class="date-inputs-centered">
                 <div class="date-group">
                     <label for="from">From Date:</label>
                     <input type="date" name="from" id="from" class="form-control" 
@@ -161,25 +172,95 @@ include '../../includes/header.php';
 </div>
 
 <style>
-.faculty-profile {
+/* Enhanced Faculty Profile */
+.faculty-profile-enhanced {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
 }
 
-.faculty-profile h2 {
+.faculty-info-enhanced h2 {
     color: white;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.faculty-profile p {
+.faculty-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.detail-item {
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.detail-label {
+    display: block;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.detail-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
+
+/* Centered Date Filter */
+.date-filter-centered {
+    background-color: #f8f9fc;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.date-range-form-centered {
+    width: 100%;
+    max-width: 600px;
+}
+
+.date-inputs-centered {
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.date-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+}
+
+.date-group label {
     margin-bottom: 0.5rem;
-    opacity: 0.9;
+    font-weight: 600;
+    color: var(--dark);
+    text-align: center;
 }
 
+.date-group input {
+    text-align: center;
+}
+
+/* Rest of existing styles */
 .appointment-booking {
     background: white;
     border-radius: 8px;
@@ -198,36 +279,6 @@ include '../../includes/header.php';
 .booking-header h3 {
     color: var(--dark);
     margin-bottom: 0.5rem;
-}
-
-.date-filter {
-    background-color: #f8f9fc;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.date-range-form {
-    display: flex;
-    justify-content: center;
-}
-
-.date-inputs {
-    display: flex;
-    align-items: end;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.date-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.date-group label {
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--dark);
 }
 
 .no-slots-available {
@@ -377,20 +428,16 @@ include '../../includes/header.php';
 }
 
 @media (max-width: 768px) {
-    .faculty-profile {
-        padding: 1.5rem;
+    .faculty-details-grid {
+        grid-template-columns: 1fr;
     }
     
-    .appointment-booking {
-        padding: 1rem;
-    }
-    
-    .date-inputs {
+    .date-inputs-centered {
         flex-direction: column;
         align-items: stretch;
     }
     
-    .date-inputs .btn {
+    .date-inputs-centered .btn {
         margin-top: 1rem;
     }
     
@@ -421,6 +468,14 @@ include '../../includes/header.php';
     
     .booking-info {
         padding: 1rem;
+    }
+    
+    .faculty-profile-enhanced {
+        padding: 1.5rem;
+    }
+    
+    .faculty-info-enhanced h2 {
+        font-size: 1.5rem;
     }
 }
 </style>

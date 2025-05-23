@@ -81,24 +81,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         redirect('pages/student/view_faculty.php');
     }
     
-    // Verify the time slot is still available
-    $dayOfWeek = strtolower(date('l', strtotime($date)));
-    $availableSlots = generateTimeSlots($facultyId, $date);
+    // IMPROVED VALIDATION: Use the new validation functions
+    $validationErrors = validateAppointmentTimeSlot($facultyId, $date, $startTime, $endTime);
     
-    $slotAvailable = false;
-    foreach ($availableSlots as $slot) {
-        if ($slot['start_time'] === $startTime && $slot['end_time'] === $endTime && $slot['available']) {
-            $slotAvailable = true;
-            break;
-        }
+    if (!empty($validationErrors)) {
+        setFlashMessage('danger', 'Booking failed: ' . implode(' ', $validationErrors));
+        redirect('pages/student/faculty_schedule.php?id=' . $facultyId);
     }
     
-    if (!$slotAvailable) {
+    // Additional check: verify the time slot is still available using improved function
+    if (!isSlotAvailableImproved($facultyId, $date, $startTime, $endTime)) {
         setFlashMessage('danger', 'This time slot is no longer available. Please select another slot.');
         redirect('pages/student/faculty_schedule.php?id=' . $facultyId);
     }
     
-    // Check if student already has an appointment at this time
+    // Check if student already has an appointment at this exact time
     $conflictingAppointment = fetchRow(
         "SELECT appointment_id FROM appointments 
          WHERE student_id = ? AND appointment_date = ? 
@@ -112,9 +109,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         redirect('pages/student/view_appointments.php');
     }
     
+    // Check if student has overlapping appointments
+    $overlappingAppointments = fetchRows(
+        "SELECT appointment_id FROM appointments 
+         WHERE student_id = ? AND appointment_date = ? 
+         AND is_cancelled = 0
+         AND ((start_time < ? AND end_time > ?) OR 
+              (start_time < ? AND end_time > ?) OR
+              (start_time >= ? AND end_time <= ?))",
+        [$studentId, $date, $startTime, $startTime, $endTime, $endTime, $startTime, $endTime]
+    );
+    
+    if (!empty($overlappingAppointments)) {
+        setFlashMessage('danger', 'You have a conflicting appointment at this time.');
+        redirect('pages/student/view_appointments.php');
+    }
+    
     // We need to create a temporary schedule entry for the new appointment system
     // This bridges the gap between old appointment system and new consultation hours
-    $tempScheduleId = createTemporarySchedule($facultyId, $dayOfWeek, $startTime, $endTime);
+    $tempScheduleId = createTemporaryScheduleImproved($facultyId, $date, $startTime, $endTime);
     
     if (!$tempScheduleId) {
         setFlashMessage('danger', 'Failed to process appointment request. Please try again.');
@@ -133,8 +146,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $fullRemarks .= "\n\nPhone: " . $studentPhone;
     }
     
-    // Create the appointment
+    // Create the appointment with improved error handling
     try {
+        // Start transaction for atomic operation
+        global $conn;
+        mysqli_begin_transaction($conn);
+        
         $appointmentId = createAppointment(
             $studentId, 
             $tempScheduleId, 
@@ -148,9 +165,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         );
         
         if ($appointmentId) {
-            // Create notification for faculty using new system
-            $notificationResult = createBookingNotification($appointmentId);
-            
             // Update student contact info if provided
             if (!empty($studentPhone)) {
                 updateOrDeleteData(
@@ -158,6 +172,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     [$studentPhone, $_SESSION['user_id']]
                 );
             }
+            
+            // Create notification for faculty using new system
+            $notificationResult = createBookingNotification($appointmentId);
             
             $successMessage = 'Your consultation appointment request has been submitted successfully!';
             
@@ -168,6 +185,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             $successMessage .= ' You will receive a notification once your appointment is approved or if any changes are needed.';
             
+            // Commit transaction
+            mysqli_commit($conn);
+            
             setFlashMessage('success', $successMessage);
             
             // Redirect to appointments page with success
@@ -177,9 +197,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
     } catch (Exception $e) {
+        // Rollback transaction
+        mysqli_rollback($conn);
+        
         // Clean up temporary schedule if appointment creation failed
         if (isset($tempScheduleId)) {
-            deleteTemporarySchedule($tempScheduleId);
+            deleteTemporaryScheduleImproved($tempScheduleId);
         }
         
         setFlashMessage('danger', 'Failed to book appointment: ' . $e->getMessage());
@@ -192,18 +215,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 /**
- * Create a temporary schedule entry for the appointment
+ * Create a temporary schedule entry for the appointment - IMPROVED VERSION
  * This bridges the gap between the old appointment system and new consultation hours
  */
-function createTemporarySchedule($facultyId, $dayOfWeek, $startTime, $endTime) {
+function createTemporaryScheduleImproved($facultyId, $date, $startTime, $endTime) {
     global $conn;
+    
+    $dayOfWeek = strtolower(date('l', strtotime($date)));
     
     // Check if a similar schedule already exists
     $existingSchedule = fetchRow(
         "SELECT schedule_id FROM availability_schedules 
          WHERE faculty_id = ? AND day_of_week = ? 
-         AND start_time = ? AND end_time = ? 
-         AND is_recurring = 0",
+         AND start_time = ? AND end_time = ?",
         [$facultyId, $dayOfWeek, $startTime, $endTime]
     );
     
@@ -211,7 +235,7 @@ function createTemporarySchedule($facultyId, $dayOfWeek, $startTime, $endTime) {
         return $existingSchedule['schedule_id'];
     }
     
-    // Create new temporary schedule
+    // Create new temporary schedule with better metadata
     $scheduleId = insertData(
         "INSERT INTO availability_schedules (faculty_id, day_of_week, start_time, end_time, is_recurring, is_active) 
          VALUES (?, ?, ?, ?, 0, 1)",
@@ -222,14 +246,61 @@ function createTemporarySchedule($facultyId, $dayOfWeek, $startTime, $endTime) {
 }
 
 /**
- * Delete temporary schedule entry if appointment creation fails
+ * Delete temporary schedule entry if appointment creation fails - IMPROVED VERSION
  */
-function deleteTemporarySchedule($scheduleId) {
-    // Only delete if it's a non-recurring schedule (temporary)
-    updateOrDeleteData(
-        "DELETE FROM availability_schedules 
-         WHERE schedule_id = ? AND is_recurring = 0",
+function deleteTemporaryScheduleImproved($scheduleId) {
+    // Only delete if it's a non-recurring schedule (temporary) and has no appointments
+    $appointmentCount = fetchRow(
+        "SELECT COUNT(*) as count FROM appointments WHERE schedule_id = ?",
         [$scheduleId]
     );
+    
+    if ($appointmentCount['count'] == 0) {
+        updateOrDeleteData(
+            "DELETE FROM availability_schedules 
+             WHERE schedule_id = ? AND is_recurring = 0",
+            [$scheduleId]
+        );
+    }
+}
+
+/**
+ * Validate student booking limits
+ */
+function validateStudentBookingLimits($studentId, $date) {
+    // Check daily limit (e.g., max 3 appointments per day)
+    $dailyCount = fetchRow(
+        "SELECT COUNT(*) as count FROM appointments 
+         WHERE student_id = ? AND appointment_date = ? AND is_cancelled = 0",
+        [$studentId, $date]
+    )['count'];
+    
+    if ($dailyCount >= 3) {
+        return ['error' => 'You can only book up to 3 appointments per day.'];
+    }
+    
+    // Check weekly limit (e.g., max 5 appointments per week)
+    $weekStart = date('Y-m-d', strtotime('monday this week', strtotime($date)));
+    $weekEnd = date('Y-m-d', strtotime('sunday this week', strtotime($date)));
+    
+    $weeklyCount = fetchRow(
+        "SELECT COUNT(*) as count FROM appointments 
+         WHERE student_id = ? AND appointment_date BETWEEN ? AND ? AND is_cancelled = 0",
+        [$studentId, $weekStart, $weekEnd]
+    )['count'];
+    
+    if ($weeklyCount >= 5) {
+        return ['error' => 'You can only book up to 5 appointments per week.'];
+    }
+    
+    return ['success' => true];
+}
+
+/**
+ * Log booking attempt for analytics
+ */
+function logBookingAttempt($studentId, $facultyId, $date, $startTime, $endTime, $success, $error = null) {
+    // This could be used for analytics and debugging
+    error_log("Booking attempt: Student {$studentId}, Faculty {$facultyId}, Date {$date}, Time {$startTime}-{$endTime}, Success: " . ($success ? 'Yes' : 'No') . ($error ? ", Error: {$error}" : ''));
 }
 ?>
