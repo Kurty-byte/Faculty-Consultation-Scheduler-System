@@ -98,6 +98,27 @@ include '../../includes/header.php';
                             <span class="preview-count" id="slots_<?php echo $dayKey; ?>">0</span>
                             <span class="preview-text">30-minute appointments</span>
                         </div>
+                        
+                        <?php if ($existingHour && $existingHour['notes']): ?>
+                            <div class="existing-notes">
+                                <label for="notes_<?php echo $dayKey; ?>">Notes:</label>
+                                <input type="text" 
+                                       name="days[<?php echo $dayKey; ?>][notes]" 
+                                       id="notes_<?php echo $dayKey; ?>"
+                                       class="form-control" 
+                                       value="<?php echo htmlspecialchars($existingHour['notes']); ?>"
+                                       placeholder="Optional notes for this day">
+                            </div>
+                        <?php else: ?>
+                            <div class="notes-group">
+                                <label for="notes_<?php echo $dayKey; ?>">Notes (Optional):</label>
+                                <input type="text" 
+                                       name="days[<?php echo $dayKey; ?>][notes]" 
+                                       id="notes_<?php echo $dayKey; ?>"
+                                       class="form-control" 
+                                       placeholder="Optional notes for this day">
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -121,7 +142,7 @@ include '../../includes/header.php';
             
             <div class="submit-actions">
                 <button type="submit" class="btn btn-primary btn-lg">Save Consultation Hours</button>
-                <p class="help-text">After saving, you can add breaks (lunch, meetings) on the next step.</p>
+                <p class="help-text">Students will be able to book 30-minute appointments during these hours.</p>
             </div>
         </div>
     </form>
@@ -241,7 +262,7 @@ include '../../includes/header.php';
     margin-bottom: 1rem;
 }
 
-.time-group {
+.time-inputs .time-group {
     flex: 1;
 }
 
@@ -265,6 +286,7 @@ include '../../includes/header.php';
     border-radius: 6px;
     text-align: center;
     font-size: 0.9rem;
+    margin-bottom: 1rem;
 }
 
 .preview-label {
@@ -279,6 +301,18 @@ include '../../includes/header.php';
 
 .preview-text {
     color: var(--gray);
+}
+
+.notes-group, .existing-notes {
+    margin-top: 1rem;
+}
+
+.notes-group label, .existing-notes label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--gray);
+    font-weight: 500;
 }
 
 .form-actions {

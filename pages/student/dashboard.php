@@ -88,7 +88,7 @@ include '../../includes/header.php';
             <p class="stat-text">Scheduled for today</p>
         </div>
         <div class="stat-icon">📅</div>
-        <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
+        <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
     </div>
 </div>
 

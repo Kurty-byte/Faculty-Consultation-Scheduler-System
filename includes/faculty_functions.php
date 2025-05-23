@@ -58,15 +58,15 @@ function getDepartmentsWithFaculty() {
     );
 }
 
-// NEW: Get available consultation slots for a faculty (replaces old function)
+// Get available consultation slots for a faculty (using new timeslot functions)
 function getAvailableConsultationSlots($facultyId, $fromDate = null, $toDate = null) {
-    // Include the new timeslot functions
+    // Include the timeslot functions
     require_once 'timeslot_functions.php';
     
     return getAvailableTimeSlotsForFaculty($facultyId, $fromDate, $toDate);
 }
 
-// NEW: Check if faculty has consultation hours set up
+// Check if faculty has consultation hours set up
 function hasConsultationHoursSetup($facultyId) {
     $result = fetchRow(
         "SELECT COUNT(*) as count FROM consultation_hours 
@@ -77,26 +77,63 @@ function hasConsultationHoursSetup($facultyId) {
     return $result['count'] > 0;
 }
 
-// NEW: Get faculty consultation schedule summary
+// Get faculty consultation schedule summary (simplified without breaks)
 function getFacultyScheduleSummary($facultyId) {
     $consultationHours = fetchRows(
-        "SELECT day_of_week, start_time, end_time FROM consultation_hours 
-         WHERE faculty_id = ? AND is_active = 1 
-         ORDER BY FIELD(day_of_week, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')",
-        [$facultyId]
-    );
-    
-    $breaks = fetchRows(
-        "SELECT day_of_week, start_time, end_time, break_type, break_name FROM consultation_breaks 
+        "SELECT day_of_week, start_time, end_time, notes FROM consultation_hours 
          WHERE faculty_id = ? AND is_active = 1 
          ORDER BY FIELD(day_of_week, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')",
         [$facultyId]
     );
     
     return [
-        'consultation_hours' => $consultationHours,
-        'breaks' => $breaks
+        'consultation_hours' => $consultationHours
     ];
+}
+
+// Get total available hours per week for a faculty
+function getFacultyWeeklyHours($facultyId) {
+    $consultationHours = fetchRows(
+        "SELECT start_time, end_time FROM consultation_hours 
+         WHERE faculty_id = ? AND is_active = 1",
+        [$facultyId]
+    );
+    
+    $totalHours = 0;
+    foreach ($consultationHours as $hours) {
+        $start = strtotime($hours['start_time']);
+        $end = strtotime($hours['end_time']);
+        $totalHours += ($end - $start) / 3600; // Convert to hours
+    }
+    
+    return $totalHours;
+}
+
+// Get number of available slots per week for a faculty
+function getFacultyWeeklySlots($facultyId) {
+    $totalHours = getFacultyWeeklyHours($facultyId);
+    return $totalHours * 2; // 30-minute slots = 2 per hour
+}
+
+// Check if a specific day has consultation hours
+function hasDayConsultationHours($facultyId, $dayOfWeek) {
+    $result = fetchRow(
+        "SELECT COUNT(*) as count FROM consultation_hours 
+         WHERE faculty_id = ? AND day_of_week = ? AND is_active = 1",
+        [$facultyId, $dayOfWeek]
+    );
+    
+    return $result['count'] > 0;
+}
+
+// Get consultation hours for a specific day
+function getDayConsultationHours($facultyId, $dayOfWeek) {
+    return fetchRows(
+        "SELECT * FROM consultation_hours 
+         WHERE faculty_id = ? AND day_of_week = ? AND is_active = 1 
+         ORDER BY start_time",
+        [$facultyId, $dayOfWeek]
+    );
 }
 
 // DEPRECATED: Keep for backward compatibility but mark as deprecated

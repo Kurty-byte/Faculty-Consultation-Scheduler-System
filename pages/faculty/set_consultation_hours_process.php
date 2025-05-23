@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($dayData['enabled']) && $dayData['enabled'] == '1') {
                 $startTime = sanitize($dayData['start_time']);
                 $endTime = sanitize($dayData['end_time']);
+                $notes = isset($dayData['notes']) ? sanitize($dayData['notes']) : null;
                 
                 // Validate time inputs
                 if (empty($startTime) || empty($endTime)) {
@@ -48,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
                 
                 // Create consultation hours for this day
-                $result = createConsultationHours($facultyId, $dayOfWeek, $startTime, $endTime);
+                $result = createConsultationHours($facultyId, $dayOfWeek, $startTime, $endTime, $notes);
                 
                 if (!$result) {
                     throw new Exception("Failed to create consultation hours for " . ucfirst($dayOfWeek));
@@ -59,17 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Commit the transaction
         mysqli_commit($conn);
         
-        // Check if faculty has any breaks set up
-        $existingBreaks = getFacultyConsultationBreaks($facultyId);
-        
-        if (empty($existingBreaks)) {
-            // Suggest setting up breaks
-            setFlashMessage('success', 'Consultation hours saved successfully! Would you like to add breaks (lunch, meetings) to your schedule?');
-            redirect('pages/faculty/manage_breaks.php?first_time=1');
-        } else {
-            setFlashMessage('success', 'Consultation hours updated successfully!');
-            redirect('pages/faculty/consultation_hours.php');
-        }
+        setFlashMessage('success', 'Consultation hours saved successfully! Students can now book appointments during your available hours.');
+        redirect('pages/faculty/consultation_hours.php');
         
     } catch (Exception $e) {
         // Rollback the transaction

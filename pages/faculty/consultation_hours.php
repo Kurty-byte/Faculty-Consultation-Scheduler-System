@@ -14,12 +14,8 @@ require_once '../../includes/timeslot_functions.php';
 // Get faculty ID
 $facultyId = getFacultyIdFromUserId($_SESSION['user_id']);
 
-// Get faculty's consultation hours and breaks
+// Get faculty's consultation hours
 $consultationHours = getFacultyConsultationHours($facultyId);
-$consultationBreaks = getFacultyConsultationBreaks($facultyId);
-
-// Get summary for display
-$scheduleSummary = getFacultyScheduleSummary($facultyId);
 
 // Include header
 include '../../includes/header.php';
@@ -28,8 +24,9 @@ include '../../includes/header.php';
 <div class="page-header">
     <h1>Consultation Hours Management</h1>
     <div class="page-actions">
-        <a href="<?php echo BASE_URL; ?>pages/faculty/set_consultation_hours.php" class="btn btn-primary">Set Consultation Hours</a>
-        <a href="<?php echo BASE_URL; ?>pages/faculty/manage_breaks.php" class="btn btn-secondary">Manage Breaks</a>
+        <a href="<?php echo BASE_URL; ?>pages/faculty/set_consultation_hours.php" class="btn btn-primary">
+            <?php echo empty($consultationHours) ? 'Set Up Hours' : 'Modify Hours'; ?>
+        </a>
     </div>
 </div>
 
@@ -42,9 +39,9 @@ include '../../includes/header.php';
             <p><strong>How it works:</strong></p>
             <ul>
                 <li>Set your daily consultation hours (e.g., Monday-Friday, 9:00 AM - 5:00 PM)</li>
-                <li>Add breaks for lunch or meetings (e.g., 12:00 PM - 1:00 PM)</li>
                 <li>Students will see 30-minute appointment slots within your available hours</li>
                 <li>Each slot can be booked by one student at a time</li>
+                <li>Students need your approval before appointments are confirmed</li>
             </ul>
             <a href="<?php echo BASE_URL; ?>pages/faculty/set_consultation_hours.php" class="btn btn-primary btn-lg">Get Started</a>
         </div>
@@ -69,10 +66,6 @@ include '../../includes/header.php';
                     $dayHours = array_filter($consultationHours, function($hour) use ($dayKey) {
                         return $hour['day_of_week'] === $dayKey;
                     });
-                    
-                    $dayBreaks = array_filter($consultationBreaks, function($break) use ($dayKey) {
-                        return $break['day_of_week'] === $dayKey;
-                    });
                 ?>
                     <div class="day-schedule <?php echo empty($dayHours) ? 'no-hours' : ''; ?>">
                         <div class="day-header">
@@ -92,25 +85,13 @@ include '../../includes/header.php';
                                             <span class="time-end"><?php echo formatTime($hours['end_time']); ?></span>
                                         </div>
                                         <span class="status-badge available">Available</span>
+                                        <?php if ($hours['notes']): ?>
+                                            <div class="consultation-notes">
+                                                <small><?php echo htmlspecialchars($hours['notes']); ?></small>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
-                                
-                                <?php if (!empty($dayBreaks)): ?>
-                                    <div class="breaks-section">
-                                        <h4>Breaks:</h4>
-                                        <?php foreach ($dayBreaks as $break): ?>
-                                            <div class="break-item">
-                                                <span class="break-time">
-                                                    <?php echo formatTime($break['start_time']) . ' - ' . formatTime($break['end_time']); ?>
-                                                </span>
-                                                <span class="break-type"><?php echo ucfirst($break['break_type']); ?></span>
-                                                <?php if ($break['break_name']): ?>
-                                                    <span class="break-name">(<?php echo htmlspecialchars($break['break_name']); ?>)</span>
-                                                <?php endif; ?>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -126,13 +107,13 @@ include '../../includes/header.php';
                         <span class="btn-icon">⚙️</span>
                         Modify Hours
                     </a>
-                    <a href="<?php echo BASE_URL; ?>pages/faculty/manage_breaks.php" class="btn btn-secondary">
-                        <span class="btn-icon">☕</span>
-                        Manage Breaks
-                    </a>
                     <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" class="btn btn-info">
                         <span class="btn-icon">📅</span>
                         View Appointments
+                    </a>
+                    <a href="<?php echo BASE_URL; ?>pages/faculty/dashboard.php" class="btn btn-secondary">
+                        <span class="btn-icon">🏠</span>
+                        Dashboard
                     </a>
                 </div>
             </div>
@@ -142,7 +123,6 @@ include '../../includes/header.php';
                 <?php
                 // Calculate total consultation hours per week
                 $totalHours = 0;
-                $totalBreakHours = 0;
                 
                 foreach ($consultationHours as $hours) {
                     $start = strtotime($hours['start_time']);
@@ -150,18 +130,12 @@ include '../../includes/header.php';
                     $totalHours += ($end - $start) / 3600; // Convert to hours
                 }
                 
-                foreach ($consultationBreaks as $break) {
-                    $start = strtotime($break['start_time']);
-                    $end = strtotime($break['end_time']);
-                    $totalBreakHours += ($end - $start) / 3600;
-                }
-                
-                $availableHours = $totalHours - $totalBreakHours;
-                $totalSlots = $availableHours * 2; // 30-minute slots = 2 per hour
+                $totalSlots = $totalHours * 2; // 30-minute slots = 2 per hour
+                $activeDays = count(array_unique(array_column($consultationHours, 'day_of_week')));
                 ?>
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <div class="stat-number"><?php echo number_format($availableHours, 1); ?></div>
+                        <div class="stat-number"><?php echo number_format($totalHours, 1); ?></div>
                         <div class="stat-label">Hours/Week</div>
                     </div>
                     <div class="stat-item">
@@ -169,9 +143,19 @@ include '../../includes/header.php';
                         <div class="stat-label">Available Slots</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number"><?php echo count(array_unique(array_column($consultationHours, 'day_of_week'))); ?></div>
+                        <div class="stat-number"><?php echo $activeDays; ?></div>
                         <div class="stat-label">Days Active</div>
                     </div>
+                </div>
+                
+                <div class="schedule-info">
+                    <h4>📋 Important Notes</h4>
+                    <ul>
+                        <li>Each appointment slot is <strong>30 minutes</strong></li>
+                        <li>Students need your <strong>approval</strong> for bookings</li>
+                        <li>You'll receive notifications for new requests</li>
+                        <li>Students can cancel up to 24 hours in advance</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -269,18 +253,17 @@ include '../../includes/header.php';
 }
 
 .consultation-block {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.75rem;
     background-color: #f8f9fc;
     border-radius: 4px;
+    border-left: 3px solid var(--success);
 }
 
 .time-range {
     font-weight: 500;
     color: var(--dark);
+    margin-bottom: 0.5rem;
 }
 
 .time-separator {
@@ -305,34 +288,10 @@ include '../../includes/header.php';
     color: #721c24;
 }
 
-.breaks-section {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e9ecef;
-}
-
-.breaks-section h4 {
-    font-size: 0.8rem;
-    color: var(--gray);
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.break-item {
-    font-size: 0.8rem;
-    color: var(--gray);
-    margin-bottom: 0.25rem;
-}
-
-.break-type {
-    font-weight: 500;
-    margin-left: 0.5rem;
-}
-
-.break-name {
+.consultation-notes {
+    margin-top: 0.5rem;
     font-style: italic;
-    margin-left: 0.25rem;
+    color: var(--gray);
 }
 
 .schedule-actions {
@@ -369,7 +328,7 @@ include '../../includes/header.php';
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
-    margin-top: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .stat-item {
@@ -391,6 +350,30 @@ include '../../includes/header.php';
     color: var(--gray);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+.schedule-info {
+    background-color: #f8f9fc;
+    border-radius: 6px;
+    padding: 1rem;
+    border-left: 3px solid var(--info);
+}
+
+.schedule-info h4 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    color: var(--dark);
+}
+
+.schedule-info ul {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.schedule-info li {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    color: var(--gray);
 }
 
 @media (max-width: 768px) {

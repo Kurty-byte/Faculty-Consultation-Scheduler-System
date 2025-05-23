@@ -1,7 +1,7 @@
 <?php
 /**
  * Time Slot Generation and Management Functions
- * Handles 30-minute consultation slots based on faculty consultation hours
+ * Simplified version without break functionality
  */
 
 // Generate 30-minute time slots for a faculty member on a specific date
@@ -18,9 +18,6 @@ function generateTimeSlots($facultyId, $date) {
     $slots = [];
     
     foreach ($consultationHours as $hours) {
-        // Get breaks for this day
-        $breaks = getConsultationBreaks($facultyId, $dayOfWeek);
-        
         // Generate 30-minute slots within consultation hours
         $currentTime = strtotime($hours['start_time']);
         $endTime = strtotime($hours['end_time']);
@@ -29,17 +26,14 @@ function generateTimeSlots($facultyId, $date) {
             $slotStart = date('H:i:s', $currentTime);
             $slotEnd = date('H:i:s', $currentTime + (30 * 60)); // Add 30 minutes
             
-            // Check if this slot conflicts with any breaks
-            if (!isSlotInBreak($slotStart, $slotEnd, $breaks)) {
-                // Check if slot is available (not booked)
-                if (isSlotAvailable($facultyId, $date, $slotStart, $slotEnd)) {
-                    $slots[] = [
-                        'start_time' => $slotStart,
-                        'end_time' => $slotEnd,
-                        'formatted_time' => formatTime($slotStart) . ' - ' . formatTime($slotEnd),
-                        'available' => true
-                    ];
-                }
+            // Check if slot is available (not booked)
+            if (isSlotAvailable($facultyId, $date, $slotStart, $slotEnd)) {
+                $slots[] = [
+                    'start_time' => $slotStart,
+                    'end_time' => $slotEnd,
+                    'formatted_time' => formatTime($slotStart) . ' - ' . formatTime($slotEnd),
+                    'available' => true
+                ];
             }
             
             $currentTime += (30 * 60); // Move to next 30-minute slot
@@ -57,32 +51,6 @@ function getConsultationHours($facultyId, $dayOfWeek) {
          ORDER BY start_time",
         [$facultyId, $dayOfWeek]
     );
-}
-
-// Get consultation breaks for a faculty member on a specific day
-function getConsultationBreaks($facultyId, $dayOfWeek) {
-    return fetchRows(
-        "SELECT * FROM consultation_breaks 
-         WHERE faculty_id = ? AND day_of_week = ? AND is_active = 1 
-         ORDER BY start_time",
-        [$facultyId, $dayOfWeek]
-    );
-}
-
-// Check if a time slot conflicts with any breaks
-function isSlotInBreak($slotStart, $slotEnd, $breaks) {
-    foreach ($breaks as $break) {
-        $breakStart = $break['start_time'];
-        $breakEnd = $break['end_time'];
-        
-        // Check for overlap
-        if (($slotStart >= $breakStart && $slotStart < $breakEnd) ||
-            ($slotEnd > $breakStart && $slotEnd <= $breakEnd) ||
-            ($slotStart <= $breakStart && $slotEnd >= $breakEnd)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 // Check if a time slot is available (not already booked)
@@ -140,21 +108,21 @@ function getAvailableTimeSlotsForFaculty($facultyId, $fromDate = null, $toDate =
 }
 
 // Create consultation hours for a faculty member
-function createConsultationHours($facultyId, $dayOfWeek, $startTime, $endTime) {
+function createConsultationHours($facultyId, $dayOfWeek, $startTime, $endTime, $notes = null) {
     // Validate time
     if (strtotime($endTime) <= strtotime($startTime)) {
         return false;
     }
     
     return insertData(
-        "INSERT INTO consultation_hours (faculty_id, day_of_week, start_time, end_time, is_active) 
-         VALUES (?, ?, ?, ?, 1)",
-        [$facultyId, $dayOfWeek, $startTime, $endTime]
+        "INSERT INTO consultation_hours (faculty_id, day_of_week, start_time, end_time, notes, is_active) 
+         VALUES (?, ?, ?, ?, ?, 1)",
+        [$facultyId, $dayOfWeek, $startTime, $endTime, $notes]
     );
 }
 
 // Update consultation hours
-function updateConsultationHours($consultationHourId, $dayOfWeek, $startTime, $endTime, $isActive = 1) {
+function updateConsultationHours($consultationHourId, $dayOfWeek, $startTime, $endTime, $isActive = 1, $notes = null) {
     // Validate time
     if (strtotime($endTime) <= strtotime($startTime)) {
         return false;
@@ -162,9 +130,9 @@ function updateConsultationHours($consultationHourId, $dayOfWeek, $startTime, $e
     
     return updateOrDeleteData(
         "UPDATE consultation_hours 
-         SET day_of_week = ?, start_time = ?, end_time = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP 
+         SET day_of_week = ?, start_time = ?, end_time = ?, notes = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP 
          WHERE consultation_hour_id = ?",
-        [$dayOfWeek, $startTime, $endTime, $isActive, $consultationHourId]
+        [$dayOfWeek, $startTime, $endTime, $notes, $isActive, $consultationHourId]
     );
 }
 
@@ -184,39 +152,6 @@ function getFacultyConsultationHours($facultyId) {
          ORDER BY FIELD(day_of_week, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'), 
          start_time",
         [$facultyId]
-    );
-}
-
-// Create consultation break
-function createConsultationBreak($facultyId, $dayOfWeek, $startTime, $endTime, $breakType = 'lunch', $breakName = null) {
-    // Validate time
-    if (strtotime($endTime) <= strtotime($startTime)) {
-        return false;
-    }
-    
-    return insertData(
-        "INSERT INTO consultation_breaks (faculty_id, day_of_week, start_time, end_time, break_type, break_name, is_active) 
-         VALUES (?, ?, ?, ?, ?, ?, 1)",
-        [$facultyId, $dayOfWeek, $startTime, $endTime, $breakType, $breakName]
-    );
-}
-
-// Get all consultation breaks for a faculty member
-function getFacultyConsultationBreaks($facultyId) {
-    return fetchRows(
-        "SELECT * FROM consultation_breaks 
-         WHERE faculty_id = ? AND is_active = 1
-         ORDER BY FIELD(day_of_week, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'), 
-         start_time",
-        [$facultyId]
-    );
-}
-
-// Delete consultation break
-function deleteConsultationBreak($breakId) {
-    return updateOrDeleteData(
-        "DELETE FROM consultation_breaks WHERE break_id = ?",
-        [$breakId]
     );
 }
 ?>

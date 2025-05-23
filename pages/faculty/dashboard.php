@@ -126,14 +126,20 @@ include '../../includes/header.php';
         
         <div class="stat-box warning">
             <div class="stat-content">
-                <h3>Consultation Hours</h3>
+                <h3>Weekly Hours</h3>
                 <p class="stat-number">
                     <?php
+                    $totalHours = 0;
                     $consultationHours = getFacultyConsultationHours($facultyId);
-                    echo count(array_unique(array_column($consultationHours, 'day_of_week')));
+                    foreach ($consultationHours as $hours) {
+                        $start = strtotime($hours['start_time']);
+                        $end = strtotime($hours['end_time']);
+                        $totalHours += ($end - $start) / 3600;
+                    }
+                    echo number_format($totalHours, 1);
                     ?>
                 </p>
-                <p class="stat-text">Days per week</p>
+                <p class="stat-text">Hours available</p>
             </div>
             <div class="stat-icon">⏰</div>
             <a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" class="btn btn-warning btn-sm">Manage Hours</a>
