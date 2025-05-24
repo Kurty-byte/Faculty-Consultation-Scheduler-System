@@ -1,268 +1,152 @@
-/*
- Navicat Premium Dump SQL
+-- FCSS Database - Clean Version for Navicat
+-- Drop database if exists and create fresh
 
- Source Server         : localhost
- Source Server Type    : MySQL
- Source Server Version : 100432 (10.4.32-MariaDB)
- Source Host           : localhost:3306
- Source Schema         : fcss_database
+DROP DATABASE IF EXISTS fcss_database;
+CREATE DATABASE fcss_database;
+USE fcss_database;
 
- Target Server Type    : MySQL
- Target Server Version : 100432 (10.4.32-MariaDB)
- File Encoding         : 65001
+-- Departments table
+CREATE TABLE departments (
+  department_id int AUTO_INCREMENT PRIMARY KEY,
+  department_name varchar(100) NOT NULL UNIQUE,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
- Date: 23/05/2025 18:57:01
-*/
+-- Users table
+CREATE TABLE users (
+  user_id int AUTO_INCREMENT PRIMARY KEY,
+  password_hash varchar(255) NOT NULL,
+  first_name varchar(50) NOT NULL,
+  last_name varchar(50) NOT NULL,
+  middle_name varchar(50),
+  birthdate date NOT NULL,
+  address varchar(255) NOT NULL,
+  email varchar(100) NOT NULL UNIQUE,
+  phone_number varchar(20) NOT NULL,
+  role enum('faculty','student') NOT NULL,
+  profile_picture varchar(255),
+  is_active tinyint(1) DEFAULT 1,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at timestamp NULL
+);
 
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
+-- Faculty table
+CREATE TABLE faculty (
+  faculty_id int AUTO_INCREMENT PRIMARY KEY,
+  user_id int NOT NULL,
+  department_id int NOT NULL,
+  office_email varchar(100) NOT NULL,
+  office_phone_number varchar(20) NOT NULL,
+  status enum('active','on leave','inactive') DEFAULT 'active',
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
 
--- ----------------------------
--- Table structure for appointment_history
--- ----------------------------
-DROP TABLE IF EXISTS `appointment_history`;
-CREATE TABLE `appointment_history`  (
-  `history_id` int NOT NULL AUTO_INCREMENT,
-  `appointment_id` int NOT NULL,
-  `status_change` enum('created','approved','rejected','cancelled','completed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `changed_by_user_id` int NOT NULL,
-  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `changed_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`history_id`) USING BTREE,
-  INDEX `appointment_history_appointment_id_fk`(`appointment_id` ASC) USING BTREE,
-  INDEX `appointment_history_user_id_fk`(`changed_by_user_id` ASC) USING BTREE,
-  CONSTRAINT `appointment_history_appointment_id_fk` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `appointment_history_user_id_fk` FOREIGN KEY (`changed_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 167 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+-- Students table
+CREATE TABLE students (
+  student_id int AUTO_INCREMENT PRIMARY KEY,
+  user_id int NOT NULL,
+  department_id int NOT NULL,
+  year_level int NOT NULL,
+  academic_year varchar(9) NOT NULL,
+  enrollment_status enum('regular','irregular','shiftee','returnee') NOT NULL,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
 
--- ----------------------------
--- Table structure for appointments
--- ----------------------------
-DROP TABLE IF EXISTS `appointments`;
-CREATE TABLE `appointments`  (
-  `appointment_id` int NOT NULL AUTO_INCREMENT,
-  `schedule_id` int NOT NULL,
-  `student_id` int NOT NULL,
-  `appointment_date` date NOT NULL,
-  `start_time` time NOT NULL,
-  `end_time` time NOT NULL,
-  `slot_duration` int NOT NULL DEFAULT 30 COMMENT 'Duration in minutes',
-  `remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `is_approved` tinyint(1) NOT NULL DEFAULT 0,
-  `is_cancelled` tinyint(1) NOT NULL DEFAULT 0,
-  `modality` enum('physical','virtual') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `platform` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `location` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `appointed_on` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`appointment_id`) USING BTREE,
-  UNIQUE INDEX `unique_faculty_slot`(`schedule_id` ASC, `appointment_date` ASC, `start_time` ASC, `end_time` ASC, `is_cancelled` ASC) USING BTREE,
-  INDEX `appointments_schedule_id_fk`(`schedule_id` ASC) USING BTREE,
-  INDEX `appointments_student_id_fk`(`student_id` ASC) USING BTREE,
-  INDEX `appointments_date_idx`(`appointment_date` ASC) USING BTREE,
-  INDEX `appointments_updated_idx`(`updated_on` ASC) USING BTREE,
-  INDEX `appointments_appointed_idx`(`appointed_on` ASC) USING BTREE,
-  INDEX `appointments_date_time_idx`(`appointment_date` ASC, `start_time` ASC) USING BTREE,
-  CONSTRAINT `appointments_schedule_id_fk` FOREIGN KEY (`schedule_id`) REFERENCES `availability_schedules` (`schedule_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `appointments_student_id_fk` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 39 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+-- Consultation hours table (NEW SYSTEM)
+CREATE TABLE consultation_hours (
+  consultation_hour_id int AUTO_INCREMENT PRIMARY KEY,
+  faculty_id int NOT NULL,
+  day_of_week enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday') NOT NULL,
+  start_time time NOT NULL,
+  end_time time NOT NULL,
+  is_active tinyint(1) DEFAULT 1,
+  notes text,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id) ON DELETE CASCADE
+);
 
--- ----------------------------
--- Table structure for availability_schedules
--- ----------------------------
-DROP TABLE IF EXISTS `availability_schedules`;
-CREATE TABLE `availability_schedules`  (
-  `schedule_id` int NOT NULL AUTO_INCREMENT,
-  `faculty_id` int NOT NULL,
-  `day_of_week` enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `start_time` time NOT NULL,
-  `end_time` time NOT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`schedule_id`) USING BTREE,
-  INDEX `availability_schedules_faculty_id_fk`(`faculty_id` ASC) USING BTREE,
-  INDEX `availability_day_idx`(`day_of_week` ASC) USING BTREE,
-  CONSTRAINT `availability_schedules_faculty_id_fk` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`faculty_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 26 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+-- Availability schedules table (LEGACY SUPPORT)
+CREATE TABLE availability_schedules (
+  schedule_id int AUTO_INCREMENT PRIMARY KEY,
+  faculty_id int NOT NULL,
+  day_of_week enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday') NOT NULL,
+  start_time time NOT NULL,
+  end_time time NOT NULL,
+  is_active tinyint(1) DEFAULT 1,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id) ON DELETE CASCADE
+);
 
--- ----------------------------
--- Table structure for consultation_hours
--- ----------------------------
-DROP TABLE IF EXISTS `consultation_hours`;
-CREATE TABLE `consultation_hours`  (
-  `consultation_hour_id` int NOT NULL AUTO_INCREMENT,
-  `faculty_id` int NOT NULL,
-  `day_of_week` enum('monday','tuesday','wednesday','thursday','friday','saturday','sunday') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `start_time` time NOT NULL,
-  `end_time` time NOT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT 'Optional notes for consultation hours',
-  PRIMARY KEY (`consultation_hour_id`) USING BTREE,
-  INDEX `consultation_hours_faculty_id_fk`(`faculty_id` ASC) USING BTREE,
-  INDEX `consultation_day_idx`(`day_of_week` ASC) USING BTREE,
-  INDEX `idx_consultation_faculty_day`(`faculty_id` ASC, `day_of_week` ASC) USING BTREE,
-  INDEX `idx_consultation_active`(`is_active` ASC) USING BTREE,
-  CONSTRAINT `consultation_hours_faculty_id_fk` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`faculty_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+-- Appointments table
+CREATE TABLE appointments (
+  appointment_id int AUTO_INCREMENT PRIMARY KEY,
+  schedule_id int NOT NULL,
+  student_id int NOT NULL,
+  appointment_date date NOT NULL,
+  start_time time NOT NULL,
+  end_time time NOT NULL,
+  slot_duration int DEFAULT 30,
+  remarks text,
+  is_approved tinyint(1) DEFAULT 0,
+  is_cancelled tinyint(1) DEFAULT 0,
+  modality enum('physical','virtual') NOT NULL,
+  platform varchar(150),
+  location varchar(150),
+  appointed_on timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_on timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (schedule_id) REFERENCES availability_schedules(schedule_id) ON DELETE CASCADE,
+  FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
 
--- ----------------------------
--- Table structure for departments
--- ----------------------------
-DROP TABLE IF EXISTS `departments`;
-CREATE TABLE `departments`  (
-  `department_id` int NOT NULL AUTO_INCREMENT,
-  `department_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`department_id`) USING BTREE,
-  UNIQUE INDEX `unique_department_name`(`department_name` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+-- Appointment history table
+CREATE TABLE appointment_history (
+  history_id int AUTO_INCREMENT PRIMARY KEY,
+  appointment_id int NOT NULL,
+  status_change enum('created','approved','rejected','cancelled','completed') NOT NULL,
+  changed_by_user_id int NOT NULL,
+  notes text,
+  changed_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE CASCADE,
+  FOREIGN KEY (changed_by_user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
 
--- ----------------------------
--- Table structure for faculty
--- ----------------------------
-DROP TABLE IF EXISTS `faculty`;
-CREATE TABLE `faculty`  (
-  `faculty_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `department_id` int NOT NULL,
-  `office_email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `office_phone_number` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `status` enum('active','on leave','inactive') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'active',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`faculty_id`) USING BTREE,
-  INDEX `faculty_user_id_fk`(`user_id` ASC) USING BTREE,
-  INDEX `faculty_department_id_fk`(`department_id` ASC) USING BTREE,
-  CONSTRAINT `faculty_department_id_fk` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `faculty_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+-- Notifications table
+CREATE TABLE notifications (
+  notification_id int AUTO_INCREMENT PRIMARY KEY,
+  user_id int NOT NULL,
+  appointment_id int NOT NULL,
+  notification_type enum('appointment_request','appointment_approved','appointment_rejected','appointment_cancelled'),
+  message text NOT NULL,
+  is_read tinyint(1) DEFAULT 0,
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE CASCADE
+);
 
--- ----------------------------
--- Table structure for notifications
--- ----------------------------
-DROP TABLE IF EXISTS `notifications`;
-CREATE TABLE `notifications`  (
-  `notification_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `appointment_id` int NOT NULL,
-  `notification_type` enum('appointment_request','appointment_approved','appointment_rejected','appointment_cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `is_read` tinyint(1) NULL DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`notification_id`) USING BTREE,
-  INDEX `idx_notification_type`(`notification_type` ASC) USING BTREE,
-  INDEX `idx_appointment_user`(`appointment_id` ASC, `user_id` ASC) USING BTREE,
-  INDEX `notifications_created_idx`(`created_at` ASC) USING BTREE,
-  INDEX `notifications_ibfk_1`(`user_id` ASC) USING BTREE,
-  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 49 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+-- Insert sample departments
+INSERT INTO departments (department_name) VALUES 
+('Computer Science'),
+('Information Technology'),
+('Engineering');
 
--- ----------------------------
--- Table structure for students
--- ----------------------------
-DROP TABLE IF EXISTS `students`;
-CREATE TABLE `students`  (
-  `student_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `department_id` int NOT NULL,
-  `year_level` int NOT NULL,
-  `academic_year` varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `enrollment_status` enum('regular','irregular','shiftee','returnee') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`student_id`) USING BTREE,
-  INDEX `students_user_id_fk`(`user_id` ASC) USING BTREE,
-  INDEX `students_department_id_fk`(`department_id` ASC) USING BTREE,
-  CONSTRAINT `students_department_id_fk` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `students_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+-- Insert sample users (password is 'password')
+INSERT INTO users (password_hash, first_name, last_name, birthdate, address, email, phone_number, role) VALUES
+('$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John', 'Doe', '1980-01-01', '123 Faculty St', 'john.doe@university.edu', '+1234567890', 'faculty'),
+('$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jane', 'Smith', '2000-01-01', '456 Student Ave', 'jane.smith@student.edu', '+0987654321', 'student');
 
--- ----------------------------
--- Table structure for users
--- ----------------------------
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users`  (
-  `user_id` int NOT NULL AUTO_INCREMENT,
-  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `first_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `last_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `middle_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `birthdate` date NOT NULL,
-  `address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `phone_number` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `role` enum('admin','faculty','student') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `profile_picture` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`user_id`) USING BTREE,
-  UNIQUE INDEX `unique_email`(`email` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+-- Link users to their roles
+INSERT INTO faculty (user_id, department_id, office_email, office_phone_number) VALUES
+(1, 1, 'john.doe@cs.university.edu', '+1234567890');
 
--- ----------------------------
--- View structure for appointment_updates_view
--- ----------------------------
-DROP VIEW IF EXISTS `appointment_updates_view`;
-CREATE ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `appointment_updates_view` AS SELECT 
-    a.appointment_id,
-    a.student_id,
-    a.appointment_date,
-    a.start_time,
-    a.end_time,
-    a.is_approved,
-    a.is_cancelled,
-    a.appointed_on,
-    a.updated_on,
-    s.faculty_id,
-    uf.first_name as faculty_first_name,
-    uf.last_name as faculty_last_name,
-    us.first_name as student_first_name,
-    us.last_name as student_last_name,
-    CASE 
-        WHEN a.appointed_on > DATE_SUB(NOW(), INTERVAL 1 MINUTE) THEN 'new_booking'
-        WHEN a.is_approved = 1 AND a.updated_on > DATE_SUB(NOW(), INTERVAL 1 MINUTE) THEN 'approved'
-        WHEN a.is_cancelled = 1 AND a.updated_on > DATE_SUB(NOW(), INTERVAL 1 MINUTE) THEN 'cancelled'
-        ELSE 'updated'
-    END as recent_activity_type
-FROM appointments a
-JOIN availability_schedules s ON a.schedule_id = s.schedule_id
-JOIN faculty f ON s.faculty_id = f.faculty_id
-JOIN users uf ON f.user_id = uf.user_id
-JOIN students st ON a.student_id = st.student_id
-JOIN users us ON st.user_id = us.user_id
-WHERE a.appointed_on > DATE_SUB(NOW(), INTERVAL 1 HOUR) 
-   OR a.updated_on > DATE_SUB(NOW(), INTERVAL 1 HOUR) ;
-
--- ----------------------------
--- Procedure structure for CleanOldRealtimeData
--- ----------------------------
-DROP PROCEDURE IF EXISTS `CleanOldRealtimeData`;
-delimiter ;;
-CREATE PROCEDURE `CleanOldRealtimeData`()
-BEGIN
-    -- Clean activities older than 1 day
-    DELETE FROM realtime_activities 
-    WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 DAY);
-    
-    -- Clean user activity for inactive users
-    DELETE ua FROM user_activity ua
-    JOIN users u ON ua.user_id = u.user_id
-    WHERE u.is_active = 0;
-    
-    -- Update statistics
-    SELECT 
-        (SELECT COUNT(*) FROM realtime_activities) as remaining_activities,
-        (SELECT COUNT(*) FROM user_activity) as active_users,
-        NOW() as cleaned_at;
-END
-;;
-delimiter ;
-
-SET FOREIGN_KEY_CHECKS = 1;
+INSERT INTO students (user_id, department_id, year_level, academic_year, enrollment_status) VALUES
+(2, 1, 3, '2024-2025', 'regular');
