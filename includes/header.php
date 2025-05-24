@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/icons.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/consultation-hours.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/login.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/register.css">
     
     <?php if (isset($isLandingPage) && $isLandingPage): ?>
         <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/landing.css">
