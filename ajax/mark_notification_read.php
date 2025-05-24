@@ -1,9 +1,4 @@
 <?php
-/*
- * File: ajax/mark_notification_read.php
- * Description: AJAX endpoint to mark single notification as read (New System)
- */
-
 // Include config file
 $configPath = dirname(__FILE__) . '/../config.php';
 if (!file_exists($configPath)) {

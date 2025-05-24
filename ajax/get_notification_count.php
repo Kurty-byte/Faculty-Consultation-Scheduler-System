@@ -1,8 +1,4 @@
 <?php
-/*
- * File: ajax/get_notification_count.php
- * Description: AJAX endpoint to get unread notification count (New System)
- */
 
 // Include config file
 $configPath = dirname(__FILE__) . '/../config.php';
