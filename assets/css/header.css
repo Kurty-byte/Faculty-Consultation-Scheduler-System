@@ -16,7 +16,7 @@ header .container {
 /* Top row - Title centered with welcome section on right */
 .header-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
 }
@@ -25,7 +25,7 @@ header .container {
 .logo {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex: 1;
   transition: all 0.3s ease;
 }
@@ -47,7 +47,7 @@ header .container {
   background-clip: text;
   position: relative;
   transition: all 0.3s ease;
-  text-align: center;
+  text-align: left;
 }
 
 .logo h1::after {
@@ -85,6 +85,8 @@ header .container {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   flex-shrink: 0;
+  transform: translateY(22px);
+  margin-left: auto;
 }
 
 /* Bottom row - Navigation centered */
