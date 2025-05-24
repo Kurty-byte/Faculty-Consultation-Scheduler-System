@@ -138,8 +138,7 @@ include 'includes/header.php';
                 <p>Stay informed with on-refresh notifications for appointment requests, approvals, and updates. Never miss an important consultation.</p>
                 <ul class="feature-list">
                     <li>✓ On-refresh status updates</li>
-                    <li>✓ Email & in-app notifications</li>
-                    <li>✓ Appointment reminders</li>
+                    <li>✓ In-app notifications</li>
                 </ul>
             </div>
             

@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/forms.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/icons.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/consultation-hours.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
     
     <?php if (isset($isLandingPage) && $isLandingPage): ?>
         <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/landing.css">
@@ -36,6 +37,7 @@
             
             <?php if (isLoggedIn()): ?>
                 <div class="header-right">
+                    <!-- Navigation comes first -->
                     <nav>
                         <ul>
                             <?php if (hasRole('faculty')): ?>
@@ -47,13 +49,14 @@
                                 <li><a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_faculty.php') !== false || strpos($_SERVER['REQUEST_URI'], '/faculty_schedule.php') !== false || strpos($_SERVER['REQUEST_URI'], '/book_appointment.php') !== false) ? 'class="active"' : ''; ?>>Book Appointment</a></li>
                                 <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
                             <?php endif; ?>
+                            <!-- Logout button with special styling -->
                             <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li>
                         </ul>
                     </nav>
                     
+                    <!-- User info section comes second (rightmost) -->
                     <div class="user-info-section">
                         <span class="user-welcome">Welcome,</span>
-                        <!-- <a href="<?php echo BASE_URL; ?>pages/<?php echo $_SESSION['role']; ?>/profile.php" class="user-profile-link"> -->
                             <?php echo $_SESSION['first_name']; ?>
                         </a>
                         <span class="user-divider">|</span>
@@ -61,16 +64,11 @@
                             <a href="<?php echo BASE_URL; ?>pages/<?php echo $_SESSION['role']; ?>/notifications.php" class="notifications-icon" title="View Notifications">
                                 🔔
                                 <?php 
-                                // Include new notification system
                                 $unreadCount = 0;
-                                
-                                // Check if notification system file exists
                                 if (file_exists(__DIR__ . '/notification_system.php')) {
                                     require_once __DIR__ . '/notification_system.php';
                                     $unreadCount = countUnreadNotifications($_SESSION['user_id']);
                                 }
-                                
-                                // Only show badge if there are unread notifications
                                 if ($unreadCount > 0): 
                                 ?>
                                     <span class="notification-badge" id="notificationBadge"><?php echo $unreadCount; ?></span>
@@ -100,320 +98,6 @@
         <?php else: ?>
             <?php displayFlashMessage(); ?>
         <?php endif; ?>
-
-<style>
-/* Landing page specific header styles */
-.landing-header {
-    position: fixed !important;
-    background: rgba(255,255,255,0.1) !important;
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    transition: all 0.3s ease;
-}
-
-.landing-header.scrolled {
-    background: rgba(26, 32, 44, 0.95) !important;
-    backdrop-filter: blur(20px);
-}
-
-.landing-header .logo a {
-    text-decoration: none;
-}
-
-.landing-header .logo h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    background: linear-gradient(45deg, #ffffff, #f0f0f0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin: 0;
-    transition: all 0.3s ease;
-}
-
-.landing-header .logo h1:hover {
-    transform: scale(1.05);
-}
-
-.landing-nav ul {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 1rem;
-}
-
-.landing-nav ul li a {
-    color: rgba(255, 255, 255, 0.9);
-    text-decoration: none;
-    padding: 0.5rem 1.5rem;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.landing-nav ul li a:hover {
-    background: rgba(255,255,255,0.1);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.landing-main {
-    padding: 0 !important;
-}
-
-/* Active state for navigation */
-nav ul li a.active {
-    color: var(--primary) !important;
-    font-weight: 600;
-    position: relative;
-}
-
-nav ul li a.active::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--primary);
-    border-radius: 1px;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .nav-toggle {
-        display: block;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 4px;
-        transition: background-color 0.2s;
-    }
-    
-    .nav-toggle:hover {
-        background-color: rgba(255,255,255,0.1);
-    }
-    
-    nav {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background-color: var(--dark);
-        border-top: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: none;
-    }
-    
-    nav.show {
-        display: block;
-    }
-    
-    nav ul {
-        padding: 1rem 0;
-        flex-direction: column;
-    }
-    
-    nav ul li {
-        margin: 0;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    nav ul li:last-child {
-        border-bottom: none;
-    }
-    
-    nav ul li a {
-        display: block;
-        padding: 1rem 1.5rem;
-        border-left: 3px solid transparent;
-        transition: all 0.2s;
-    }
-    
-    nav ul li a.active {
-        border-left-color: var(--primary);
-        background-color: rgba(78, 115, 223, 0.1);
-    }
-    
-    nav ul li a:hover {
-        background-color: rgba(255,255,255,0.05);
-        padding-left: 2rem;
-    }
-    
-    nav ul li a.active::after {
-        display: none;
-    }
-    
-    .landing-header .container {
-        flex-wrap: wrap;
-    }
-    
-    .landing-nav {
-        width: 100%;
-        margin-top: 1rem;
-    }
-    
-    .landing-nav ul {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-}
-
-/* Enhanced notification badge */
-.notification-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background-color: var(--danger);
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    z-index: 1;
-    border: 2px solid white;
-    animation: pulse 2s infinite;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-}
-
-.user-info-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 0.5rem 1rem;
-    border-radius: 25px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.user-welcome {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-.user-profile-link {
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    padding: 0.25rem 0.5rem;
-    border-radius: 15px;
-}
-
-.user-profile-link:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-}
-
-.user-divider {
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0 0.5rem;
-}
-
-.notifications-container {
-    position: relative;
-}
-
-.notifications-icon {
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    position: relative;
-    text-decoration: none;
-    color: rgba(255, 255, 255, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.notifications-icon:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    text-decoration: none;
-    transform: scale(1.1);
-}
-
-@media (max-width: 768px) {
-    .header-right {
-        gap: 1rem;
-    }
-    
-    .user-info-section {
-        padding: 0.4rem 0.8rem;
-        gap: 0.5rem;
-    }
-    
-    .user-welcome {
-        font-size: 0.8rem;
-    }
-    
-    .notifications-icon {
-        width: 35px;
-        height: 35px;
-        font-size: 16px;
-    }
-}
-
-@media (max-width: 576px) {
-    .user-info-section {
-        flex-direction: column;
-        gap: 0.25rem;
-        padding: 0.5rem;
-        text-align: center;
-    }
-    
-    .user-divider {
-        display: none;
-    }
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(231, 74, 59, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(231, 74, 59, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(231, 74, 59, 0);
-    }
-}
-
-/* Header scroll effect for landing page */
-.landing-header-scroll-effect {
-    background: rgba(26, 32, 44, 0.95) !important;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-}
-</style>
-
 <script>
 // Enhanced mobile navigation and landing page effects
 document.addEventListener('DOMContentLoaded', function() {
