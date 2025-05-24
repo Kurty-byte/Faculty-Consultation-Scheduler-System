@@ -336,11 +336,162 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Update notification badge if function exists
-    if (typeof updateNotificationBadge === 'function') {
-        updateNotificationBadge();
-        setInterval(updateNotificationBadge, 30000);
+    // Initialize enhanced notification system for logged-in users
+    <?php if (isLoggedIn()): ?>
+    // Auto-refresh configuration initialization
+    window.autoRefreshConfig = {
+        userRole: '<?php echo $_SESSION['role']; ?>',
+        userId: <?php echo $_SESSION['user_id']; ?>,
+        currentPage: '<?php echo basename($_SERVER['PHP_SELF']); ?>',
+        baseUrl: '<?php echo BASE_URL; ?>',
+        refreshInterval: <?php 
+            // Set page-specific refresh intervals
+            $currentPage = basename($_SERVER['PHP_SELF']);
+            if (strpos($currentPage, 'dashboard.php') !== false) {
+                echo '60000'; // 1 minute for dashboard
+            } elseif (strpos($currentPage, 'notifications.php') !== false) {
+                echo '30000'; // 30 seconds for notifications page
+            } elseif (strpos($currentPage, 'appointment') !== false) {
+                echo '90000'; // 1.5 minutes for appointment pages
+            } else {
+                echo '120000'; // 2 minutes for other pages
+            }
+        ?>
+    };
+    
+    // Enhanced notification badge initialization
+    const notificationBadge = document.getElementById('notificationBadge');
+    if (notificationBadge) {
+        // Add pulse animation for existing notifications
+        notificationBadge.classList.add('has-unread');
+        
+        // Store initial count for comparison
+        window.initialNotificationCount = parseInt(notificationBadge.textContent) || 0;
     }
+    
+    // Custom event listeners for page-specific updates
+    document.addEventListener('notificationsUpdated', function(event) {
+        const detail = event.detail;
+        
+        // Update page-specific elements if they exist
+        updatePageSpecificElements(detail);
+        
+        // Log activity for debugging (only in development)
+        <?php if (DEBUG_MODE): ?>
+        console.log('Notifications updated:', detail);
+        <?php endif; ?>
+    });
+    
+    function updatePageSpecificElements(data) {
+        // Update dashboard statistics if on dashboard page
+        <?php if (strpos($_SERVER['PHP_SELF'], 'dashboard.php') !== false): ?>
+        if (data.activitySummary) {
+            updateDashboardStats(data.activitySummary);
+        }
+        <?php endif; ?>
+        
+        // Update appointment counters if on appointment pages
+        const statBoxes = document.querySelectorAll('.stat-box .stat-number');
+        if (statBoxes.length > 0 && data.activitySummary) {
+            updateStatBoxes(data.activitySummary);
+        }
+    }
+    
+    function updateDashboardStats(summary) {
+        // Update pending appointments count
+        const pendingElement = document.querySelector('[data-stat="pending"] .stat-number');
+        if (pendingElement && summary.pending_appointments !== undefined) {
+            pendingElement.textContent = summary.pending_appointments;
+        }
+        
+        // Update today's appointments count
+        const todayElement = document.querySelector('[data-stat="today"] .stat-number');
+        if (todayElement && summary.todays_appointments !== undefined) {
+            todayElement.textContent = summary.todays_appointments;
+        }
+    }
+    
+    function updateStatBoxes(summary) {
+        // This can be expanded based on your specific stat box implementations
+        const pendingBox = document.querySelector('.stat-box:first-child .stat-number');
+        if (pendingBox && summary.pending_appointments !== undefined) {
+            pendingBox.textContent = summary.pending_appointments;
+            
+            // Add animation if count changed
+            if (pendingBox.textContent !== pendingBox.dataset.lastValue) {
+                pendingBox.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    pendingBox.style.transform = 'scale(1)';
+                }, 200);
+                pendingBox.dataset.lastValue = pendingBox.textContent;
+            }
+        }
+    }
+    
+    // Page-specific enhancements
+    <?php if (strpos($_SERVER['PHP_SELF'], 'notifications.php') !== false): ?>
+    // Enhanced notifications page functionality
+    setupNotificationsPageEnhancements();
+    <?php endif; ?>
+    
+    <?php if (strpos($_SERVER['PHP_SELF'], 'dashboard.php') !== false): ?>
+    // Enhanced dashboard functionality
+    setupDashboardEnhancements();
+    <?php endif; ?>
+    
+    function setupNotificationsPageEnhancements() {
+        // Auto-scroll to new notifications
+        const notificationsList = document.getElementById('notificationsList');
+        if (notificationsList) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        // New notification added, scroll to top
+                        notificationsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+            
+            observer.observe(notificationsList, { childList: true });
+        }
+    }
+    
+    function setupDashboardEnhancements() {
+        // Add real-time clock to dashboard
+        const clockElement = document.querySelector('.dashboard-clock');
+        if (clockElement) {
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+        
+        function updateClock() {
+            const now = new Date();
+            clockElement.textContent = now.toLocaleTimeString();
+        }
+    }
+    
+    // Keyboard shortcuts for power users
+    document.addEventListener('keydown', function(e) {
+        // Alt + N to go to notifications
+        if (e.altKey && e.key === 'n') {
+            e.preventDefault();
+            const notificationsLink = document.querySelector('a[href*="notifications.php"]');
+            if (notificationsLink) {
+                notificationsLink.click();
+            }
+        }
+        
+        // Alt + D to go to dashboard
+        if (e.altKey && e.key === 'd') {
+            e.preventDefault();
+            const dashboardLink = document.querySelector('a[href*="dashboard.php"]');
+            if (dashboardLink) {
+                dashboardLink.click();
+            }
+        }
+    });
+    
+    <?php endif; ?>
     
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -355,5 +506,60 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Connection status monitoring
+    let isOnline = navigator.onLine;
+    
+    window.addEventListener('online', function() {
+        if (!isOnline) {
+            isOnline = true;
+            showConnectionStatus('back online', 'success');
+            // Immediate notification update when back online
+            if (window.NotificationManager) {
+                window.NotificationManager.updateNotificationBadge();
+            }
+        }
+    });
+    
+    window.addEventListener('offline', function() {
+        isOnline = false;
+        showConnectionStatus('offline', 'warning');
+    });
+    
+    function showConnectionStatus(status, type) {
+        const toast = document.createElement('div');
+        toast.className = `notification-toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">${type === 'success' ? '🌐' : '📡'}</div>
+            <div class="toast-content">
+                <div class="toast-title">Connection Status</div>
+                <div class="toast-message">You are now ${status}</div>
+            </div>
+        `;
+        
+        const container = document.getElementById('notificationToastContainer');
+        if (container) {
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+    }
 });
 </script>
+
+<!-- Load auto-refresh configuration and enhanced notifications -->
+<?php if (isLoggedIn()): ?>
+<script src="<?php echo BASE_URL; ?>assets/js/auto-refresh-config.js"></script>
+<script src="<?php echo BASE_URL; ?>assets/js/notifications.js"></script>
+<?php endif; ?>
+
+<?php if (isset($extraJS)): ?>
+    <?php foreach ($extraJS as $js): ?>
+        <script src="<?php echo BASE_URL . 'assets/js/' . $js; ?>"></script>
+    <?php endforeach; ?>
+<?php endif; ?>
+</body>
+</html>
