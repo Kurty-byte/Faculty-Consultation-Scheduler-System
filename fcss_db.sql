@@ -225,4 +225,5 @@ INSERT INTO departments (department_name) VALUES
 ('Veterinary Medicine'),
 ('Fine Arts'),
 ('Communication'),
-('Physical Education');
+('Physical Education'),
+('Information Technology');
