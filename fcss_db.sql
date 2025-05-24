@@ -206,3 +206,23 @@ CREATE TABLE `users`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+----------------------
+-- Sample Departments
+----------------------
+
+INSERT INTO departments (department_name) VALUES
+('Computer Studies'),
+('Engineering'),
+('Business Administration'),
+('Arts and Sciences'),
+('Education'),
+('Nursing'),
+('Tourism and Hospitality Management'),
+('Architecture'),
+('Medicine'),
+('Agriculture'),
+('Veterinary Medicine'),
+('Fine Arts'),
+('Communication'),
+('Physical Education');
