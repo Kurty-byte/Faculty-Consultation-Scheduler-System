@@ -6,7 +6,7 @@ session_start();
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', '');
-define('DB_NAME', 'fcss_database');
+define('DB_NAME', 'fcss_db');
 
 // Site configuration - Updated for network access and landing page
 define('SITE_NAME', 'Faculty Consultation Scheduler System');

@@ -1,0 +1,289 @@
+/* ================================================================
+   CONSULTATION HOURS MANAGEMENT QUICK FIX NEEDS TOO BE FIXED LATER
+   ================================================================ */
+
+/* Fix 1: Weekly Schedule Cards Layout */
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.day-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+    min-height: 120px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.day-card .day-name {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-transform: capitalize;
+}
+
+/* Fix 2: "Not Available" Status Styling */
+.availability-status {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-align: center;
+    margin-top: 8px;
+    line-height: 1.2;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.availability-status.not-available {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffcccb;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.availability-status.available {
+    background-color: rgba(76, 175, 80, 0.3);
+    color: #c8e6c9;
+    border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+/* Fix 3: Time Slots in Cards */
+.time-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 8px 0;
+}
+
+.time-slot {
+    font-size: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 3px 6px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Fix 4: Weekly Availability Form Improvements */
+.availability-form {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+.day-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    border: 2px solid #f1f3f4;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.day-section.active {
+    border-color: #4285f4;
+    background-color: #f8f9ff;
+}
+
+.day-checkbox {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.day-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+    accent-color: #4285f4;
+}
+
+.day-checkbox label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Fix 5: Time Input Controls */
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.time-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.time-input-group label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.time-input {
+    padding: 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 120px;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+/* Fix 6: Available Slots Counter */
+.slots-info {
+    background: #e8f4f8;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1976d2;
+    margin: 10px 0;
+    display: inline-block;
+}
+
+/* Fix 7: Notes Section */
+.notes-section {
+    margin-top: 15px;
+}
+
+.notes-section label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.notes-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 60px;
+    font-family: inherit;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+/* Fix 8: Responsive Improvements */
+@media (max-width: 768px) {
+    .schedule-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    
+    .day-card {
+        padding: 15px;
+        min-height: 100px;
+    }
+    
+    .time-inputs {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .time-input {
+        min-width: auto;
+    }
+    
+    .availability-form {
+        padding: 20px;
+        margin: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .schedule-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .day-card .day-name {
+        font-size: 14px;
+    }
+    
+    .availability-status {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+}
+
+/* Fix 9: Hover Effects */
+.day-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.time-input:hover {
+    border-color: #4285f4;
+}
+
+/* Fix 10: Form Buttons */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e1e5e9;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #4285f4, #1976d2);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+/* Fix 11: Loading States */
+.time-input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.day-section:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
