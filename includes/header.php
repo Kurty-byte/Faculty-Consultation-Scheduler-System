@@ -31,36 +31,20 @@
 <body<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-page"' : ''; ?>>
     <header<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-header"' : ''; ?>>
         <div class="container">
-            <div class="logo">
-                <a href="<?php echo BASE_URL; ?><?php echo isLoggedIn() ? (hasRole('faculty') ? 'pages/faculty/dashboard.php' : 'pages/student/dashboard.php') : 'home.php'; ?>">
-                    <h1><?php echo SITE_NAME; ?></h1>
-                </a>
-            </div>
-            
             <?php if (isLoggedIn()): ?>
-                <div class="header-right">
-                    <!-- Navigation comes first -->
-                    <nav>
-                        <ul>
-                            <?php if (hasRole('faculty')): ?>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/consultation_hours.php') !== false || strpos($_SERVER['REQUEST_URI'], '/set_consultation_hours.php') !== false) ? 'class="active"' : ''; ?>>Consultation Hours</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>Appointments</a></li>
-                            <?php elseif (hasRole('student')): ?>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_faculty.php') !== false || strpos($_SERVER['REQUEST_URI'], '/faculty_schedule.php') !== false || strpos($_SERVER['REQUEST_URI'], '/book_appointment.php') !== false) ? 'class="active"' : ''; ?>>Book Appointment</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
-                            <?php endif; ?>
-                            <!-- Logout button with special styling -->
-                            <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li>
-                        </ul>
-                    </nav>
+                <!-- Top row: Title centered with user info on right -->
+                <div class="header-top">
+                    <div></div> <!-- Empty div for spacing -->
+                    <div class="logo">
+                        <a href="<?php echo BASE_URL; ?><?php echo hasRole('faculty') ? 'pages/faculty/dashboard.php' : 'pages/student/dashboard.php'; ?>">
+                            <h1><?php echo SITE_NAME; ?></h1>
+                        </a>
+                    </div>
                     
-                    <!-- User info section comes second (rightmost) -->
+                    <!-- User info section stays on the right -->
                     <div class="user-info-section">
                         <span class="user-welcome">Welcome,</span>
                             <?php echo $_SESSION['first_name']; ?>
-                        </a>
                         <span class="user-divider">|</span>
                         <div class="notifications-container">
                             <a href="<?php echo BASE_URL; ?>pages/<?php echo $_SESSION['role']; ?>/notifications.php" class="notifications-icon" title="View Notifications">
@@ -79,15 +63,41 @@
                         </div>
                     </div>
                 </div>
-            <?php else: ?>
-                <!-- Navigation for non-logged in users (landing page) -->
-                <?php if (isset($isLandingPage) && $isLandingPage): ?>
-                    <nav class="landing-nav">
+                
+                <!-- Bottom row: Navigation centered -->
+                <div class="header-bottom">
+                    <nav>
                         <ul>
-                            <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
-                            <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                            <?php if (hasRole('faculty')): ?>
+                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/consultation_hours.php') !== false || strpos($_SERVER['REQUEST_URI'], '/set_consultation_hours.php') !== false) ? 'class="active"' : ''; ?>>Consultation Hours</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>Appointments</a></li>
+                            <?php elseif (hasRole('student')): ?>
+                                <li><a href="<?php echo BASE_URL; ?>pages/student/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_faculty.php') !== false || strpos($_SERVER['REQUEST_URI'], '/faculty_schedule.php') !== false || strpos($_SERVER['REQUEST_URI'], '/book_appointment.php') !== false) ? 'class="active"' : ''; ?>>Book Appointment</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
+                            <?php endif; ?>
+                            <!-- Logout button -->
+                            <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li>
                         </ul>
                     </nav>
+                </div>
+            <?php else: ?>
+                <!-- Landing page layout -->
+                <?php if (isset($isLandingPage) && $isLandingPage): ?>
+                    <div class="header-top">
+                        <div class="logo">
+                            <a href="<?php echo BASE_URL; ?>home.php">
+                                <h1><?php echo SITE_NAME; ?></h1>
+                            </a>
+                        </div>
+                        <nav class="landing-nav">
+                            <ul>
+                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                            </ul>
+                        </nav>
+                    </div>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
