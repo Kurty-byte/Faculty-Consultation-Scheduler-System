@@ -11,7 +11,7 @@ function createAppointment($studentId, $scheduleId, $date, $startTime, $endTime,
     mysqli_begin_transaction($conn);
     
     try {
-        // Get schedule details to verify it exists
+        // Get faculty_id from the schedule
         $schedule = fetchRow(
             "SELECT faculty_id FROM availability_schedules WHERE schedule_id = ?",
             [$scheduleId]
@@ -21,55 +21,16 @@ function createAppointment($studentId, $scheduleId, $date, $startTime, $endTime,
             throw new Exception("Invalid schedule ID.");
         }
         
-        // For consultation hours system, check if slot is still available with improved validation
         $facultyId = $schedule['faculty_id'];
-        $dayOfWeek = strtolower(date('l', strtotime($date)));
-        
-        // Use improved slot validation
-        if (!isSlotAvailableImproved($facultyId, $date, $startTime, $endTime)) {
-            throw new Exception("This time slot is no longer available or has been booked by another student.");
-        }
-        
-        // Additional validation: check if the time slot exists in consultation hours
-        $consultationHours = getConsultationHours($facultyId, $dayOfWeek);
-        $slotValid = false;
-        
-        foreach ($consultationHours as $hours) {
-            if ($startTime >= $hours['start_time'] && $endTime <= $hours['end_time']) {
-                $slotValid = true;
-                break;
-            }
-        }
-        
-        if (!$slotValid) {
-            throw new Exception("The selected time slot is not within the faculty's consultation hours.");
-        }
-        
-        // Check for date and time validity
-        if ($date < date('Y-m-d')) {
-            throw new Exception("Cannot book appointments for past dates.");
-        }
-        
-        // If it's today, check if the time has passed
-        if ($date === date('Y-m-d')) {
-            $currentDateTime = new DateTime();
-            $slotDateTime = new DateTime($date . ' ' . $startTime);
-            $bufferTime = clone $currentDateTime;
-            $bufferTime->add(new DateInterval('PT30M')); // 30 minute buffer
-            
-            if ($slotDateTime <= $bufferTime) {
-                throw new Exception("Cannot book appointments for past times or within 30 minutes of current time.");
-            }
-        }
         
         // Calculate slot duration
         $slotDuration = (strtotime($endTime) - strtotime($startTime)) / 60; // in minutes
         
-        // Insert the appointment
+        // Insert the appointment WITH faculty_id
         $appointmentId = insertData(
-            "INSERT INTO appointments (schedule_id, student_id, appointment_date, start_time, end_time, remarks, is_approved, is_cancelled, modality, platform, location, slot_duration) 
-             VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)",
-            [$scheduleId, $studentId, $date, $startTime, $endTime, $remarks, $modality, $platform, $location, $slotDuration]
+            "INSERT INTO appointments (schedule_id, student_id, faculty_id, appointment_date, start_time, end_time, remarks, is_approved, is_cancelled, modality, platform, location, slot_duration) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)",
+            [$scheduleId, $studentId, $facultyId, $date, $startTime, $endTime, $remarks, $modality, $platform, $location, $slotDuration]
         );
         
         if (!$appointmentId) {

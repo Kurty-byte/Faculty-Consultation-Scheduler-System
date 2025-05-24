@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         // Authentication failed
         setFlashMessage('danger', 'Invalid email or password. Please try again.');
-        redirect('home.php');
+        redirect('login.php');
     }
 } else {
     // Not a POST request, redirect to login page
