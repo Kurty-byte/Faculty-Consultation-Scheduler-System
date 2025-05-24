@@ -73,7 +73,7 @@ include '../../includes/header.php';
             <p class="stat-text">Awaiting faculty response</p>
         </div>
         <div class="stat-icon">📋</div>
-        <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All</a>
+        <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=pending" class="btn btn-primary btn-sm">View All</a>
     </div>
     
     <div class="stat-box success">
