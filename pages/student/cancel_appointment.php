@@ -55,10 +55,9 @@ if ($hoursDifference < MIN_CANCEL_HOURS) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Get cancellation reason from form
     $cancellationReason = isset($_POST['cancellation_reason']) ? sanitize($_POST['cancellation_reason']) : null;
-    
-    $notes = "Cancelled by student: " . $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
+
     if (!empty($cancellationReason)) {
-        $notes .= " - Reason: " . $cancellationReason;
+        $notes = $cancellationReason;
     }
 
     try {
