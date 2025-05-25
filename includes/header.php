@@ -29,45 +29,50 @@
     <?php endif; ?>
 </head>
 <body<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-page"' : ''; ?>>
+    <?php 
+    // Determine if this is a login/register page or landing page
+    $currentPage = basename($_SERVER['PHP_SELF']);
+    $isAuthPage = in_array($currentPage, ['login.php', 'register.php']);
+    ?>
+    
     <header<?php 
-        // Show landing header for: landing page, login page, register page
-        if ((isset($isLandingPage) && $isLandingPage) || 
-            (basename($_SERVER['PHP_SELF']) === 'login.php') || 
-            (basename($_SERVER['PHP_SELF']) === 'register.php')) {
+        // Different header styles for different page types
+        if (isset($isLandingPage) && $isLandingPage) {
             echo ' class="landing-header"';
+        } elseif ($isAuthPage) {
+            echo ' class="auth-header"';
         }
     ?>>
         <div class="container">
             <?php if (isLoggedIn()): ?>
-                <!-- Logged in user header -->
-                <!-- Top row: Title centered -->
-                <div class="header-top">
-                    <div class="logo">
-                        <a href="<?php echo BASE_URL; ?><?php echo hasRole('faculty') ? 'pages/faculty/dashboard.php' : 'pages/student/dashboard.php'; ?>">
-                            <h1><?php echo SITE_NAME; ?></h1>
-                        </a>
+                <!-- Logged in user header - Modified Layout -->
+                <!-- Single row with title on left, user info on right -->
+                <div class="header-main">
+                    <div class="logo-section">
+                        <div class="logo">
+                            <a href="<?php echo BASE_URL; ?><?php echo hasRole('faculty') ? 'pages/faculty/dashboard.php' : 'pages/student/dashboard.php'; ?>">
+                                <h1><?php echo SITE_NAME; ?></h1>
+                            </a>
+                        </div>
+                        <!-- Navigation directly under the title -->
+                        <nav class="main-navigation">
+                            <ul>
+                                <?php if (hasRole('faculty')): ?>
+                                    <li><a href="<?php echo BASE_URL; ?>pages/faculty/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
+                                    <li><a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/consultation_hours.php') !== false || strpos($_SERVER['REQUEST_URI'], '/set_consultation_hours.php') !== false) ? 'class="active"' : ''; ?>>Consultation Hours</a></li>
+                                    <li><a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>Appointments</a></li>
+                                <?php elseif (hasRole('student')): ?>
+                                    <li><a href="<?php echo BASE_URL; ?>pages/student/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
+                                    <li><a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_faculty.php') !== false || strpos($_SERVER['REQUEST_URI'], '/faculty_schedule.php') !== false || strpos($_SERVER['REQUEST_URI'], '/book_appointment.php') !== false) ? 'class="active"' : ''; ?>>Book Appointment</a></li>
+                                    <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
+                                <?php endif; ?>
+                                <!-- Logout button -->
+                                <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li>
+                            </ul>
+                        </nav>
                     </div>
-                </div>
-
-                <!-- Bottom row: Navigation and User Info -->
-                <div class="header-bottom">
-                    <nav>
-                        <ul>
-                            <?php if (hasRole('faculty')): ?>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/consultation_hours.php') !== false || strpos($_SERVER['REQUEST_URI'], '/set_consultation_hours.php') !== false) ? 'class="active"' : ''; ?>>Consultation Hours</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>Appointments</a></li>
-                            <?php elseif (hasRole('student')): ?>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_faculty.php') !== false || strpos($_SERVER['REQUEST_URI'], '/faculty_schedule.php') !== false || strpos($_SERVER['REQUEST_URI'], '/book_appointment.php') !== false) ? 'class="active"' : ''; ?>>Book Appointment</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
-                            <?php endif; ?>
-                            <!-- Logout button -->
-                            <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li>
-                        </ul>
-                    </nav>
                     
-                    <!-- User info section moved to navigation row -->
+                    <!-- User info section on the right -->
                     <div class="user-info-section">
                         <span class="user-role-badge"><?php echo ucfirst($_SESSION['role']); ?></span>
                         <span class="user-welcome">Welcome, <?php echo $_SESSION['first_name']; ?></span>
@@ -90,19 +95,16 @@
                     </div>
                 </div>
             <?php else: ?>
-                <!-- Landing page header for non-logged-in users (landing, login, register pages) -->
+                <!-- Header for non-logged-in users (unchanged) -->
                 <div class="header-top">
                     <div class="logo">
                         <a href="<?php echo BASE_URL; ?>home.php">
                             <h1><?php echo SITE_NAME; ?></h1>
                         </a>
                     </div>
-                    <nav class="landing-nav">
+                    <nav class="<?php echo $isAuthPage ? 'auth-nav' : 'landing-nav'; ?>">
                         <ul>
-                            <?php 
-                            $currentPage = basename($_SERVER['PHP_SELF']);
-                            if ($currentPage === 'login.php'): 
-                            ?>
+                            <?php if ($currentPage === 'login.php'): ?>
                                 <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
                                 <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
                             <?php elseif ($currentPage === 'register.php'): ?>
@@ -150,8 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Landing page header scroll effect
-    if (landingHeader) {
+    // Landing page header scroll effect (only for landing page, not auth pages)
+    if (landingHeader && !document.body.classList.contains('auth-page')) {
         window.addEventListener('scroll', function() {
             if (window.scrollY > 100) {
                 landingHeader.classList.add('landing-header-scroll-effect');
@@ -386,5 +388,3 @@ document.addEventListener('DOMContentLoaded', function() {
         <script src="<?php echo BASE_URL . 'assets/js/' . $js; ?>"></script>
     <?php endforeach; ?>
 <?php endif; ?>
-</body>
-</html>
