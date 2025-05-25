@@ -528,3 +528,74 @@ header {
     border: 1px solid rgba(255, 255, 255, 0.3);
     margin-right: 0.5rem;
 }
+
+/* Auth pages header - same as landing header */
+.auth-header .container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 15px;
+    gap: 0;
+}
+
+.auth-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Auth header content - use same styling as landing */
+.auth-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.auth-nav {
+    display: flex;
+    justify-content: center;
+}
+
+.auth-nav ul {
+    display: flex;
+    gap: 1rem;
+}
+
+.auth-nav ul li a {
+    padding: 0.6rem 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-nav ul li a:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments for auth pages */
+@media (max-width: 768px) {
+    .auth-header .container {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .auth-nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .auth-nav ul li a {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+}

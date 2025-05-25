@@ -113,28 +113,26 @@
                         </nav>
                     </div>
                 <?php else: ?>
-                    <!-- Auth pages header (login.php, register.php) -->
-                    <div class="auth-header-content">
-                        <div class="logo">
-                            <a href="<?php echo BASE_URL; ?>home.php">
-                                <h1><?php echo SITE_NAME; ?></h1>
-                            </a>
-                        </div>
-                        <nav class="auth-nav">
-                            <ul>
-                                <?php if ($currentPage === 'login.php'): ?>
-                                    <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
-                                    <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
-                                <?php elseif ($currentPage === 'register.php'): ?>
-                                    <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
-                                    <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
-                                <?php else: ?>
-                                    <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
-                                    <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
-                                <?php endif; ?>
-                            </ul>
-                        </nav>
+                    <!-- Auth pages header (login.php, register.php) - Same as landing page -->
+                    <div class="logo">
+                        <a href="<?php echo BASE_URL; ?>home.php">
+                            <h1><?php echo SITE_NAME; ?></h1>
+                        </a>
                     </div>
+                    <nav class="landing-nav">
+                        <ul>
+                            <?php if ($currentPage === 'login.php'): ?>
+                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                            <?php elseif ($currentPage === 'register.php'): ?>
+                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                            <?php else: ?>
+                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
