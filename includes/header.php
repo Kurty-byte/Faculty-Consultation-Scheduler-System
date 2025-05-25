@@ -99,19 +99,29 @@
                 <!-- Header for non-logged-in users -->
                 <?php if ($isLandingPageActual): ?>
                     <!-- Landing page header (home.php only) -->
-                    <div class="header-top">
-                        <div class="logo">
-                            <a href="<?php echo BASE_URL; ?>home.php">
-                                <h1><?php echo SITE_NAME; ?></h1>
-                            </a>
-                        </div>
-                        <nav class="landing-nav">
-                            <ul>
+                    <div class="logo">
+                        <a href="<?php echo BASE_URL; ?>home.php">
+                            <h1><?php echo SITE_NAME; ?></h1>
+                        </a>
+                    </div>
+                    <nav class="landing-nav">
+                        <ul>
+                            <?php if ($currentPage === 'home.php'): ?>
                                 <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
                                 <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
-                            </ul>
-                        </nav>
-                    </div>
+                            <?php elseif ($currentPage === 'login.php'): ?>
+                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                            <?php elseif ($currentPage === 'register.php'): ?>
+                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                            <?php else: ?>
+                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
                 <?php else: ?>
                     <!-- Auth pages header (login.php, register.php) - Same as landing page -->
                     <div class="logo">
