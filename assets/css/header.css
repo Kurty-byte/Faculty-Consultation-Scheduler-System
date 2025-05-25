@@ -599,3 +599,67 @@ header {
         font-size: 0.85rem;
     }
 }
+
+/* Logged-in user header - horizontal layout */
+.header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    gap: 1rem;
+}
+
+.logo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+}
+
+.logo-section .logo {
+    margin-bottom: 0.5rem;
+}
+
+.main-navigation {
+    margin-top: 0;
+}
+
+.main-navigation ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+}
+
+/* Adjust user info section positioning */
+.user-info-section {
+    margin-top: 0.25rem; /* Align with logo */
+    align-self: flex-start;
+}
+
+/* Responsive adjustments for logged-in header */
+@media (max-width: 992px) {
+    .header-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .user-info-section {
+        align-self: flex-end;
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-navigation ul {
+        flex-wrap: wrap;
+        gap: 0.15rem;
+    }
+    
+    .main-navigation ul li a {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
