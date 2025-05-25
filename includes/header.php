@@ -40,19 +40,37 @@
         <div class="container">
             <?php if (isLoggedIn()): ?>
                 <!-- Logged in user header -->
-                <!-- Top row: Title centered with user info on right -->
+                <!-- Top row: Title centered -->
                 <div class="header-top">
-                    <div></div> <!-- Empty div for spacing -->
                     <div class="logo">
                         <a href="<?php echo BASE_URL; ?><?php echo hasRole('faculty') ? 'pages/faculty/dashboard.php' : 'pages/student/dashboard.php'; ?>">
                             <h1><?php echo SITE_NAME; ?></h1>
                         </a>
                     </div>
+                </div>
+
+                <!-- Bottom row: Navigation and User Info -->
+                <div class="header-bottom">
+                    <nav>
+                        <ul>
+                            <?php if (hasRole('faculty')): ?>
+                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/consultation_hours.php') !== false || strpos($_SERVER['REQUEST_URI'], '/set_consultation_hours.php') !== false) ? 'class="active"' : ''; ?>>Consultation Hours</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>Appointments</a></li>
+                            <?php elseif (hasRole('student')): ?>
+                                <li><a href="<?php echo BASE_URL; ?>pages/student/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_faculty.php') !== false || strpos($_SERVER['REQUEST_URI'], '/faculty_schedule.php') !== false || strpos($_SERVER['REQUEST_URI'], '/book_appointment.php') !== false) ? 'class="active"' : ''; ?>>Book Appointment</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
+                            <?php endif; ?>
+                            <!-- Logout button -->
+                            <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li>
+                        </ul>
+                    </nav>
                     
-                    <!-- User info section stays on the right -->
+                    <!-- User info section moved to navigation row -->
                     <div class="user-info-section">
-                        <span class="user-welcome">Welcome,</span>
-                            <?php echo $_SESSION['first_name']; ?>
+                        <span class="user-role-badge"><?php echo ucfirst($_SESSION['role']); ?></span>
+                        <span class="user-welcome">Welcome, <?php echo $_SESSION['first_name']; ?></span>
                         <span class="user-divider">|</span>
                         <div class="notifications-container">
                             <a href="<?php echo BASE_URL; ?>pages/<?php echo $_SESSION['role']; ?>/notifications.php" class="notifications-icon" title="View Notifications">
@@ -70,25 +88,6 @@
                             </a>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Bottom row: Navigation centered -->
-                <div class="header-bottom">
-                    <nav>
-                        <ul>
-                            <?php if (hasRole('faculty')): ?>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/consultation_hours.php') !== false || strpos($_SERVER['REQUEST_URI'], '/set_consultation_hours.php') !== false) ? 'class="active"' : ''; ?>>Consultation Hours</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>Appointments</a></li>
-                            <?php elseif (hasRole('student')): ?>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/dashboard.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/dashboard.php') !== false) ? 'class="active"' : ''; ?>>Dashboard</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_faculty.php') !== false || strpos($_SERVER['REQUEST_URI'], '/faculty_schedule.php') !== false || strpos($_SERVER['REQUEST_URI'], '/book_appointment.php') !== false) ? 'class="active"' : ''; ?>>Book Appointment</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
-                            <?php endif; ?>
-                            <!-- Logout button -->
-                            <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li>
-                        </ul>
-                    </nav>
                 </div>
             <?php else: ?>
                 <!-- Landing page header for non-logged-in users (landing, login, register pages) -->
