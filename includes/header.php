@@ -29,9 +29,17 @@
     <?php endif; ?>
 </head>
 <body<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-page"' : ''; ?>>
-    <header<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-header"' : ''; ?>>
+    <header<?php 
+        // Show landing header for: landing page, login page, register page
+        if ((isset($isLandingPage) && $isLandingPage) || 
+            (basename($_SERVER['PHP_SELF']) === 'login.php') || 
+            (basename($_SERVER['PHP_SELF']) === 'register.php')) {
+            echo ' class="landing-header"';
+        }
+    ?>>
         <div class="container">
             <?php if (isLoggedIn()): ?>
+                <!-- Logged in user header -->
                 <!-- Top row: Title centered with user info on right -->
                 <div class="header-top">
                     <div></div> <!-- Empty div for spacing -->
@@ -83,22 +91,31 @@
                     </nav>
                 </div>
             <?php else: ?>
-                <!-- Landing page layout -->
-                <?php if (isset($isLandingPage) && $isLandingPage): ?>
-                    <div class="header-top">
-                        <div class="logo">
-                            <a href="<?php echo BASE_URL; ?>home.php">
-                                <h1><?php echo SITE_NAME; ?></h1>
-                            </a>
-                        </div>
-                        <nav class="landing-nav">
-                            <ul>
+                <!-- Landing page header for non-logged-in users (landing, login, register pages) -->
+                <div class="header-top">
+                    <div class="logo">
+                        <a href="<?php echo BASE_URL; ?>home.php">
+                            <h1><?php echo SITE_NAME; ?></h1>
+                        </a>
+                    </div>
+                    <nav class="landing-nav">
+                        <ul>
+                            <?php 
+                            $currentPage = basename($_SERVER['PHP_SELF']);
+                            if ($currentPage === 'login.php'): 
+                            ?>
+                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                            <?php elseif ($currentPage === 'register.php'): ?>
+                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                            <?php else: ?>
                                 <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
                                 <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
-                            </ul>
-                        </nav>
-                    </div>
-                <?php endif; ?>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
+                </div>
             <?php endif; ?>
         </div>
     </header>
@@ -110,6 +127,7 @@
         <?php else: ?>
             <?php displayFlashMessage(); ?>
         <?php endif; ?>
+
 <script>
 // Enhanced mobile navigation and landing page effects
 document.addEventListener('DOMContentLoaded', function() {

@@ -1,8 +1,10 @@
+/* Base header styles */
 header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Header container for logged-in users */
 header .container {
   display: flex;
   flex-direction: column;
@@ -13,6 +15,27 @@ header .container {
   gap: 0.75rem;
 }
 
+/* Landing header styles (for home, login, register pages) */
+.landing-header .container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 15px;
+  gap: 0;
+}
+
+.landing-header {
+  background: rgba(0,0,0,0.1) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
 /* Top row - Title centered with welcome section on right */
 .header-top {
   display: flex;
@@ -21,7 +44,7 @@ header .container {
   width: 100%;
 }
 
-/* Enhanced Logo positioning with fancy title - now centered */
+/* Enhanced Logo positioning with fancy title */
 .logo {
   display: flex;
   align-items: center;
@@ -48,6 +71,16 @@ header .container {
   position: relative;
   transition: all 0.3s ease;
   text-align: left;
+}
+
+/* Landing page logo styles */
+.landing-header .logo h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #ffffff, #f0f0f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .logo h1::after {
@@ -166,8 +199,90 @@ nav ul li a:not([href*="logout.php"]).active {
   justify-content: center;
 }
 
+.landing-nav ul {
+  display: flex;
+  gap: 1rem;
+}
+
 .landing-nav ul li a {
   padding: 0.6rem 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.landing-nav ul li a:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Landing header scroll effect */
+.landing-header-scroll-effect {
+  background: rgba(102, 126, 234, 0.95) !important;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Notifications container */
+.notifications-container {
+  position: relative;
+}
+
+.notifications-icon {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  display: inline-block;
+  font-size: 18px;
+}
+
+.notifications-icon:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  transform: scale(1.1);
+}
+
+.notifications-icon:active {
+  transform: scale(0.95);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--danger);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  z-index: 1;
+  border: 2px solid white;
+  transition: all 0.3s ease;
+}
+
+/* User info text styling */
+.user-welcome {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.user-divider {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Responsive adjustments */
@@ -205,6 +320,11 @@ nav ul li a:not([href*="logout.php"]).active {
     padding: 0.4rem 0.6rem;
     font-size: 0.75rem;
   }
+  
+  .landing-nav ul li a {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -213,9 +333,19 @@ nav ul li a:not([href*="logout.php"]).active {
     gap: 0.5rem;
   }
   
+  .landing-header .container {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
   .logo h1 {
     font-size: 1.4rem;
     letter-spacing: 0.3px;
+  }
+  
+  .landing-header .logo h1 {
+    font-size: 1.6rem;
   }
   
   nav ul {
@@ -225,6 +355,12 @@ nav ul li a:not([href*="logout.php"]).active {
   nav ul li a {
     padding: 0.35rem 0.5rem;
     font-size: 0.7rem;
+  }
+  
+  .landing-nav ul {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
   }
   
   .notifications-icon {
