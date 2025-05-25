@@ -30,14 +30,16 @@
 </head>
 <body<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-page"' : ''; ?>>
     <?php 
-    // Determine if this is a login/register page or landing page
+    // Determine page type more accurately
     $currentPage = basename($_SERVER['PHP_SELF']);
     $isAuthPage = in_array($currentPage, ['login.php', 'register.php']);
+    $isHomePage = ($currentPage === 'home.php');
+    $isLandingPageActual = (isset($isLandingPage) && $isLandingPage && $isHomePage);
     ?>
     
     <header<?php 
-        // Different header styles for different page types
-        if (isset($isLandingPage) && $isLandingPage) {
+        // Apply different header classes based on page type
+        if ($isLandingPageActual) {
             echo ' class="landing-header"';
         } elseif ($isAuthPage) {
             echo ' class="auth-header"';
@@ -45,8 +47,7 @@
     ?>>
         <div class="container">
             <?php if (isLoggedIn()): ?>
-                <!-- Logged in user header - Modified Layout -->
-                <!-- Single row with title on left, user info on right -->
+                <!-- Logged in user header -->
                 <div class="header-main">
                     <div class="logo-section">
                         <div class="logo">
@@ -95,34 +96,52 @@
                     </div>
                 </div>
             <?php else: ?>
-                <!-- Header for non-logged-in users (unchanged) -->
-                <div class="header-top">
-                    <div class="logo">
-                        <a href="<?php echo BASE_URL; ?>home.php">
-                            <h1><?php echo SITE_NAME; ?></h1>
-                        </a>
+                <!-- Header for non-logged-in users -->
+                <?php if ($isLandingPageActual): ?>
+                    <!-- Landing page header (home.php only) -->
+                    <div class="header-top">
+                        <div class="logo">
+                            <a href="<?php echo BASE_URL; ?>home.php">
+                                <h1><?php echo SITE_NAME; ?></h1>
+                            </a>
+                        </div>
+                        <nav class="landing-nav">
+                            <ul>
+                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                            </ul>
+                        </nav>
                     </div>
-                    <nav class="<?php echo $isAuthPage ? 'auth-nav' : 'landing-nav'; ?>">
-                        <ul>
-                            <?php if ($currentPage === 'login.php'): ?>
-                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
-                            <?php elseif ($currentPage === 'register.php'): ?>
-                                <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
-                            <?php else: ?>
-                                <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
-                                <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
-                            <?php endif; ?>
-                        </ul>
-                    </nav>
-                </div>
+                <?php else: ?>
+                    <!-- Auth pages header (login.php, register.php) -->
+                    <div class="auth-header-content">
+                        <div class="logo">
+                            <a href="<?php echo BASE_URL; ?>home.php">
+                                <h1><?php echo SITE_NAME; ?></h1>
+                            </a>
+                        </div>
+                        <nav class="auth-nav">
+                            <ul>
+                                <?php if ($currentPage === 'login.php'): ?>
+                                    <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                    <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                                <?php elseif ($currentPage === 'register.php'): ?>
+                                    <li><a href="<?php echo BASE_URL; ?>home.php">Home</a></li>
+                                    <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                                <?php else: ?>
+                                    <li><a href="<?php echo BASE_URL; ?>login.php">Login</a></li>
+                                    <li><a href="<?php echo BASE_URL; ?>register.php">Register</a></li>
+                                <?php endif; ?>
+                            </ul>
+                        </nav>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </header>
     
-    <main<?php echo (isset($isLandingPage) && $isLandingPage) ? ' class="landing-main"' : ''; ?>>
-        <?php if (!isset($isLandingPage) || !$isLandingPage): ?>
+    <main<?php echo ($isLandingPageActual) ? ' class="landing-main"' : ''; ?>>
+        <?php if (!$isLandingPageActual): ?>
             <div class="container">
                 <?php displayFlashMessage(); ?>
         <?php else: ?>
@@ -152,8 +171,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Landing page header scroll effect (only for landing page, not auth pages)
-    if (landingHeader && !document.body.classList.contains('auth-page')) {
+    // Landing page header scroll effect (only for actual landing page - home.php)
+    if (landingHeader && document.body.classList.contains('landing-page')) {
         window.addEventListener('scroll', function() {
             if (window.scrollY > 100) {
                 landingHeader.classList.add('landing-header-scroll-effect');
