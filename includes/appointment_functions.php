@@ -136,7 +136,7 @@ function getAppointmentDetails($appointmentId) {
         "SELECT a.*, s.day_of_week, s.faculty_id, f.user_id as faculty_user_id, 
                 uf.first_name as faculty_first_name, uf.last_name as faculty_last_name, uf.email as faculty_email,
                 us.first_name as student_first_name, us.last_name as student_last_name, us.email as student_email,
-                d.department_name,
+                d.department_name, a.cancellation_reason,
                 CASE 
                     WHEN a.is_cancelled = 1 THEN 'cancelled'
                     WHEN a.is_approved = 1 THEN 'approved' 
@@ -296,7 +296,7 @@ function rejectAppointment($appointmentId, $notes = null) {
 }
 
 // Cancel an appointment (enhanced with improved validation)
-function cancelAppointment($appointmentId, $notes = null) {
+function cancelAppointment($appointmentId, $notes = null, $cancellationReason = null) {
     global $conn;
     
     // Start a transaction
@@ -320,8 +320,8 @@ function cancelAppointment($appointmentId, $notes = null) {
         
         // Update the appointment
         $result = updateOrDeleteData(
-            "UPDATE appointments SET is_cancelled = 1, updated_on = CURRENT_TIMESTAMP WHERE appointment_id = ?",
-            [$appointmentId]
+            "UPDATE appointments SET is_cancelled = 1, cancellation_reason = ?, updated_on = CURRENT_TIMESTAMP WHERE appointment_id = ?",
+            [$cancellationReason, $appointmentId]
         );
         
         if (!$result) {

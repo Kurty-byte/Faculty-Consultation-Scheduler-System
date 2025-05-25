@@ -18,7 +18,31 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 $appointmentId = (int)$_GET['id'];
 
 // Get appointment details
-$appointment = getAppointmentDetails($appointmentId);
+$appointment = fetchRow(
+    "SELECT a.*, s.day_of_week, s.faculty_id, f.user_id as faculty_user_id, 
+            uf.first_name as faculty_first_name, uf.last_name as faculty_last_name, uf.email as faculty_email,
+            us.first_name as student_first_name, us.last_name as student_last_name, us.email as student_email,
+            d.department_name, a.cancellation_reason,
+            CASE 
+                WHEN a.is_cancelled = 1 THEN 'cancelled'
+                WHEN a.is_approved = 1 THEN 'approved' 
+                ELSE 'pending'
+            END as status_text,
+            CASE 
+                WHEN a.appointment_date < CURDATE() THEN 'past'
+                WHEN a.appointment_date = CURDATE() THEN 'today'
+                ELSE 'future'
+            END as time_status
+     FROM appointments a 
+     JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
+     JOIN faculty f ON s.faculty_id = f.faculty_id 
+     JOIN users uf ON f.user_id = uf.user_id 
+     JOIN students st ON a.student_id = st.student_id 
+     JOIN users us ON st.user_id = us.user_id 
+     JOIN departments d ON f.department_id = d.department_id 
+     WHERE a.appointment_id = ?",
+    [$appointmentId]
+);
 
 // Check if appointment exists and belongs to this student
 $student = fetchRow("SELECT student_id FROM students WHERE user_id = ?", [$_SESSION['user_id']]);
@@ -103,6 +127,12 @@ include '../../includes/header.php';
                 <th>Reason for Consultation:</th>
                 <td><?php echo nl2br(htmlspecialchars($appointment['remarks'])); ?></td>
             </tr>
+            <?php if ($appointment['is_cancelled'] && !empty($appointment['cancellation_reason'])): ?>
+            <tr>
+                <th>Cancellation Reason:</th>
+                <td style="color: var(--danger); font-weight: 500;"><?php echo nl2br(htmlspecialchars($appointment['cancellation_reason'])); ?></td>
+            </tr>
+            <?php endif; ?>
         </table>
     </div>
     

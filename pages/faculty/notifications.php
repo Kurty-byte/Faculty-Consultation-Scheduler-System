@@ -86,6 +86,9 @@ include '../../includes/header.php';
                                     <?php if (!empty($appointment['remarks'])): ?>
                                         <br><strong>Reason:</strong> <?php echo htmlspecialchars($appointment['remarks']); ?>
                                     <?php endif; ?>
+                                    <?php if ($notification['notification_type'] == 'appointment_cancelled' && !empty($appointment['cancellation_reason'])): ?>
+                                        <br><strong>Cancellation Reason:</strong> <span style="color: var(--danger);"><?php echo htmlspecialchars($appointment['cancellation_reason']); ?></span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         <?php endif; ?>

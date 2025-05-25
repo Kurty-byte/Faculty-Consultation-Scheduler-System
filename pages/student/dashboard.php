@@ -14,9 +14,8 @@ require_once '../../includes/notification_system.php';
 // Get student ID
 $studentId = fetchRow("SELECT student_id FROM students WHERE user_id = ?", [$_SESSION['user_id']])['student_id'];
 
-// Get pending appointments with dynamic time display
 $pendingAppointments = getAppointmentsWithTimeDisplay(
-    "SELECT a.*, u.first_name, u.last_name, d.department_name,
+    "SELECT a.*, u.first_name, u.last_name, d.department_name, a.cancellation_reason,
             CASE 
                 WHEN a.appointed_on IS NOT NULL THEN a.appointed_on
                 ELSE a.updated_on
@@ -36,9 +35,8 @@ $pendingAppointments = getAppointmentsWithTimeDisplay(
     [$studentId]
 );
 
-// Get upcoming appointments with dynamic time display
 $upcomingAppointments = getAppointmentsWithTimeDisplay(
-    "SELECT a.*, u.first_name, u.last_name, d.department_name,
+    "SELECT a.*, u.first_name, u.last_name, d.department_name, a.cancellation_reason,
             CASE 
                 WHEN a.updated_on IS NOT NULL THEN a.updated_on
                 ELSE a.appointed_on

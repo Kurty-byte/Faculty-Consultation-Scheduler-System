@@ -206,7 +206,7 @@ function createRejectionNotification($appointmentId) {
 }
 
 // Create notification when student cancels appointment
-function createCancellationNotification($appointmentId) {
+function createCancellationNotification($appointmentId, $cancellationReason = null) {
     // Get appointment details
     $appointment = fetchRow(
         "SELECT a.*, s.faculty_id, u.first_name, u.last_name
@@ -233,6 +233,10 @@ function createCancellationNotification($appointmentId) {
     }
     
     $message = $appointment['first_name'] . ' ' . $appointment['last_name'] . ' cancelled their appointment';
+    
+    if (!empty($cancellationReason)) {
+        $message .= '. Reason: ' . $cancellationReason;
+    }
     
     return createNotification(
         $faculty['user_id'],
