@@ -89,7 +89,7 @@ define('FEATURE_LANDING_PAGE', true); // Enable landing page
 define('FEATURE_ENHANCED_UI', true); // Enable enhanced UI components
 
 // Development and Debug Configuration
-define('DEBUG_MODE', true); // Enable/disable debug mode (set to false in production)
+define('DEBUG_MODE', false); // Enable/disable debug mode (set to false in production)
 
 // Error reporting (set to 0 in production)
 if (DEBUG_MODE) {

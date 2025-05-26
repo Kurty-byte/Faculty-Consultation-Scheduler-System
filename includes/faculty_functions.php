@@ -1,5 +1,9 @@
 <?php
 // Get all active faculty members - FIXED to always include department_name
+
+require_once 'faculty_functions.php';
+require_once 'timeslot_functions.php';
+
 function getAllActiveFaculty() {
     return fetchRows(
         "SELECT f.faculty_id, u.first_name, u.last_name, d.department_name, f.office_email, f.office_phone_number 

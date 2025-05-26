@@ -27,16 +27,6 @@ $query = "SELECT a.*, s.day_of_week, st.student_id, u.first_name, u.last_name, u
 
 $params = [$facultyId];
 
-// if ($statusFilter === 'pending') {
-//     $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0";
-// } else if ($statusFilter === 'approved') {
-//     $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
-// } else if ($statusFilter === 'cancelled') {
-//     $query .= " AND a.is_cancelled = 1";
-// } elseif ($statusFilter == 'completed') {
-//     $query .= " AND a.completed_at IS NOT NULL";
-// }
-
 if ($statusFilter === 'pending') {
     $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
 } else if ($statusFilter === 'approved') {

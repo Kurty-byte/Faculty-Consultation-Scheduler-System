@@ -229,11 +229,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update page-specific elements if they exist
         updatePageSpecificElements(detail);
-        
-        // Log activity for debugging (only in development)
-        <?php if (DEBUG_MODE): ?>
-        console.log('Notifications updated:', detail);
-        <?php endif; ?>
     });
     
     function updatePageSpecificElements(data) {

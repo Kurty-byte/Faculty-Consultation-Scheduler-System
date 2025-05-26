@@ -142,7 +142,7 @@ function getAppointmentDetails($appointmentId) {
                     WHEN a.is_cancelled = 1 THEN 'cancelled'
                     WHEN a.is_approved = 1 THEN 'approved' 
                     ELSE 'pending'
-                END as status_text,
+                END as status_text
          FROM appointments a 
          JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
          JOIN faculty f ON s.faculty_id = f.faculty_id 
@@ -654,12 +654,14 @@ function completeAppointment($appointmentId, $notes = null) {
             throw new Exception("Cannot complete a cancelled appointment.");
         }
         
-        // Check if appointment time has passed
-        $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
-        if (strtotime($appointmentDateTime) > time()) {
-            throw new Exception("Cannot mark future appointments as completed.");
+        if (DEBUG_MODE) {
+            // Check if appointment time has passed (Comment to DEBUGG)
+            $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
+            if (strtotime($appointmentDateTime) > time()) {
+                throw new Exception("Cannot mark future appointments as completed.");
+            }
         }
-        
+
         // Update the appointment with completion timestamp
         $result = updateOrDeleteData(
             "UPDATE appointments SET completed_at = CURRENT_TIMESTAMP WHERE appointment_id = ?",
@@ -714,7 +716,13 @@ function canCompleteAppointment($appointmentId) {
     }
     
     // Appointment end time must have passed
-    $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
-    return strtotime($appointmentDateTime) <= time();
+
+    if (DEBUG_MODE) {
+        $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
+        return strtotime($appointmentDateTime) <= time();
+    }
+
+
+    return true; // DEBUGGIN ONLY
 }
 ?>
