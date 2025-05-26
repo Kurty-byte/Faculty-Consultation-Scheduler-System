@@ -41,18 +41,25 @@ $query .= " ORDER BY a.appointment_date ASC, a.start_time ASC";
 
 $appointments = fetchRows($query, $params);
 
-// Count appointments by status
+// Count appointments by status - FIXED
 $pendingCount = count(fetchRows(
     "SELECT a.appointment_id FROM appointments a 
      JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
-     WHERE s.faculty_id = ? AND a.is_approved = 0 AND a.is_cancelled = 0",
+     WHERE s.faculty_id = ? AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.completed_at IS NULL",
     [$facultyId]
 ));
 
 $approvedCount = count(fetchRows(
     "SELECT a.appointment_id FROM appointments a 
      JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
-     WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0",
+     WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL",
+    [$facultyId]
+));
+
+$completedCount = count(fetchRows(
+    "SELECT a.appointment_id FROM appointments a 
+     JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
+     WHERE s.faculty_id = ? AND a.completed_at IS NOT NULL",
     [$facultyId]
 ));
 
@@ -63,12 +70,8 @@ $cancelledCount = count(fetchRows(
     [$facultyId]
 ));
 
-$completedCount = count(fetchRows(
-    "SELECT a.appointment_id FROM appointments a 
-     JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
-     WHERE s.faculty_id = ? AND a.completed_at IS NOT NULL",
-    [$facultyId]
-));
+// Fix the total count calculation
+$totalCount = $pendingCount + $approvedCount + $completedCount + $cancelledCount;
 
 // Include header
 include '../../includes/header.php';
@@ -97,7 +100,7 @@ include '../../includes/header.php';
     </a>
     <a href="view_appointments.php" class="stat-box <?php echo $statusFilter === null ? 'active' : ''; ?>">
         <h3>All</h3>
-        <p class="stat-number"><?php echo $pendingCount + $approvedCount + $completedCount + $cancelledCount; ?></p>
+        <p class="stat-number"><?php echo $totalCount; ?></p>
     </a>
 </div>
 

@@ -10,6 +10,7 @@ $pageTitle = 'Student Dashboard';
 
 // Include notification system for time formatting
 require_once '../../includes/notification_system.php';
+require_once '../../includes/appointment_functions.php';
 
 // Get student ID
 $studentId = fetchRow("SELECT student_id FROM students WHERE user_id = ?", [$_SESSION['user_id']])['student_id'];
@@ -51,9 +52,20 @@ $upcomingAppointments = getAppointmentsWithTimeDisplay(
      JOIN users u ON f.user_id = u.user_id 
      JOIN departments d ON f.department_id = d.department_id 
      WHERE a.student_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 
-     AND a.appointment_date >= CURDATE() 
+     AND (a.appointment_date > CURDATE() OR 
+          (a.appointment_date = CURDATE() AND a.start_time > CURTIME()))
      ORDER BY a.appointment_date ASC, a.start_time ASC 
      LIMIT 5",
+    [$studentId]
+);
+
+$todayAppointments = fetchRows(
+    "SELECT a.* FROM appointments a 
+     JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
+     WHERE a.student_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 
+     AND a.appointment_date = CURDATE()
+     AND a.end_time > CURTIME()
+     AND a.completed_at IS NULL",
     [$studentId]
 );
 
@@ -77,11 +89,6 @@ include '../../includes/header.php';
     <div class="stat-box success">
         <div class="stat-content">
             <h3>Upcoming Today</h3>
-            <?php
-            $todayAppointments = array_filter($upcomingAppointments, function($apt) {
-                return $apt['appointment_date'] === date('Y-m-d');
-            });
-            ?>
             <p class="stat-number"><?php echo count($todayAppointments); ?></p>
             <p class="stat-text">Scheduled for today</p>
         </div>
@@ -130,17 +137,25 @@ include '../../includes/header.php';
                             <?php endif; ?>
                         </div>
                         <div class="appointment-actions">
-                            <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
+                            <a href="appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
                             <?php
                             // Check if can be canceled (24 hours before)
                             $appointmentTime = $appointment['appointment_date'] . ' ' . $appointment['start_time'];
                             $hoursDifference = getHoursDifference($appointmentTime, date('Y-m-d H:i:s'));
                             
-                            if ($hoursDifference >= MIN_CANCEL_HOURS):
+                            if ($hoursDifference >= MIN_CANCEL_HOURS && empty($appointment['completed_at'])):
                             ?>
-                                <a href="<?php echo BASE_URL; ?>pages/student/cancel_appointment.php?id=<?php echo $appointment['appointment_id']; ?>"
-                                   class="btn btn-danger btn-sm" 
-                                   onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
+                                <a href="cancel_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" 
+                                class="btn btn-danger btn-sm" 
+                                onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
+                            <?php elseif (canStudentCompleteAppointment($appointment['appointment_id'], $studentId) && empty($appointment['completed_at'])): ?>
+                                <a href="complete_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" 
+                                class="btn btn-success btn-sm">Mark Complete</a>
+                            <?php else: ?>
+                                <button class="btn btn-secondary btn-sm" disabled 
+                                        title="Cannot cancel appointments less than <?php echo MIN_CANCEL_HOURS; ?> hours before the scheduled time">
+                                    Cannot Cancel
+                                </button>
                             <?php endif; ?>
                         </div>
                     </div>

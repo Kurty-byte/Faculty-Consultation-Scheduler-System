@@ -190,6 +190,10 @@ include '../../includes/header.php';
     <div class="card-actions">
         <a href="<?php echo BASE_URL; ?>pages/student/cancel_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel Appointment</a>
     </div>
+    <?php elseif (canStudentCompleteAppointment($appointmentId, $studentId) && empty($appointment['completed_at'])): ?>
+    <div class="card-actions">
+        <a href="<?php echo BASE_URL; ?>pages/student/complete_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-success">Mark as Completed</a>
+    </div>
     <?php endif; ?>
 </div>
 

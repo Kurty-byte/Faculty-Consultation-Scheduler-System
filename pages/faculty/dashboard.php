@@ -60,7 +60,8 @@ $upcomingAppointments = getAppointmentsWithTimeDisplay(
      JOIN departments d ON f.department_id = d.department_id 
      WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 
      AND a.completed_at IS NULL
-     AND a.appointment_date >= CURDATE() 
+     AND (a.appointment_date > CURDATE() OR 
+          (a.appointment_date = CURDATE() AND a.start_time > CURTIME()))
      ORDER BY a.appointment_date ASC, a.start_time ASC 
      LIMIT 5",
     [$facultyId]

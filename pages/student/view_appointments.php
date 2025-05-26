@@ -18,27 +18,56 @@ $studentId = $student['student_id'];
 // Get appointment status filter
 $statusFilter = isset($_GET['status']) ? sanitize($_GET['status']) : null;
 
+// Build the base query - FIXED
+$query = "SELECT a.*, s.day_of_week, u.first_name, u.last_name, d.department_name,
+                 CASE 
+                     WHEN a.completed_at IS NOT NULL THEN 'completed'
+                     WHEN a.is_cancelled = 1 THEN 'cancelled'
+                     WHEN a.is_approved = 1 THEN 'approved' 
+                     ELSE 'pending'
+                 END as status_text
+          FROM appointments a 
+          JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
+          JOIN faculty f ON s.faculty_id = f.faculty_id 
+          JOIN users u ON f.user_id = u.user_id 
+          JOIN departments d ON f.department_id = d.department_id 
+          WHERE a.student_id = ?";
+
+$params = [$studentId];
+
+// Add status filter conditions - FIXED
+if ($statusFilter === 'pending') {
+    $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
+} elseif ($statusFilter === 'approved') {
+    $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
+} elseif ($statusFilter === 'completed') {
+    $query .= " AND a.completed_at IS NOT NULL";
+} elseif ($statusFilter === 'cancelled') {
+    $query .= " AND a.is_cancelled = 1";
+}
+
+$query .= " ORDER BY a.appointment_date ASC, a.start_time ASC";
+
 // Get appointments
-$appointments = getStudentAppointments($studentId, $statusFilter);
+$appointments = fetchRows($query, $params);
 
 // Count appointments by status
-$pendingCount = count(getStudentAppointments($studentId, 'pending'));
-$approvedCount = count(getStudentAppointments($studentId, 'approved'));
-$cancelledCount = count(getStudentAppointments($studentId, 'cancelled'));
+$pendingCount = count(fetchRows(
+    "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_approved = 0 AND is_cancelled = 0 AND completed_at IS NULL",
+    [$studentId]
+));
+$approvedCount = count(fetchRows(
+    "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_approved = 1 AND is_cancelled = 0 AND completed_at IS NULL",
+    [$studentId]
+));
 $completedCount = count(fetchRows(
     "SELECT appointment_id FROM appointments WHERE student_id = ? AND completed_at IS NOT NULL",
     [$studentId]
 ));
-
-if ($statusFilter === 'pending') {
-    $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
-} else if ($statusFilter === 'approved') {
-    $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
-} else if ($statusFilter === 'completed') {
-    $query .= " AND a.completed_at IS NOT NULL";
-} else if ($statusFilter === 'cancelled') {
-    $query .= " AND a.is_cancelled = 1";
-}
+$cancelledCount = count(fetchRows(
+    "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_cancelled = 1",
+    [$studentId]
+));
 
 // Include header
 include '../../includes/header.php';
@@ -113,7 +142,7 @@ include '../../includes/header.php';
                         
                         <?php
                         // Show cancel button only for approved or pending appointments that haven't passed
-                        if (!$appointment['is_cancelled'] && !isPast($appointment['appointment_date'] . ' ' . $appointment['start_time'])):
+                        if (!$appointment['is_cancelled'] && !isPast($appointment['appointment_date'] . ' ' . $appointment['start_time']) && empty($appointment['completed_at'])):
                             // Check if can be cancelled (24 hours before)
                             $appointmentTime = $appointment['appointment_date'] . ' ' . $appointment['start_time'];
                             $canCancel = getHoursDifference($appointmentTime, date('Y-m-d H:i:s')) >= MIN_CANCEL_HOURS;
@@ -124,6 +153,8 @@ include '../../includes/header.php';
                             <?php else: ?>
                                 <button class="btn btn-sm btn-secondary" disabled title="Cannot cancel appointments less than <?php echo MIN_CANCEL_HOURS; ?> hours before the scheduled time">Cancel</button>
                             <?php endif; ?>
+                        <?php elseif (canStudentCompleteAppointment($appointment['appointment_id'], $studentId) && empty($appointment['completed_at'])): ?>
+                            <a href="<?php echo BASE_URL; ?>pages/student/complete_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-success">Mark Complete</a>
                         <?php endif; ?>
                     </td>
                 </tr>

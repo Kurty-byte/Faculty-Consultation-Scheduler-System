@@ -654,8 +654,8 @@ function completeAppointment($appointmentId, $notes = null) {
             throw new Exception("Cannot complete a cancelled appointment.");
         }
         
-        if (DEBUG_MODE) {
-            // Check if appointment time has passed (Comment to DEBUGG)
+        if (!DEBUG_MODE) {
+            // Check if appointment time has passed
             $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
             if (strtotime($appointmentDateTime) > time()) {
                 throw new Exception("Cannot mark future appointments as completed.");
@@ -717,12 +717,37 @@ function canCompleteAppointment($appointmentId) {
     
     // Appointment end time must have passed
 
-    if (DEBUG_MODE) {
+    if (!DEBUG_MODE) {
         $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
         return strtotime($appointmentDateTime) <= time();
     }
 
 
     return true; // DEBUGGIN ONLY
+}
+
+// Allow student to mark appointment as completed (add after existing canCompleteAppointment function)
+function canStudentCompleteAppointment($appointmentId, $studentId) {
+    $appointment = getAppointmentDetails($appointmentId);
+    
+    if (!$appointment || $appointment['student_id'] != $studentId) {
+        return false;
+    }
+    
+    // Must be approved and not cancelled
+    if (!$appointment['is_approved'] || $appointment['is_cancelled']) {
+        return false;
+    }
+    
+    // Must not already be completed
+    if (!empty($appointment['completed_at'])) {
+        return false;
+    }
+    
+    // For students, allow completion if appointment time has passed or is today
+    $appointmentDate = $appointment['appointment_date'];
+    $today = date('Y-m-d');
+    
+    return $appointmentDate <= $today;
 }
 ?>
