@@ -27,10 +27,22 @@ $query = "SELECT a.*, s.day_of_week, st.student_id, u.first_name, u.last_name, u
 
 $params = [$facultyId];
 
+// if ($statusFilter === 'pending') {
+//     $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0";
+// } else if ($statusFilter === 'approved') {
+//     $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
+// } else if ($statusFilter === 'cancelled') {
+//     $query .= " AND a.is_cancelled = 1";
+// } elseif ($statusFilter == 'completed') {
+//     $query .= " AND a.completed_at IS NOT NULL";
+// }
+
 if ($statusFilter === 'pending') {
-    $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0";
+    $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
 } else if ($statusFilter === 'approved') {
-    $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0";
+    $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
+} else if ($statusFilter === 'completed') {
+    $query .= " AND a.completed_at IS NOT NULL";
 } else if ($statusFilter === 'cancelled') {
     $query .= " AND a.is_cancelled = 1";
 }
@@ -61,6 +73,13 @@ $cancelledCount = count(fetchRows(
     [$facultyId]
 ));
 
+$completedCount = count(fetchRows(
+    "SELECT a.appointment_id FROM appointments a 
+     JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
+     WHERE s.faculty_id = ? AND a.completed_at IS NOT NULL",
+    [$facultyId]
+));
+
 // Include header
 include '../../includes/header.php';
 ?>
@@ -78,13 +97,17 @@ include '../../includes/header.php';
         <h3>Approved</h3>
         <p class="stat-number"><?php echo $approvedCount; ?></p>
     </a>
+    <a href="view_appointments.php?status=completed" class="stat-box <?php echo $statusFilter === 'completed' ? 'active' : ''; ?>">
+        <h3>Completed</h3>
+        <p class="stat-number"><?php echo $completedCount; ?></p>
+    </a>
     <a href="view_appointments.php?status=cancelled" class="stat-box <?php echo $statusFilter === 'cancelled' ? 'active' : ''; ?>">
         <h3>Cancelled/Rejected</h3>
         <p class="stat-number"><?php echo $cancelledCount; ?></p>
     </a>
     <a href="view_appointments.php" class="stat-box <?php echo $statusFilter === null ? 'active' : ''; ?>">
         <h3>All</h3>
-        <p class="stat-number"><?php echo $pendingCount + $approvedCount + $cancelledCount; ?></p>
+        <p class="stat-number"><?php echo $pendingCount + $approvedCount + $completedCount + $cancelledCount; ?></p>
     </a>
 </div>
 
@@ -112,7 +135,9 @@ include '../../includes/header.php';
                     <td><?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?></td>
                     <td><?php echo ucfirst($appointment['modality']); ?></td>
                     <td>
-                        <?php if ($appointment['is_cancelled']): ?>
+                        <?php if (!empty($appointment['completed_at'])): ?>
+                            <span class="badge badge-success">Completed</span>
+                        <?php elseif ($appointment['is_cancelled']): ?>
                             <span class="badge badge-danger">Cancelled</span>
                         <?php elseif ($appointment['is_approved']): ?>
                             <span class="badge badge-success">Approved</span>
@@ -126,6 +151,8 @@ include '../../includes/header.php';
                         <?php if (!$appointment['is_approved'] && !$appointment['is_cancelled']): ?>
                             <a href="<?php echo BASE_URL; ?>pages/faculty/approve_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-success">Approve</a>
                             <a href="<?php echo BASE_URL; ?>pages/faculty/reject_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-danger">Reject</a>
+                        <?php elseif (canCompleteAppointment($appointment['appointment_id'])): ?>
+                            <a href="<?php echo BASE_URL; ?>pages/faculty/complete_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-info">Mark Complete</a>
                         <?php endif; ?>
                     </td>
                 </tr>

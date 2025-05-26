@@ -44,7 +44,7 @@ $pendingAppointments = getAppointmentsWithTimeDisplay(
 );
 
 $upcomingAppointments = getAppointmentsWithTimeDisplay(
-    "SELECT a.*, s.day_of_week, u.first_name, u.last_name,
+    "SELECT a.*, u.first_name, u.last_name, d.department_name, a.cancellation_reason,
             CASE 
                 WHEN a.updated_on IS NOT NULL THEN a.updated_on
                 ELSE a.appointed_on
@@ -55,9 +55,11 @@ $upcomingAppointments = getAppointmentsWithTimeDisplay(
             END) as activity_timestamp
      FROM appointments a 
      JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
-     JOIN students st ON a.student_id = st.student_id 
-     JOIN users u ON st.user_id = u.user_id 
+     JOIN faculty f ON s.faculty_id = f.faculty_id 
+     JOIN users u ON f.user_id = u.user_id 
+     JOIN departments d ON f.department_id = d.department_id 
      WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 
+     AND a.completed_at IS NULL
      AND a.appointment_date >= CURDATE() 
      ORDER BY a.appointment_date ASC, a.start_time ASC 
      LIMIT 5",
@@ -143,6 +145,16 @@ include '../../includes/header.php';
             </div>
             <div class="stat-icon">⏰</div>
             <a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" class="btn btn-warning btn-sm">Manage Hours</a>
+        </div>
+
+        <div class="stat-box info">
+            <div class="stat-content">
+                <h3>Completed</h3>
+                <p class="stat-number"><?php echo $appointmentStats['completed']; ?></p>
+                <p class="stat-text">Finished consultations</p>
+            </div>
+            <div class="stat-icon">✅</div>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=completed" class="btn btn-info btn-sm">View Completed</a>
         </div>
     </div>
 <?php endif; ?>

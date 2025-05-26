@@ -130,23 +130,19 @@ function getFacultyAppointments($facultyId, $status = null, $fromDate = null, $t
     return fetchRows($query, $params);
 }
 
-// Get appointment details (enhanced with more information)
+// Get appointment details
 function getAppointmentDetails($appointmentId) {
     return fetchRow(
         "SELECT a.*, s.day_of_week, s.faculty_id, f.user_id as faculty_user_id, 
                 uf.first_name as faculty_first_name, uf.last_name as faculty_last_name, uf.email as faculty_email,
                 us.first_name as student_first_name, us.last_name as student_last_name, us.email as student_email,
-                d.department_name, a.cancellation_reason,
+                d.department_name, a.cancellation_reason, a.completed_at,
                 CASE 
+                    WHEN a.completed_at IS NOT NULL THEN 'completed'
                     WHEN a.is_cancelled = 1 THEN 'cancelled'
                     WHEN a.is_approved = 1 THEN 'approved' 
                     ELSE 'pending'
                 END as status_text,
-                CASE 
-                    WHEN a.appointment_date < CURDATE() THEN 'past'
-                    WHEN a.appointment_date = CURDATE() THEN 'today'
-                    ELSE 'future'
-                END as time_status
          FROM appointments a 
          JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
          JOIN faculty f ON s.faculty_id = f.faculty_id 
@@ -501,8 +497,8 @@ function getAppointmentStatistics($userId, $userRole) {
         $facultyId = getFacultyIdFromUserId($userId);
         
         $pending = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_approved = 0 AND a.is_cancelled = 0", [$facultyId])['count'];
-        $approved = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 AND (a.appointment_date > CURDATE() OR (a.appointment_date = CURDATE() AND a.start_time > CURTIME()))", [$facultyId])['count'];
-        $completed = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 AND (a.appointment_date < CURDATE() OR (a.appointment_date = CURDATE() AND a.start_time <= CURTIME()))", [$facultyId])['count'];
+        $approved = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 AND (a.appointment_date > CURDATE() OR (a.appointment_date = CURDATE() AND a.start_time > CURTIME())) AND a.completed_at IS NULL", [$facultyId])['count'];
+        $completed = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.completed_at IS NOT NULL", [$facultyId])['count'];
         $cancelled = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_cancelled = 1", [$facultyId])['count'];
         
         return [
@@ -634,5 +630,91 @@ function validateAppointmentTimeSlot($facultyId, $date, $startTime, $endTime) {
     }
     
     return $errors;
+}
+
+// Complete an appointment (mark as finished)
+function completeAppointment($appointmentId, $notes = null) {
+    global $conn;
+    
+    // Start a transaction
+    mysqli_begin_transaction($conn);
+    
+    try {
+        // Get appointment details first
+        $appointment = getAppointmentDetails($appointmentId);
+        if (!$appointment) {
+            throw new Exception("Appointment not found.");
+        }
+        
+        if (!$appointment['is_approved']) {
+            throw new Exception("Only approved appointments can be marked as completed.");
+        }
+        
+        if ($appointment['is_cancelled']) {
+            throw new Exception("Cannot complete a cancelled appointment.");
+        }
+        
+        // Check if appointment time has passed
+        $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
+        if (strtotime($appointmentDateTime) > time()) {
+            throw new Exception("Cannot mark future appointments as completed.");
+        }
+        
+        // Update the appointment with completion timestamp
+        $result = updateOrDeleteData(
+            "UPDATE appointments SET completed_at = CURRENT_TIMESTAMP WHERE appointment_id = ?",
+            [$appointmentId]
+        );
+        
+        if (!$result) {
+            throw new Exception("Failed to complete appointment.");
+        }
+        
+        // Record in appointment history
+        $historyNotes = $notes ? $notes : 'Appointment marked as completed by faculty';
+        $historyResult = insertData(
+            "INSERT INTO appointment_history (appointment_id, status_change, changed_by_user_id, notes) 
+             VALUES (?, 'completed', ?, ?)",
+            [$appointmentId, getCurrentUserId(), $historyNotes]
+        );
+        
+        if (!$historyResult) {
+            throw new Exception("Failed to record appointment history.");
+        }
+        
+        // Commit the transaction
+        mysqli_commit($conn);
+        
+        return true;
+    } catch (Exception $e) {
+        // Rollback the transaction
+        mysqli_rollback($conn);
+        
+        // Re-throw the exception
+        throw $e;
+    }
+}
+
+// Check if an appointment can be marked as completed
+function canCompleteAppointment($appointmentId) {
+    $appointment = getAppointmentDetails($appointmentId);
+    
+    if (!$appointment) {
+        return false;
+    }
+    
+    // Must be approved and not cancelled
+    if (!$appointment['is_approved'] || $appointment['is_cancelled']) {
+        return false;
+    }
+    
+    // Must not already be completed
+    if (!empty($appointment['completed_at'])) {
+        return false;
+    }
+    
+    // Appointment end time must have passed
+    $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
+    return strtotime($appointmentDateTime) <= time();
 }
 ?>

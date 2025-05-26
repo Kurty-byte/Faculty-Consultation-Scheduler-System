@@ -338,4 +338,31 @@ function cleanOldNotifications() {
     
     return $result;
 }
+
+function createCompletionNotification($appointmentId) {
+    // Get appointment details
+    $appointment = fetchRow(
+        "SELECT a.*, st.user_id as student_user_id, u.first_name, u.last_name
+         FROM appointments a
+         JOIN students st ON a.student_id = st.student_id
+         JOIN availability_schedules s ON a.schedule_id = s.schedule_id
+         JOIN faculty f ON s.faculty_id = f.faculty_id
+         JOIN users u ON f.user_id = u.user_id
+         WHERE a.appointment_id = ?",
+        [$appointmentId]
+    );
+    
+    if (!$appointment) {
+        return false;
+    }
+    
+    $message = $appointment['first_name'] . ' ' . $appointment['last_name'] . ' marked your consultation as completed';
+    
+    return createNotification(
+        $appointment['student_user_id'],
+        $appointmentId,
+        'appointment_completed',
+        $message
+    );
+}
 ?>

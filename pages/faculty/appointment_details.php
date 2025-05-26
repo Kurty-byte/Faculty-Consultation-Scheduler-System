@@ -83,7 +83,9 @@ include '../../includes/header.php';
             <tr>
                 <th>Status:</th>
                 <td>
-                    <?php if ($appointment['is_cancelled']): ?>
+                    <?php if (!empty($appointment['completed_at'])): ?>
+                        <span class="badge badge-success">Completed</span>
+                    <?php elseif ($appointment['is_cancelled']): ?>
                         <span class="badge badge-danger">Cancelled</span>
                     <?php elseif ($appointment['is_approved']): ?>
                         <span class="badge badge-success">Approved</span>
@@ -92,6 +94,12 @@ include '../../includes/header.php';
                     <?php endif; ?>
                 </td>
             </tr>
+            <?php if (!empty($appointment['completed_at'])): ?>
+                <tr>
+                    <th>Completed At:</th>
+                    <td><?php echo date('F j, Y g:i A', strtotime($appointment['completed_at'])); ?></td>
+                </tr>
+            <?php endif; ?>
             <tr>
                 <th>Reason for Consultation:</th>
                 <td><?php echo nl2br(htmlspecialchars($appointment['remarks'])); ?></td>
@@ -140,11 +148,15 @@ include '../../includes/header.php';
             <?php endforeach; ?>
         </div>
     </div>
-    
-    <?php if (!$appointment['is_approved'] && !$appointment['is_cancelled']): ?>
+
+    <?php if (!$appointment['is_approved'] && !$appointment['is_cancelled'] && empty($appointment['completed_at'])): ?>
     <div class="card-actions">
         <a href="<?php echo BASE_URL; ?>pages/faculty/approve_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-success">Approve Appointment</a>
         <a href="<?php echo BASE_URL; ?>pages/faculty/reject_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this appointment?')">Reject Appointment</a>
+    </div>
+    <?php elseif (canCompleteAppointment($appointmentId)): ?>
+    <div class="card-actions">
+        <a href="<?php echo BASE_URL; ?>pages/faculty/complete_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-info">Mark as Completed</a>
     </div>
     <?php endif; ?>
 </div>

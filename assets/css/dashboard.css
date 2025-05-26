@@ -1561,3 +1561,38 @@
     border: 1px solid #ddd !important;
   }
 }
+
+.appointment-item.completed {
+    border-left-color: var(--success);
+    background-color: rgba(28, 200, 138, 0.05);
+}
+
+.appointment-status-indicator.completed {
+    background-color: var(--success);
+}
+
+.badge-completed {
+    color: #fff;
+    background-color: var(--success);
+}
+
+/* Completed stat box */
+.stat-box.completed {
+    border-left-color: var(--info);
+}
+
+.stat-box.completed .stat-icon {
+    color: var(--info);
+}
+
+/* Mark as completed button */
+.btn-complete {
+    background-color: var(--info);
+    border-color: var(--info);
+    color: white;
+}
+
+.btn-complete:hover {
+    background-color: #2a96a5;
+    border-color: #2a96a5;
+}
