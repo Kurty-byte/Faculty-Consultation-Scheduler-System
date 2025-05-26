@@ -149,7 +149,6 @@ include 'includes/header.php';
                 <ul class="feature-list">
                     <li>✓ In-person meetings</li>
                     <li>✓ Virtual video calls</li>
-                    <li>✓ Platform integration</li>
                 </ul>
             </div>
             
