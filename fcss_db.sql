@@ -11,7 +11,7 @@
  Target Server Version : 100432 (10.4.32-MariaDB)
  File Encoding         : 65001
 
- Date: 25/05/2025 09:47:50
+ Date: 26/05/2025 19:38:40
 */
 
 DROP DATABASE IF EXISTS fcss_db;
@@ -37,7 +37,7 @@ CREATE TABLE `appointment_history`  (
   INDEX `changed_by_user_id`(`changed_by_user_id` ASC) USING BTREE,
   CONSTRAINT `appointment_history_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `appointment_history_ibfk_2` FOREIGN KEY (`changed_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for appointments
@@ -60,6 +60,7 @@ CREATE TABLE `appointments`  (
   `cancellation_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
   `appointed_on` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
+  `completed_at` timestamp NULL DEFAULT NULL,
   `faculty_id` int NOT NULL,
   PRIMARY KEY (`appointment_id`) USING BTREE,
   INDEX `schedule_id`(`schedule_id` ASC) USING BTREE,
@@ -69,7 +70,7 @@ CREATE TABLE `appointments`  (
   CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`schedule_id`) REFERENCES `availability_schedules` (`schedule_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `check_appointment_time_order` CHECK (`end_time` > `start_time`)
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for availability_schedules
@@ -87,7 +88,7 @@ CREATE TABLE `availability_schedules`  (
   PRIMARY KEY (`schedule_id`) USING BTREE,
   INDEX `faculty_id`(`faculty_id` ASC) USING BTREE,
   CONSTRAINT `availability_schedules_ibfk_1` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`faculty_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for consultation_hours
@@ -159,7 +160,7 @@ CREATE TABLE `notifications`  (
   INDEX `appointment_id`(`appointment_id` ASC) USING BTREE,
   CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for students
