@@ -11,12 +11,13 @@
  Target Server Version : 100432 (10.4.32-MariaDB)
  File Encoding         : 65001
 
- Date: 27/05/2025 02:45:44
+ Date: 27/05/2025 15:01:35
 */
 
 DROP DATABASE IF EXISTS fcss_db;
 CREATE DATABASE fcss_db;
 USE fcss_db;
+
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -28,7 +29,7 @@ DROP TABLE IF EXISTS `appointment_history`;
 CREATE TABLE `appointment_history`  (
   `history_id` int NOT NULL AUTO_INCREMENT,
   `appointment_id` int NOT NULL,
-  `status_change` enum('created','approved','rejected','cancelled','completed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `status_change` enum('created','approved','rejected','cancelled','completed','missed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `changed_by_user_id` int NOT NULL,
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
   `changed_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -37,7 +38,7 @@ CREATE TABLE `appointment_history`  (
   INDEX `changed_by_user_id`(`changed_by_user_id` ASC) USING BTREE,
   CONSTRAINT `appointment_history_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `appointment_history_ibfk_2` FOREIGN KEY (`changed_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for appointments
@@ -61,16 +62,21 @@ CREATE TABLE `appointments`  (
   `appointed_on` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
   `completed_at` timestamp NULL DEFAULT NULL,
+  `is_missed` tinyint(1) NOT NULL DEFAULT 0,
+  `missed_by` enum('student','faculty') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `missed_at` timestamp NULL DEFAULT NULL,
+  `missed_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
   `faculty_id` int NOT NULL,
   PRIMARY KEY (`appointment_id`) USING BTREE,
   INDEX `schedule_id`(`schedule_id` ASC) USING BTREE,
   INDEX `idx_appointments_lookup`(`faculty_id` ASC, `appointment_date` ASC, `start_time` ASC, `end_time` ASC, `is_cancelled` ASC) USING BTREE,
   INDEX `idx_student_appointments`(`student_id` ASC, `appointment_date` ASC, `is_cancelled` ASC) USING BTREE,
+  INDEX `idx_missed_appointments`(`is_missed` ASC, `missed_at` ASC) USING BTREE,
   CONSTRAINT `appointments_fk_faculty` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`faculty_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`schedule_id`) REFERENCES `availability_schedules` (`schedule_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `check_appointment_time_order` CHECK (`end_time` > `start_time`)
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for availability_schedules
@@ -88,7 +94,7 @@ CREATE TABLE `availability_schedules`  (
   PRIMARY KEY (`schedule_id`) USING BTREE,
   INDEX `faculty_id`(`faculty_id` ASC) USING BTREE,
   CONSTRAINT `availability_schedules_ibfk_1` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`faculty_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for consultation_hours
@@ -108,7 +114,7 @@ CREATE TABLE `consultation_hours`  (
   INDEX `idx_consultation_hours_lookup`(`faculty_id` ASC, `day_of_week` ASC, `is_active` ASC) USING BTREE,
   CONSTRAINT `consultation_hours_ibfk_1` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`faculty_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `check_consultation_time_order` CHECK (`end_time` > `start_time`)
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for departments
@@ -121,7 +127,7 @@ CREATE TABLE `departments`  (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`department_id`) USING BTREE,
   UNIQUE INDEX `department_name`(`department_name` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 17 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for faculty
@@ -141,7 +147,7 @@ CREATE TABLE `faculty`  (
   INDEX `department_id`(`department_id` ASC) USING BTREE,
   CONSTRAINT `faculty_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `faculty_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for notifications
@@ -151,7 +157,7 @@ CREATE TABLE `notifications`  (
   `notification_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
   `appointment_id` int NOT NULL,
-  `notification_type` enum('appointment_request','appointment_approved','appointment_rejected','appointment_cancelled','appointment_completed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `notification_type` enum('appointment_request','appointment_approved','appointment_rejected','appointment_cancelled','appointment_completed','appointment_missed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `is_read` tinyint(1) NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -160,7 +166,7 @@ CREATE TABLE `notifications`  (
   INDEX `appointment_id`(`appointment_id` ASC) USING BTREE,
   CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for students
@@ -172,7 +178,7 @@ CREATE TABLE `students`  (
   `department_id` int NOT NULL,
   `year_level` int NOT NULL,
   `academic_year` varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `enrollment_status` enum('regular','irregular','shiftee','returnee') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `enrollment_status` enum('regular','irregular','shiftee','returnee','transferee') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`student_id`) USING BTREE,
@@ -180,7 +186,7 @@ CREATE TABLE `students`  (
   INDEX `department_id`(`department_id` ASC) USING BTREE,
   CONSTRAINT `students_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `students_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for users
@@ -204,6 +210,6 @@ CREATE TABLE `users`  (
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`user_id`) USING BTREE,
   UNIQUE INDEX `email`(`email` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 SET FOREIGN_KEY_CHECKS = 1;
