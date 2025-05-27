@@ -104,7 +104,7 @@ include '../../includes/header.php';
         <p class="stat-number"><?php echo $completedCount; ?></p>
     </a>
     <a href="view_appointments.php?status=cancelled" class="stat-box <?php echo $statusFilter === 'cancelled' ? 'active' : ''; ?>">
-        <h3>Cancelled/Rejected</h3>
+        <h3>Withdrawn</h3>
         <p class="stat-number"><?php echo $cancelledCount; ?></p>
     </a>
     <a href="view_appointments.php?status=missed" class="stat-box <?php echo $statusFilter === 'missed' ? 'active' : ''; ?>">
