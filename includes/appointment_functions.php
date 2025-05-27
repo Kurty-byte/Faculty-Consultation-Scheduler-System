@@ -714,16 +714,13 @@ function canCompleteAppointment($appointmentId) {
     if (!empty($appointment['completed_at'])) {
         return false;
     }
-    
-    // Appointment end time must have passed
 
-    if (!DEBUG_MODE) {
-        $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
-        return strtotime($appointmentDateTime) <= time();
+    if (DEBUG_MODE) {
+        return true;
     }
-
-
-    return true; // DEBUGGIN ONLY
+    
+    $appointmentDateTime = $appointment['appointment_date'] . ' ' . $appointment['end_time'];
+    return strtotime($appointmentDateTime) <= time();
 }
 
 // Allow student to mark appointment as completed (add after existing canCompleteAppointment function)

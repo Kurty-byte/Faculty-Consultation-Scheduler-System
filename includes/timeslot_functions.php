@@ -64,12 +64,14 @@ function getAvailableConsultationSlotsImproved($facultyId, $fromDate = null, $to
     $availableSlots = [];
     $currentDate = new DateTime($fromDate);
     $endDate = new DateTime($toDate);
+    $today = date('Y-m-d');
+    $currentTime = date('H:i:s');
     
     while ($currentDate <= $endDate) {
         $currentDateStr = $currentDate->format('Y-m-d');
         
-        // Skip past dates
-        if ($currentDateStr < date('Y-m-d')) {
+        // Skip past dates completely
+        if ($currentDateStr < $today) {
             $currentDate->modify('+1 day');
             continue;
         }
@@ -77,12 +79,19 @@ function getAvailableConsultationSlotsImproved($facultyId, $fromDate = null, $to
         // Generate slots with improved filtering
         $slots = generateTimeSlotsImproved($facultyId, $currentDateStr);
         
+        // Additional filtering for today's slots
+        if ($currentDateStr === $today) {
+            $slots = array_filter($slots, function($slot) use ($currentTime) {
+                return $slot['start_time'] > date('H:i:s', strtotime($currentTime . ' +1 hour'));
+            });
+        }
+        
         if (!empty($slots)) {
             $availableSlots[$currentDateStr] = [
                 'date' => $currentDateStr,
                 'formatted_date' => formatDate($currentDateStr),
                 'day_name' => $currentDate->format('l'),
-                'slots' => $slots
+                'slots' => array_values($slots) // Re-index array after filtering
             ];
         }
         
@@ -116,11 +125,11 @@ function generateTimeSlotsImproved($facultyId, $date) {
             $slotStart = date('H:i:s', $currentSlotTime);
             $slotEnd = date('H:i:s', $currentSlotTime + (30 * 60));
             
-            // Skip past time slots if it's today (add 30 minute buffer)
+            // Enhanced filtering for past time slots
             if ($isToday) {
                 $slotDateTime = new DateTime($date . ' ' . $slotStart);
                 $bufferTime = clone $currentDateTime;
-                $bufferTime->add(new DateInterval('PT30M')); // Add 30 minutes buffer
+                $bufferTime->add(new DateInterval('PT1H')); // Add 1 hour buffer for booking
                 
                 if ($slotDateTime <= $bufferTime) {
                     $currentSlotTime += (30 * 60);

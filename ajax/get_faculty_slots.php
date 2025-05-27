@@ -29,10 +29,23 @@ if (!$facultyId) {
 $toDate = date('Y-m-d', strtotime($date . ' +1 day'));
 $availableSchedules = getAvailableSchedulesForFaculty($facultyId, $date, $toDate);
 
-// Filter for the specific date
+// Filter for the specific date and time
 $slotsForDate = [];
+$currentTime = date('H:i:s');
+$isToday = ($date === date('Y-m-d'));
+
 foreach ($availableSchedules as $schedule) {
     if ($schedule['date'] === $date) {
+        // Skip past times for today
+        if ($isToday) {
+            $slotStartTime = $schedule['start_time'];
+            $bufferTime = date('H:i:s', strtotime($currentTime . ' +1 hour'));
+            
+            if ($slotStartTime <= $bufferTime) {
+                continue; // Skip this slot
+            }
+        }
+        
         $slotsForDate[] = [
             'schedule_id' => $schedule['schedule_id'],
             'start_time' => $schedule['start_time'],

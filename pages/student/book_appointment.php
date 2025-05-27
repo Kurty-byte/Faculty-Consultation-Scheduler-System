@@ -65,10 +65,10 @@ if ($isToday) {
     $currentDateTime = new DateTime();
     $slotDateTime = new DateTime($date . ' ' . $startTime);
     $bufferTime = clone $currentDateTime;
-    $bufferTime->add(new DateInterval('PT30M')); // 30 minutes buffer
+    $bufferTime->add(new DateInterval('PT1H')); // 1 hour buffer
     
     if ($slotDateTime <= $bufferTime) {
-        setFlashMessage('danger', 'Appointments must be booked at least 30 minutes in advance.');
+        setFlashMessage('danger', 'Appointments must be booked at least 1 hour in advance.');
         redirect('pages/student/faculty_schedule.php?id=' . $facultyId);
     }
 }

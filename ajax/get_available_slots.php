@@ -71,15 +71,23 @@ try {
             throw new Exception('Cannot get slots for past dates', 400);
         }
         
-        // Generate slots for specific date
+        // Generate slots for specific date with time filtering
         $slots = generateTimeSlots($facultyId, $date);
+        
+        // Additional filtering for current day
+        if ($date === date('Y-m-d')) {
+            $currentTime = date('H:i:s');
+            $slots = array_filter($slots, function($slot) use ($currentTime) {
+                return $slot['start_time'] > date('H:i:s', strtotime($currentTime . ' +1 hour'));
+            });
+            $slots = array_values($slots); // Re-index array
+        }
         
         $response['date'] = $date;
         $response['formatted_date'] = formatDate($date);
         $response['day_name'] = date('l', strtotime($date));
         $response['slots'] = array_map('formatSlotForResponse', $slots);
         $response['slot_count'] = count($slots);
-        
     } else {
         // Handle date range request
         if (empty($fromDate)) {

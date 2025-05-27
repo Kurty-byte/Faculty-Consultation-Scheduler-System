@@ -44,8 +44,38 @@ if ($fromDate < date('Y-m-d')) {
     $fromDate = date('Y-m-d');
 }
 
-// Get available consultation slots (30-minute appointments) - IMPROVED to filter booked slots and past times
-$availableSlots = getAvailableConsultationSlotsImproved($facultyId, $fromDate, $toDate);
+if (DEBUG_MODE) {
+    // Force regenerate slots with current time filtering
+    $availableSlots = [];
+    $currentTime = date('H:i:s');
+    $today = date('Y-m-d');
+    
+    // Get raw slots first
+    $rawSlots = getAvailableConsultationSlotsImproved($facultyId, $fromDate, $toDate);
+    
+    foreach ($rawSlots as $dateKey => $dateSlots) {
+        if ($dateKey === $today) {
+            // Filter out past times for today
+            $filteredSlots = array_filter($dateSlots['slots'], function($slot) use ($currentTime) {
+                return $slot['start_time'] > $currentTime;
+            });
+            
+            if (!empty($filteredSlots)) {
+                $availableSlots[$dateKey] = $dateSlots;
+                $availableSlots[$dateKey]['slots'] = array_values($filteredSlots);
+            }
+        } else {
+            $availableSlots[$dateKey] = $dateSlots;
+        }
+    }
+    
+    echo "<pre>Debug: Current time = " . date('Y-m-d H:i:s') . "</pre>";
+    var_dump($availableSlots); // Temporary debug
+    
+} else {
+    // Get available consultation slots (30-minute appointments) - IMPROVED to filter booked slots and past times
+    $availableSlots = getAvailableConsultationSlotsImproved($facultyId, $fromDate, $toDate);
+}
 
 // Include header
 include '../../includes/header.php';
@@ -519,6 +549,34 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.transform = 'translateY(0)';
         });
     });
+
+    // Additional time filtering for real-time updates
+    function filterPastSlots() {
+        const currentDate = new Date();
+        const today = currentDate.toISOString().split('T')[0];
+        const currentTime = currentDate.getTime();
+        
+        document.querySelectorAll('.time-slot-card').forEach(function(slot) {
+            const slotDate = slot.dataset.date;
+            const slotTime = slot.dataset.startTime;
+            
+            if (slotDate === today && slotTime) {
+                const slotDateTime = new Date(slotDate + ' ' + slotTime);
+                const oneHourFromNow = currentTime + (60 * 60 * 1000);
+                
+                if (slotDateTime.getTime() <= oneHourFromNow) {
+                    slot.style.display = 'none';
+                    slot.classList.add('past-slot');
+                }
+            }
+        });
+    }
+
+    // Filter slots on page load
+    filterPastSlots();
+    
+    // Update every minute to hide slots that become past due
+    setInterval(filterPastSlots, 60000);
 });
 </script>
 
