@@ -842,6 +842,10 @@ function canMarkAppointmentAsMissed($appointmentId, $userRole) {
     if (!$appointment['is_approved']) {
         return false;
     }
+
+    if (DEBUG_MODE) {
+        return true;
+    }
     
     // Check if appointment time has passed by at least 20 minutes
     $appointmentDateTime = new DateTime($appointment['appointment_date'] . ' ' . $appointment['start_time']);
