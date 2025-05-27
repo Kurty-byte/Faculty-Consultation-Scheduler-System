@@ -15,6 +15,11 @@ include 'includes/header.php';
 
 // Get all departments for dropdown
 $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
+
+// Get current academic year automatically
+$currentYear = date('Y');
+$nextYear = $currentYear + 1;
+$currentAcademicYear = $currentYear . '-' . $nextYear;
 ?>
 
 <div class="register-container">
@@ -71,7 +76,7 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">👤</span>
                             <input type="text" name="first_name" id="first_name" class="form-control" required 
-                                   placeholder="Enter your first name">
+                                   placeholder="Enter your first name" maxlength="50">
                         </div>
                     </div>
                     
@@ -80,7 +85,7 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">👤</span>
                             <input type="text" name="last_name" id="last_name" class="form-control" required 
-                                   placeholder="Enter your last name">
+                                   placeholder="Enter your last name" maxlength="50">
                         </div>
                     </div>
                 </div>
@@ -90,7 +95,7 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                     <div class="input-group">
                         <span class="input-icon">👤</span>
                         <input type="text" name="middle_name" id="middle_name" class="form-control" 
-                               placeholder="Enter your middle name">
+                               placeholder="Enter your middle name" maxlength="50">
                     </div>
                 </div>
                 
@@ -99,8 +104,11 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <label for="birthdate" class="required">Date of Birth</label>
                         <div class="input-group">
                             <span class="input-icon">📅</span>
-                            <input type="date" name="birthdate" id="birthdate" class="form-control" required>
+                            <input type="date" name="birthdate" id="birthdate" class="form-control" required
+                                   max="<?php echo date('Y-m-d', strtotime('-15 years')); ?>"
+                                   min="<?php echo date('Y-m-d', strtotime('-80 years')); ?>">
                         </div>
+                        <small class="form-text">You must be at least 15 years old to register</small>
                     </div>
                     
                     <div class="form-group">
@@ -124,11 +132,11 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
             <div class="form-section">
                 <h3>Contact Information</h3>
                 <div class="form-group">
-                    <label for="address" class="required">Address</label>
+                    <label for="address" class="required">Complete Address</label>
                     <div class="input-group">
                         <span class="input-icon">📍</span>
                         <textarea name="address" id="address" class="form-control" required rows="3" 
-                                  placeholder="Enter your complete address"></textarea>
+                                  placeholder="Enter your complete address (Street, Barangay, City, Province)" maxlength="255"></textarea>
                     </div>
                 </div>
                 
@@ -138,8 +146,9 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">📧</span>
                             <input type="email" name="email" id="email" class="form-control" required 
-                                   placeholder="your.email@example.com">
+                                   placeholder="your.email@example.com" maxlength="100">
                         </div>
+                        <small class="form-text">This will be your login email</small>
                     </div>
                     
                     <div class="form-group">
@@ -147,8 +156,9 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">📱</span>
                             <input type="tel" name="phone_number" id="phone_number" class="form-control" required 
-                                   placeholder="+1 (555) 123-4567">
+                                   placeholder="09XX-XXX-XXXX" pattern="[0-9]{11}" maxlength="11">
                         </div>
+                        <small class="form-text">11-digit Philippine mobile number</small>
                     </div>
                 </div>
             </div>
@@ -168,6 +178,7 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                                 <option value="3">3rd Year</option>
                                 <option value="4">4th Year</option>
                                 <option value="5">5th Year</option>
+                                <option value="6">6th Year (Graduate)</option>
                             </select>
                         </div>
                     </div>
@@ -177,8 +188,9 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">📅</span>
                             <input type="text" name="academic_year" id="academic_year" class="form-control" 
-                                   value="2024-2025" placeholder="e.g., 2024-2025">
+                                   value="<?php echo $currentAcademicYear; ?>" readonly>
                         </div>
+                        <small class="form-text">Current academic year (automatically set)</small>
                     </div>
                 </div>
                 
@@ -192,8 +204,10 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                             <option value="irregular">Irregular</option>
                             <option value="shiftee">Shiftee</option>
                             <option value="returnee">Returnee</option>
+                            <option value="transferee">Transferee</option>
                         </select>
                     </div>
+                    <small class="form-text">Select your current enrollment status</small>
                 </div>
             </div>
             
@@ -206,8 +220,9 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">📧</span>
                             <input type="email" name="office_email" id="office_email" class="form-control" 
-                                   placeholder="office.email@university.edu">
+                                   placeholder="office.email@university.edu" maxlength="100">
                         </div>
+                        <small class="form-text">Official institutional email address</small>
                     </div>
                     
                     <div class="form-group">
@@ -215,8 +230,9 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">☎️</span>
                             <input type="tel" name="office_phone_number" id="office_phone_number" class="form-control" 
-                                   placeholder="Office phone number">
+                                   placeholder="02-8XXX-XXXX or 09XX-XXX-XXXX" maxlength="20">
                         </div>
+                        <small class="form-text">Office landline or designated contact number</small>
                     </div>
                 </div>
             </div>
@@ -230,7 +246,7 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">🔒</span>
                             <input type="password" name="password" id="password" class="form-control" required 
-                                   placeholder="Create a strong password">
+                                   placeholder="Create a strong password" minlength="8" maxlength="50">
                             <button type="button" class="password-toggle" onclick="togglePassword('password')">
                                 <span id="passwordToggleIcon">👁️</span>
                             </button>
@@ -248,7 +264,7 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <div class="input-group">
                             <span class="input-icon">🔒</span>
                             <input type="password" name="confirm_password" id="confirm_password" class="form-control" required 
-                                   placeholder="Confirm your password">
+                                   placeholder="Confirm your password" minlength="8" maxlength="50">
                             <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
                                 <span id="confirmPasswordToggleIcon">👁️</span>
                             </button>
@@ -263,24 +279,26 @@ $departments = fetchRows("SELECT * FROM departments ORDER BY department_name");
                         <li id="req-uppercase">One uppercase letter</li>
                         <li id="req-lowercase">One lowercase letter</li>
                         <li id="req-number">One number</li>
+                        <li id="req-special">One special character (!@#$%^&*)</li>
                     </ul>
                 </div>
             </div>
             
             <!-- Submit Button -->
-            <div class="form-section">
+            <div class="form-section form-actions-final">
+                <div class="terms-agreement">
+                    <label class="terms-checkbox">
+                        <input type="checkbox" name="agree_terms" required>
+                        <span class="checkmark"></span>
+                        <span class="terms-text">I agree that the information provided is accurate and I understand the system's terms of use.</span>
+                    </label>
+                </div>
+                
                 <button type="submit" class="btn btn-primary btn-register" id="submitBtn">
                     <span class="btn-icon">🚀</span>
                     Create Account
                 </button>
-            </div>
-            
-            <!-- Login Link -->
-            <div class="register-divider">
-                <span>or</span>
-            </div>
-            
-            <div class="form-section">
+                
                 <p class="register-login-link">
                     Already have an account? 
                     <a href="<?php echo BASE_URL; ?>login.php" class="login-link">Sign In</a>
@@ -297,6 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirm_password');
+    const phoneInput = document.getElementById('phone_number');
     
     // Role selection handling
     const roleRadios = document.querySelectorAll('input[name="role"]');
@@ -317,7 +336,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Password strength checker
+    // Phone number formatting and validation
+    phoneInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, ''); // Remove non-digits
+        
+        // Limit to 11 digits for Philippine numbers
+        if (value.length > 11) {
+            value = value.slice(0, 11);
+        }
+        
+        this.value = value;
+        
+        // Validate Philippine mobile number format
+        if (value.length === 11) {
+            if (value.startsWith('09')) {
+                this.setCustomValidity('');
+                this.classList.remove('error');
+                this.classList.add('success');
+            } else {
+                this.setCustomValidity('Philippine mobile numbers should start with 09');
+                this.classList.add('error');
+                this.classList.remove('success');
+            }
+        } else if (value.length > 0) {
+            this.setCustomValidity('Philippine mobile numbers should be 11 digits');
+            this.classList.add('error');
+            this.classList.remove('success');
+        } else {
+            this.setCustomValidity('');
+            this.classList.remove('error', 'success');
+        }
+    });
+    
+    // Enhanced password strength checker
     passwordInput.addEventListener('input', function() {
         checkPasswordStrength(this.value);
         checkPasswordRequirements(this.value);
@@ -364,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Helper functions
     function toggleRequiredFields(role) {
-        const studentRequired = ['year_level', 'academic_year', 'enrollment_status'];
+        const studentRequired = ['year_level', 'enrollment_status'];
         const facultyRequired = ['office_email', 'office_phone_number'];
         
         // Remove all role-specific required attributes
@@ -393,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (/[a-z]/.test(password)) strength++;
         if (/[A-Z]/.test(password)) strength++;
         if (/[0-9]/.test(password)) strength++;
-        if (/[^A-Za-z0-9]/.test(password)) strength++;
+        if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength++;
         
         switch (strength) {
             case 0:
@@ -425,15 +476,18 @@ document.addEventListener('DOMContentLoaded', function() {
             'req-length': password.length >= 8,
             'req-uppercase': /[A-Z]/.test(password),
             'req-lowercase': /[a-z]/.test(password),
-            'req-number': /[0-9]/.test(password)
+            'req-number': /[0-9]/.test(password),
+            'req-special': /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
         };
         
         Object.keys(requirements).forEach(reqId => {
             const element = document.getElementById(reqId);
-            if (requirements[reqId]) {
-                element.classList.add('valid');
-            } else {
-                element.classList.remove('valid');
+            if (element) {
+                if (requirements[reqId]) {
+                    element.classList.add('valid');
+                } else {
+                    element.classList.remove('valid');
+                }
             }
         });
     }
@@ -444,11 +498,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (confirmPassword && password !== confirmPassword) {
             confirmPasswordInput.classList.add('error');
-            showInputError(confirmPasswordInput, 'Passwords do not match');
+            confirmPasswordInput.setCustomValidity('Passwords do not match');
         } else if (confirmPassword) {
             confirmPasswordInput.classList.remove('error');
             confirmPasswordInput.classList.add('success');
-            removeInputError(confirmPasswordInput);
+            confirmPasswordInput.setCustomValidity('');
         }
     }
     
@@ -467,12 +521,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Validate email format
-        const emailField = document.getElementById('email');
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (emailField.value && !emailRegex.test(emailField.value)) {
-            showInputError(emailField, 'Please enter a valid email address');
-            isValid = false;
-        }
+        const emailFields = ['email', 'office_email'];
+        emailFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field && field.value) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(field.value)) {
+                    showInputError(field, 'Please enter a valid email address');
+                    isValid = false;
+                }
+            }
+        });
         
         // Validate password requirements
         const password = passwordInput.value;
@@ -481,9 +540,38 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
         
+        if (!/[A-Z]/.test(password)) {
+            showInputError(passwordInput, 'Password must contain at least one uppercase letter');
+            isValid = false;
+        }
+        
+        if (!/[a-z]/.test(password)) {
+            showInputError(passwordInput, 'Password must contain at least one lowercase letter');
+            isValid = false;
+        }
+        
+        if (!/[0-9]/.test(password)) {
+            showInputError(passwordInput, 'Password must contain at least one number');
+            isValid = false;
+        }
+        
         // Validate password match
         if (password !== confirmPasswordInput.value) {
             showInputError(confirmPasswordInput, 'Passwords do not match');
+            isValid = false;
+        }
+        
+        // Validate phone number
+        const phone = phoneInput.value;
+        if (phone && (phone.length !== 11 || !phone.startsWith('09'))) {
+            showInputError(phoneInput, 'Please enter a valid 11-digit Philippine mobile number starting with 09');
+            isValid = false;
+        }
+        
+        // Validate terms agreement
+        const termsCheckbox = document.querySelector('input[name="agree_terms"]');
+        if (!termsCheckbox.checked) {
+            alert('Please agree to the terms and conditions');
             isValid = false;
         }
         
@@ -513,20 +601,136 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Auto-focus first name field
     document.getElementById('first_name').focus();
-    
-    // Phone number formatting
-    const phoneInput = document.getElementById('phone_number');
-    phoneInput.addEventListener('input', function() {
-        let value = this.value.replace(/\D/g, '');
-        if (value.length >= 6) {
-            value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-        } else if (value.length >= 3) {
-            value = value.replace(/(\d{3})(\d{0,3})/, '($1) $2');
-        }
-        this.value = value;
-    });
 });
 </script>
+
+<style>
+/* Additional styles for improvements */
+.form-actions-final {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+}
+
+.terms-agreement {
+    background-color: #f8f9fc;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    margin-bottom: 2rem;
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.terms-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin-top: 2px;
+    background-color: white;
+}
+
+.terms-checkbox input[type="checkbox"]:checked + .checkmark {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.terms-checkbox input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓';
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.terms-text {
+    color: var(--gray);
+    font-size: 0.95rem;
+}
+
+.requirements-list li.valid {
+    color: var(--success);
+}
+
+.requirements-list li.valid::before {
+    content: '✓ ';
+    font-weight: bold;
+}
+
+.form-control.success {
+    border-color: var(--success);
+    box-shadow: 0 0 0 0.2rem rgba(28, 200, 138, 0.25);
+}
+
+.form-control.error {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 0.2rem rgba(231, 74, 59, 0.25);
+}
+
+.input-error {
+    color: var(--danger);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.input-error::before {
+    content: '⚠️ ';
+    margin-right: 0.25rem;
+}
+
+.strength-fill.weak {
+    width: 20%;
+    background-color: var(--danger);
+}
+
+.strength-fill.fair {
+    width: 40%;
+    background-color: var(--warning);
+}
+
+.strength-fill.good {
+    width: 70%;
+    background-color: var(--info);
+}
+
+.strength-fill.strong {
+    width: 100%;
+    background-color: var(--success);
+}
+
+/* Remove the register-divider that was creating the extra line */
+.register-divider {
+    display: none;
+}
+
+/* Proper spacing for Create Account button and Sign In link */
+.btn-register {
+    margin-bottom: 1.5rem;
+}
+
+.register-login-link {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+</style>
 
 <?php
 // Include footer

@@ -52,17 +52,6 @@ include 'includes/header.php';
             </div>
             
             <div class="form-group">
-                <div class="form-options">
-                    <label class="remember-me">
-                        <input type="checkbox" name="remember_me">
-                        <span class="checkmark"></span>
-                        <span>Remember me</span>
-                    </label>
-                    <a href="#" class="forgot-password">Forgot Password?</a>
-                </div>
-            </div>
-            
-            <div class="form-group">
                 <button type="submit" class="btn btn-primary btn-login">
                     <span class="btn-icon">🔑</span>
                     Sign In
