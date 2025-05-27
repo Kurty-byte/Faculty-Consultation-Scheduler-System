@@ -13,6 +13,12 @@ function createNotification($userId, $appointmentId, $type, $message) {
         return false;
     }
     
+    // Validate notification type (add 'appointment_missed' to valid types)
+    $validTypes = ['appointment_request', 'appointment_approved', 'appointment_rejected', 'appointment_cancelled', 'appointment_completed', 'appointment_missed'];
+    if (!in_array($type, $validTypes)) {
+        return false;
+    }
+    
     // Check if notification already exists to avoid duplicates
     $existing = fetchRow(
         "SELECT notification_id FROM notifications 
@@ -362,6 +368,48 @@ function createCompletionNotification($appointmentId) {
         $appointment['student_user_id'],
         $appointmentId,
         'appointment_completed',
+        $message
+    );
+}
+
+// Create notification when appointment is marked as missed
+function createMissedNotification($appointmentId, $missedBy) {
+    // Get appointment details
+    $appointment = fetchRow(
+        "SELECT a.*, s.faculty_id, st.user_id as student_user_id, uf.first_name as faculty_first_name, 
+                uf.last_name as faculty_last_name, us.first_name as student_first_name, us.last_name as student_last_name
+         FROM appointments a
+         JOIN availability_schedules s ON a.schedule_id = s.schedule_id
+         JOIN students st ON a.student_id = st.student_id
+         JOIN users us ON st.user_id = us.user_id
+         JOIN faculty f ON s.faculty_id = f.faculty_id
+         JOIN users uf ON f.user_id = uf.user_id
+         WHERE a.appointment_id = ?",
+        [$appointmentId]
+    );
+    
+    if (!$appointment) {
+        return false;
+    }
+    
+    // Determine who to notify (the other party)
+    if ($missedBy === 'student') {
+        // Student marked faculty as missed, notify faculty
+        $faculty = fetchRow("SELECT user_id FROM faculty WHERE faculty_id = ?", [$appointment['faculty_id']]);
+        if (!$faculty) return false;
+        
+        $notifyUserId = $faculty['user_id'];
+        $message = $appointment['student_first_name'] . ' ' . $appointment['student_last_name'] . ' marked you as missed for the appointment';
+    } else {
+        // Faculty marked student as missed, notify student
+        $notifyUserId = $appointment['student_user_id'];
+        $message = $appointment['faculty_first_name'] . ' ' . $appointment['faculty_last_name'] . ' marked you as missed for the appointment';
+    }
+    
+    return createNotification(
+        $notifyUserId,
+        $appointmentId,
+        'appointment_missed',
         $message
     );
 }

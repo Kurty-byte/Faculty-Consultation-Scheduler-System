@@ -39,13 +39,15 @@ include '../../includes/header.php';
     <?php else: ?>
         <div class="notifications-list-page" id="notificationsList">
             <?php foreach ($notifications as $notification): ?>
-                <div class="notification-card unread" data-notification-id="<?php echo $notification['notification_id']; ?>">
+                <div class="notification-card unread" data-notification-id="<?php echo $notification['notification_id']; ?>" data-type="<?php echo $notification['notification_type']; ?>">
                     <div class="notification-card-header">
                         <div class="notification-icon-large">
                             <?php if ($notification['notification_type'] == 'appointment_request'): ?>
                                 📅
                             <?php elseif ($notification['notification_type'] == 'appointment_cancelled'): ?>
                                 ⚠️
+                            <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
+                                ❌
                             <?php endif; ?>
                         </div>
                         <div class="notification-meta">
@@ -54,6 +56,8 @@ include '../../includes/header.php';
                                     <span class="badge badge-primary">New Appointment Request</span>
                                 <?php elseif ($notification['notification_type'] == 'appointment_cancelled'): ?>
                                     <span class="badge badge-warning">Appointment Cancelled</span>
+                                <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
+                                    <span class="badge badge-danger">Student Marked as Missed</span>
                                 <?php endif; ?>
                                 <span class="badge badge-info">New</span>
                             </div>
@@ -96,14 +100,17 @@ include '../../includes/header.php';
                     
                     <div class="notification-card-footer">
                         <div class="notification-actions">
-                            <?php if ($notification['notification_type'] == 'appointment_request' && $appointment && !$appointment['is_approved'] && !$appointment['is_cancelled']): ?>
+                            <?php if ($notification['notification_type'] == 'appointment_request' && $appointment && !$appointment['is_approved'] && !$appointment['is_cancelled'] && !$appointment['is_missed']): ?>
                                 <a href="<?php echo BASE_URL; ?>pages/faculty/approve_appointment.php?id=<?php echo $notification['appointment_id']; ?>"
-                                   class="btn btn-sm btn-success">Approve</a>
+                                class="btn btn-sm btn-success">Approve</a>
                                 <a href="<?php echo BASE_URL; ?>pages/faculty/reject_appointment.php?id=<?php echo $notification['appointment_id']; ?>"
-                                   class="btn btn-sm btn-danger">Reject</a>
+                                class="btn btn-sm btn-danger">Reject</a>
+                            <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
+                                <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=missed"
+                                class="btn btn-sm btn-warning">View Missed Appointments</a>
                             <?php endif; ?>
                             <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $notification['appointment_id']; ?>"
-                               class="btn btn-sm btn-primary">View Details</a>
+                            class="btn btn-sm btn-primary">View Details</a>
                             <button class="btn btn-sm btn-secondary mark-read-btn" 
                                     data-notification-id="<?php echo $notification['notification_id']; ?>">
                                 Mark as Read
@@ -124,6 +131,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const notificationId = this.getAttribute('data-notification-id');
             markNotificationAsRead(notificationId, this);
         });
+    });
+
+    document.querySelectorAll('.notification-card[data-type="appointment_missed"]').forEach(function(card) {
+        card.style.borderLeftWidth = '5px';
+        card.style.borderLeftColor = '#ffc107';
     });
     
     // Mark all notifications as read
@@ -208,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="empty-state">
                     <div class="empty-state-icon">🔔</div>
                     <div class="empty-state-text">No unread notifications</div>
-                    <p>You'll see notifications here when students book appointments or make changes to existing bookings.</p>
+                    <p>You'll see notifications here when students book appointments, cancel bookings, or when you mark students as missed.</p>
                 </div>
             `;
             notificationsList.outerHTML = emptyState;
@@ -227,6 +239,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+    
+    function updateNotificationDisplay() {
+        const missedNotifications = document.querySelectorAll('.notification-card[data-type="appointment_missed"]').length;
+        const requestNotifications = document.querySelectorAll('.notification-card[data-type="appointment_request"]').length;
+        const cancelledNotifications = document.querySelectorAll('.notification-card[data-type="appointment_cancelled"]').length;
+        
+        // You can add custom logic here to handle different notification types
+        console.log('Missed:', missedNotifications, 'Requests:', requestNotifications, 'Cancelled:', cancelledNotifications);
+    }
+    
+    updateNotificationDisplay();
 });
 </script>
 
@@ -408,6 +431,34 @@ document.addEventListener('DOMContentLoaded', function() {
         width: 100%;
         margin-bottom: 5px;
     }
+}
+
+.badge-danger {
+    color: #fff;
+    background-color: #dc3545;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+
+/* Special styling for missed appointment notifications */
+.notification-card[data-type="appointment_missed"] {
+    border-left-color: var(--warning);
+    background-color: rgba(255, 193, 7, 0.02);
+}
+
+.notification-card[data-type="appointment_missed"] .notification-icon-large {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: var(--warning);
 }
 </style>
 

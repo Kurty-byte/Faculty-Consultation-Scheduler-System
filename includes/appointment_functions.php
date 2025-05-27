@@ -136,8 +136,9 @@ function getAppointmentDetails($appointmentId) {
         "SELECT a.*, s.day_of_week, s.faculty_id, f.user_id as faculty_user_id, 
                 uf.first_name as faculty_first_name, uf.last_name as faculty_last_name, uf.email as faculty_email,
                 us.first_name as student_first_name, us.last_name as student_last_name, us.email as student_email,
-                d.department_name, a.cancellation_reason, a.completed_at,
+                d.department_name, a.cancellation_reason, a.completed_at, a.is_missed, a.missed_by, a.missed_at, a.missed_reason,
                 CASE 
+                    WHEN a.is_missed = 1 THEN 'missed'
                     WHEN a.completed_at IS NOT NULL THEN 'completed'
                     WHEN a.is_cancelled = 1 THEN 'cancelled'
                     WHEN a.is_approved = 1 THEN 'approved' 
@@ -480,33 +481,37 @@ function getAppointmentStatistics($userId, $userRole) {
     if ($userRole === 'student') {
         $studentId = getStudentIdFromUserId($userId);
         
-        $pending = fetchRow("SELECT COUNT(*) as count FROM appointments WHERE student_id = ? AND is_approved = 0 AND is_cancelled = 0", [$studentId])['count'];
-        $approved = fetchRow("SELECT COUNT(*) as count FROM appointments WHERE student_id = ? AND is_approved = 1 AND is_cancelled = 0 AND (appointment_date > CURDATE() OR (appointment_date = CURDATE() AND start_time > CURTIME()))", [$studentId])['count'];
-        $completed = fetchRow("SELECT COUNT(*) as count FROM appointments WHERE student_id = ? AND is_approved = 1 AND is_cancelled = 0 AND (appointment_date < CURDATE() OR (appointment_date = CURDATE() AND start_time <= CURTIME()))", [$studentId])['count'];
+        $pending = fetchRow("SELECT COUNT(*) as count FROM appointments WHERE student_id = ? AND is_approved = 0 AND is_cancelled = 0 AND is_missed = 0", [$studentId])['count'];
+        $approved = fetchRow("SELECT COUNT(*) as count FROM appointments WHERE student_id = ? AND is_approved = 1 AND is_cancelled = 0 AND is_missed = 0 AND completed_at IS NULL AND (appointment_date > CURDATE() OR (appointment_date = CURDATE() AND start_time > CURTIME()))", [$studentId])['count'];
+        $completed = fetchRow("SELECT COUNT(*) as count FROM appointments WHERE student_id = ? AND completed_at IS NOT NULL", [$studentId])['count'];
         $cancelled = fetchRow("SELECT COUNT(*) as count FROM appointments WHERE student_id = ? AND is_cancelled = 1", [$studentId])['count'];
+        $missed = fetchRow("SELECT COUNT(*) as count FROM appointments WHERE student_id = ? AND is_missed = 1", [$studentId])['count'];
         
         return [
             'pending' => $pending,
             'approved' => $approved,
             'completed' => $completed,
             'cancelled' => $cancelled,
-            'total' => $pending + $approved + $completed + $cancelled
+            'missed' => $missed,
+            'total' => $pending + $approved + $completed + $cancelled + $missed
         ];
         
     } elseif ($userRole === 'faculty') {
         $facultyId = getFacultyIdFromUserId($userId);
         
-        $pending = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_approved = 0 AND a.is_cancelled = 0", [$facultyId])['count'];
-        $approved = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 AND (a.appointment_date > CURDATE() OR (a.appointment_date = CURDATE() AND a.start_time > CURTIME())) AND a.completed_at IS NULL", [$facultyId])['count'];
+        $pending = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.is_missed = 0", [$facultyId])['count'];
+        $approved = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.is_missed = 0 AND a.completed_at IS NULL AND (a.appointment_date > CURDATE() OR (a.appointment_date = CURDATE() AND a.start_time > CURTIME()))", [$facultyId])['count'];
         $completed = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.completed_at IS NOT NULL", [$facultyId])['count'];
         $cancelled = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_cancelled = 1", [$facultyId])['count'];
+        $missed = fetchRow("SELECT COUNT(*) as count FROM appointments a JOIN availability_schedules s ON a.schedule_id = s.schedule_id WHERE s.faculty_id = ? AND a.is_missed = 1", [$facultyId])['count'];
         
         return [
             'pending' => $pending,
             'approved' => $approved,
             'completed' => $completed,
             'cancelled' => $cancelled,
-            'total' => $pending + $approved + $completed + $cancelled
+            'missed' => $missed,
+            'total' => $pending + $approved + $completed + $cancelled + $missed
         ];
     }
     
@@ -705,8 +710,8 @@ function canCompleteAppointment($appointmentId) {
         return false;
     }
     
-    // Must be approved and not cancelled
-    if (!$appointment['is_approved'] || $appointment['is_cancelled']) {
+    // Must be approved, not cancelled, and not missed
+    if (!$appointment['is_approved'] || $appointment['is_cancelled'] || $appointment['is_missed']) {
         return false;
     }
     
@@ -731,8 +736,8 @@ function canStudentCompleteAppointment($appointmentId, $studentId) {
         return false;
     }
     
-    // Must be approved and not cancelled
-    if (!$appointment['is_approved'] || $appointment['is_cancelled']) {
+    // Must be approved, not cancelled, and not missed
+    if (!$appointment['is_approved'] || $appointment['is_cancelled'] || $appointment['is_missed']) {
         return false;
     }
     
@@ -747,4 +752,138 @@ function canStudentCompleteAppointment($appointmentId, $studentId) {
     
     return $appointmentDate <= $today;
 }
+
+// Mark an appointment as missed
+function markAppointmentAsMissed($appointmentId, $missedBy, $reason = null) {
+    global $conn;
+    
+    // Start a transaction
+    mysqli_begin_transaction($conn);
+    
+    try {
+        // Get appointment details first
+        $appointment = getAppointmentDetails($appointmentId);
+        if (!$appointment) {
+            throw new Exception("Appointment not found.");
+        }
+        
+        // Validate that appointment can be marked as missed
+        if (!canMarkAppointmentAsMissed($appointmentId, $missedBy)) {
+            throw new Exception("This appointment cannot be marked as missed at this time.");
+        }
+        
+        if ($appointment['is_missed']) {
+            throw new Exception("Appointment is already marked as missed.");
+        }
+        
+        if ($appointment['is_cancelled']) {
+            throw new Exception("Cannot mark a cancelled appointment as missed.");
+        }
+        
+        if (!empty($appointment['completed_at'])) {
+            throw new Exception("Cannot mark a completed appointment as missed.");
+        }
+        
+        // Update the appointment
+        $result = updateOrDeleteData(
+            "UPDATE appointments SET is_missed = 1, missed_by = ?, missed_at = CURRENT_TIMESTAMP, missed_reason = ? WHERE appointment_id = ?",
+            [$missedBy, $reason, $appointmentId]
+        );
+        
+        if (!$result) {
+            throw new Exception("Failed to mark appointment as missed.");
+        }
+        
+        // Record in appointment history
+        $historyNotes = $reason ? "Marked as missed by {$missedBy}: {$reason}" : "Marked as missed by {$missedBy}";
+        $historyResult = insertData(
+            "INSERT INTO appointment_history (appointment_id, status_change, changed_by_user_id, notes) 
+             VALUES (?, 'missed', ?, ?)",
+            [$appointmentId, getCurrentUserId(), $historyNotes]
+        );
+        
+        if (!$historyResult) {
+            throw new Exception("Failed to record appointment history.");
+        }
+        
+        // Commit the transaction
+        mysqli_commit($conn);
+        
+        return true;
+    } catch (Exception $e) {
+        // Rollback the transaction
+        mysqli_rollback($conn);
+        
+        // Re-throw the exception
+        throw $e;
+    }
+}
+
+// Check if an appointment can be marked as missed
+function canMarkAppointmentAsMissed($appointmentId, $userRole) {
+    $appointment = getAppointmentDetails($appointmentId);
+    
+    if (!$appointment) {
+        return false;
+    }
+    
+    // Cannot mark if already missed, cancelled, or completed
+    if ($appointment['is_missed'] || $appointment['is_cancelled'] || !empty($appointment['completed_at'])) {
+        return false;
+    }
+    
+    // Must be approved appointment
+    if (!$appointment['is_approved']) {
+        return false;
+    }
+    
+    // Check if appointment time has passed by at least 20 minutes
+    $appointmentDateTime = new DateTime($appointment['appointment_date'] . ' ' . $appointment['start_time']);
+    $currentDateTime = new DateTime();
+    $missedThreshold = clone $appointmentDateTime;
+    $missedThreshold->add(new DateInterval('PT20M')); // Add 20 minutes
+    
+    // Can only mark as missed if 20+ minutes have passed since start time
+    if ($currentDateTime < $missedThreshold) {
+        return false;
+    }
+    
+    // Check if it's not too late to mark as missed (e.g., within 24 hours)
+    $maxMissedTime = clone $appointmentDateTime;
+    $maxMissedTime->add(new DateInterval('PT24H')); // Can mark as missed within 24 hours
+    
+    if ($currentDateTime > $maxMissedTime) {
+        return false;
+    }
+    
+    // Verify user has permission for this appointment
+    if ($userRole === 'student') {
+        $studentId = getStudentIdFromUserId($_SESSION['user_id']);
+        return $appointment['student_id'] == $studentId;
+    } elseif ($userRole === 'faculty') {
+        $facultyId = getFacultyIdFromUserId($_SESSION['user_id']);
+        return $appointment['faculty_id'] == $facultyId;
+    }
+    
+    return false;
+}
+
+// Check if appointment is currently eligible to be marked as missed (for real-time checking)
+function isAppointmentMissedEligible($appointmentId) {
+    $appointment = getAppointmentDetails($appointmentId);
+    
+    if (!$appointment || !$appointment['is_approved'] || $appointment['is_cancelled'] || 
+        $appointment['is_missed'] || !empty($appointment['completed_at'])) {
+        return false;
+    }
+    
+    $appointmentDateTime = new DateTime($appointment['appointment_date'] . ' ' . $appointment['start_time']);
+    $currentDateTime = new DateTime();
+    $missedThreshold = clone $appointmentDateTime;
+    $missedThreshold->add(new DateInterval('PT20M'));
+    
+    return $currentDateTime >= $missedThreshold;
+}
+
+
 ?>

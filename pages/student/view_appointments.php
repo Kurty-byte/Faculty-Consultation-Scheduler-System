@@ -37,13 +37,15 @@ $params = [$studentId];
 
 // Add status filter conditions - FIXED
 if ($statusFilter === 'pending') {
-    $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
+    $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.is_missed = 0 AND a.completed_at IS NULL";
 } elseif ($statusFilter === 'approved') {
-    $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
+    $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.is_missed = 0 AND a.completed_at IS NULL";
 } elseif ($statusFilter === 'completed') {
     $query .= " AND a.completed_at IS NOT NULL";
 } elseif ($statusFilter === 'cancelled') {
     $query .= " AND a.is_cancelled = 1";
+} elseif ($statusFilter === 'missed') {
+    $query .= " AND a.is_missed = 1";
 }
 
 $query .= " ORDER BY a.appointment_date ASC, a.start_time ASC";
@@ -53,19 +55,27 @@ $appointments = fetchRows($query, $params);
 
 // Count appointments by status
 $pendingCount = count(fetchRows(
-    "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_approved = 0 AND is_cancelled = 0 AND completed_at IS NULL",
+    "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_approved = 0 AND is_cancelled = 0 AND is_missed = 0 AND completed_at IS NULL",
     [$studentId]
 ));
+
 $approvedCount = count(fetchRows(
-    "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_approved = 1 AND is_cancelled = 0 AND completed_at IS NULL",
+    "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_approved = 1 AND is_cancelled = 0 AND is_missed = 0 AND completed_at IS NULL",
     [$studentId]
 ));
+
 $completedCount = count(fetchRows(
     "SELECT appointment_id FROM appointments WHERE student_id = ? AND completed_at IS NOT NULL",
     [$studentId]
 ));
+
 $cancelledCount = count(fetchRows(
     "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_cancelled = 1",
+    [$studentId]
+));
+
+$missedCount = count(fetchRows(
+    "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_missed = 1",
     [$studentId]
 ));
 
@@ -95,9 +105,13 @@ include '../../includes/header.php';
         <h3>Cancelled/Rejected</h3>
         <p class="stat-number"><?php echo $cancelledCount; ?></p>
     </a>
+    <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=missed" class="stat-box <?php echo $statusFilter === 'missed' ? 'active' : ''; ?>">
+        <h3>Missed</h3>
+        <p class="stat-number"><?php echo $missedCount; ?></p>
+    </a>
     <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" class="stat-box <?php echo $statusFilter === null ? 'active' : ''; ?>">
         <h3>All</h3>
-        <p class="stat-number"><?php echo $pendingCount + $approvedCount + $completedCount + $cancelledCount; ?></p>
+        <p class="stat-number"><?php echo $pendingCount + $approvedCount + $completedCount + $cancelledCount + $missedCount; ?></p>
     </a>
 </div>
 
@@ -129,6 +143,8 @@ include '../../includes/header.php';
                     <td>
                         <?php if (!empty($appointment['completed_at'])): ?>
                             <span class="badge badge-success">Completed</span>
+                        <?php elseif ($appointment['is_missed']): ?>
+                            <span class="badge badge-warning">Missed</span>
                         <?php elseif ($appointment['is_cancelled']): ?>
                             <span class="badge badge-danger">Cancelled</span>
                         <?php elseif ($appointment['is_approved']): ?>
@@ -141,8 +157,8 @@ include '../../includes/header.php';
                         <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-primary">View</a>
                         
                         <?php
-                        // Show cancel button only for approved or pending appointments that haven't passed
-                        if (!$appointment['is_cancelled'] && !isPast($appointment['appointment_date'] . ' ' . $appointment['start_time']) && empty($appointment['completed_at'])):
+                        // Show cancel button only for approved or pending appointments that haven't passed and aren't missed
+                        if (!$appointment['is_cancelled'] && !$appointment['is_missed'] && !isPast($appointment['appointment_date'] . ' ' . $appointment['start_time']) && empty($appointment['completed_at'])):
                             // Check if can be cancelled (24 hours before)
                             $appointmentTime = $appointment['appointment_date'] . ' ' . $appointment['start_time'];
                             $canCancel = getHoursDifference($appointmentTime, date('Y-m-d H:i:s')) >= MIN_CANCEL_HOURS;
@@ -156,12 +172,42 @@ include '../../includes/header.php';
                         <?php elseif (canStudentCompleteAppointment($appointment['appointment_id'], $studentId) && empty($appointment['completed_at'])): ?>
                             <a href="<?php echo BASE_URL; ?>pages/student/complete_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-success">Mark Complete</a>
                         <?php endif; ?>
+                        
+                        <?php if (canMarkAppointmentAsMissed($appointment['appointment_id'], 'student')): ?>
+                            <a href="<?php echo BASE_URL; ?>pages/student/mark_missed.php?id=<?php echo $appointment['appointment_id']; ?>" 
+                            class="btn btn-sm btn-warning" title="Mark faculty as missed">Mark Missed</a>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 <?php endif; ?>
+
+<style>
+
+.badge-warning {
+    color: #212529;
+    background-color: #ffc107;
+}
+
+.stat-box:nth-child(6) {
+    border-left-color: var(--warning);
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+
+</style>
 
 <?php
 // Include footer

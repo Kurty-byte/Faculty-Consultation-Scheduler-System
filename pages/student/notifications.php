@@ -39,13 +39,15 @@ include '../../includes/header.php';
     <?php else: ?>
         <div class="notifications-list-page" id="notificationsList">
             <?php foreach ($notifications as $notification): ?>
-                <div class="notification-card unread" data-notification-id="<?php echo $notification['notification_id']; ?>">
+            <div class="notification-card unread" data-notification-id="<?php echo $notification['notification_id']; ?>" data-type="<?php echo $notification['notification_type']; ?>">
                     <div class="notification-card-header">
                         <div class="notification-icon-large">
                             <?php if ($notification['notification_type'] == 'appointment_approved'): ?>
                                 ✅
                             <?php elseif ($notification['notification_type'] == 'appointment_rejected'): ?>
                                 ❌
+                            <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
+                                ⚠️
                             <?php endif; ?>
                         </div>
                         <div class="notification-meta">
@@ -54,6 +56,8 @@ include '../../includes/header.php';
                                     <span class="badge badge-success">Appointment Approved</span>
                                 <?php elseif ($notification['notification_type'] == 'appointment_rejected'): ?>
                                     <span class="badge badge-danger">Appointment Rejected</span>
+                                <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
+                                    <span class="badge badge-warning">Faculty Marked as Missed</span>
                                 <?php endif; ?>
                                 <span class="badge badge-info">New</span>
                             </div>
@@ -107,13 +111,16 @@ include '../../includes/header.php';
                     <div class="notification-card-footer">
                         <div class="notification-actions">
                             <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $notification['appointment_id']; ?>"
-                               class="btn btn-sm btn-primary">View Details</a>
+                            class="btn btn-sm btn-primary">View Details</a>
                             <?php if ($notification['notification_type'] == 'appointment_approved'): ?>
                                 <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php"
-                                   class="btn btn-sm btn-success">View All Appointments</a>
+                                class="btn btn-sm btn-success">View All Appointments</a>
                             <?php elseif ($notification['notification_type'] == 'appointment_rejected'): ?>
                                 <a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php"
-                                   class="btn btn-sm btn-warning">Book New Appointment</a>
+                                class="btn btn-sm btn-warning">Book New Appointment</a>
+                            <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
+                                <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=missed"
+                                class="btn btn-sm btn-warning">View Missed Appointments</a>
                             <?php endif; ?>
                             <button class="btn btn-sm btn-secondary mark-read-btn" 
                                     data-notification-id="<?php echo $notification['notification_id']; ?>">
@@ -135,6 +142,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const notificationId = this.getAttribute('data-notification-id');
             markNotificationAsRead(notificationId, this);
         });
+    });
+
+    document.querySelectorAll('.notification-card[data-type="appointment_missed"]').forEach(function(card) {
+        card.style.borderLeftWidth = '5px';
+        card.style.borderLeftColor = '#ffc107';
     });
     
     // Mark all notifications as read
@@ -219,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="empty-state">
                     <div class="empty-state-icon">🔔</div>
                     <div class="empty-state-text">No unread notifications</div>
-                    <p>You'll see notifications here when faculty members respond to your appointment requests.</p>
+                    <p>You'll see notifications here when faculty members respond to your appointment requests or when you mark faculty as missed.</p>
                 </div>
             `;
             notificationsList.outerHTML = emptyState;
@@ -238,6 +250,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
+    function updateNotificationDisplay() {
+        const missedNotifications = document.querySelectorAll('.notification-card[data-type="appointment_missed"]').length;
+        const approvedNotifications = document.querySelectorAll('.notification-card[data-type="appointment_approved"]').length;
+        const rejectedNotifications = document.querySelectorAll('.notification-card[data-type="appointment_rejected"]').length;
+        
+        // You can add custom logic here to handle different notification types
+        console.log('Missed:', missedNotifications, 'Approved:', approvedNotifications, 'Rejected:', rejectedNotifications);
+    }
+    
+    updateNotificationDisplay();
 });
 </script>
 
@@ -424,6 +447,34 @@ document.addEventListener('DOMContentLoaded', function() {
         width: 100%;
         margin-bottom: 5px;
     }
+}
+
+.badge-warning {
+    color: #212529;
+    background-color: #ffc107;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+
+/* Special styling for missed appointment notifications */
+.notification-card[data-type="appointment_missed"] {
+    border-left-color: var(--warning);
+    background-color: rgba(255, 193, 7, 0.02);
+}
+
+.notification-card[data-type="appointment_missed"] .notification-icon-large {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: var(--warning);
 }
 </style>
 

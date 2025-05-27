@@ -116,6 +116,8 @@ include '../../includes/header.php';
                 <td>
                     <?php if (!empty($appointment['completed_at'])): ?>
                         <span class="badge badge-success">Completed</span>
+                    <?php elseif ($appointment['is_missed']): ?>
+                        <span class="badge badge-warning">Missed</span>
                     <?php elseif ($appointment['is_cancelled']): ?>
                         <span class="badge badge-danger">Cancelled</span>
                     <?php elseif ($appointment['is_approved']): ?>
@@ -125,6 +127,22 @@ include '../../includes/header.php';
                     <?php endif; ?>
                 </td>
             </tr>
+            <?php if ($appointment['is_missed']): ?>
+                <tr>
+                    <th>Missed At:</th>
+                    <td><?php echo date('F j, Y g:i A', strtotime($appointment['missed_at'])); ?></td>
+                </tr>
+                <tr>
+                    <th>Marked as Missed By:</th>
+                    <td><?php echo ucfirst($appointment['missed_by']); ?></td>
+                </tr>
+                <?php if (!empty($appointment['missed_reason'])): ?>
+                    <tr>
+                        <th>Missed Reason:</th>
+                        <td style="color: var(--warning); font-weight: 500;"><?php echo nl2br(htmlspecialchars($appointment['missed_reason'])); ?></td>
+                    </tr>
+                <?php endif; ?>
+            <?php endif; ?>
             <?php if (!empty($appointment['completed_at'])): ?>
                 <tr>
                     <th>Completed At:</th>
@@ -156,6 +174,8 @@ include '../../includes/header.php';
                             case 'approved': echo 'badge-success'; break;
                             case 'rejected': echo 'badge-danger'; break;
                             case 'cancelled': echo 'badge-warning'; break;
+                            case 'missed': echo 'badge-warning'; break;
+                            case 'completed': echo 'badge-success'; break;
                             default: echo 'badge-secondary';
                         }
                         ?>">
@@ -169,6 +189,8 @@ include '../../includes/header.php';
                                 case 'approved': echo 'Appointment Approved'; break;
                                 case 'rejected': echo 'Appointment Rejected'; break;
                                 case 'cancelled': echo 'Appointment Cancelled'; break;
+                                case 'missed': echo 'Appointment Marked as Missed'; break;
+                                case 'completed': echo 'Appointment Completed'; break;
                                 default: echo ucfirst($event['status_change']);
                             }
                             ?>
@@ -186,16 +208,57 @@ include '../../includes/header.php';
         </div>
     </div>
     
-    <?php if ($canCancel && empty($appointment['completed_at'])): ?>
-    <div class="card-actions">
-        <a href="<?php echo BASE_URL; ?>pages/student/cancel_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel Appointment</a>
-    </div>
-    <?php elseif (canStudentCompleteAppointment($appointmentId, $studentId) && empty($appointment['completed_at'])): ?>
-    <div class="card-actions">
-        <a href="<?php echo BASE_URL; ?>pages/student/complete_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-success">Mark as Completed</a>
-    </div>
+    <?php if ($canCancel && empty($appointment['completed_at']) && !$appointment['is_missed']): ?>
+        <div class="card-actions">
+            <a href="<?php echo BASE_URL; ?>pages/student/cancel_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel Appointment</a>
+        </div>
+        <?php elseif (canStudentCompleteAppointment($appointmentId, $studentId) && empty($appointment['completed_at']) && !$appointment['is_missed']): ?>
+        <div class="card-actions">
+            <a href="<?php echo BASE_URL; ?>pages/student/complete_appointment.php?id=<?php echo $appointmentId; ?>" class="btn btn-success">Mark as Completed</a>
+        </div>
+        <?php endif; ?>
+
+        <?php if (canMarkAppointmentAsMissed($appointmentId, 'student')): ?>
+        <div class="card-actions">
+            <a href="<?php echo BASE_URL; ?>pages/student/mark_missed.php?id=<?php echo $appointmentId; ?>" 
+            class="btn btn-warning" 
+            onclick="return confirm('Are you sure you want to mark this appointment as missed? This action will notify the faculty member.')">
+                <span class="btn-icon">⚠️</span>
+                Mark Faculty as Missed
+            </a>
+        </div>
     <?php endif; ?>
 </div>
+
+<style>
+
+.badge-warning {
+    color: #212529;
+    background-color: #ffc107;
+}
+
+.timeline-badge.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+
+.btn-icon {
+    margin-right: 0.5rem;
+}   
+
+</style>
 
 <?php
 // Include footer

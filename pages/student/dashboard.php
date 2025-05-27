@@ -95,6 +95,38 @@ include '../../includes/header.php';
         <div class="stat-icon">📅</div>
         <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=approved" class="btn btn-success btn-sm">View Schedule</a>
     </div>
+    
+    <div class="stat-box info">
+        <div class="stat-content">
+            <h3>Completed</h3>
+            <p class="stat-number"><?php 
+            $completedCount = count(fetchRows(
+                "SELECT appointment_id FROM appointments WHERE student_id = ? AND completed_at IS NOT NULL",
+                [$studentId]
+            ));
+            echo $completedCount;
+            ?></p>
+            <p class="stat-text">Finished consultations</p>
+        </div>
+        <div class="stat-icon">✅</div>
+        <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=completed" class="btn btn-info btn-sm">View Completed</a>
+    </div>
+    
+    <div class="stat-box warning">
+        <div class="stat-content">
+            <h3>Missed</h3>
+            <p class="stat-number"><?php 
+            $missedCount = count(fetchRows(
+                "SELECT appointment_id FROM appointments WHERE student_id = ? AND is_missed = 1",
+                [$studentId]
+            ));
+            echo $missedCount;
+            ?></p>
+            <p class="stat-text">Faculty no-shows</p>
+        </div>
+        <div class="stat-icon">⚠️</div>
+        <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=missed" class="btn btn-warning btn-sm">View Missed</a>
+    </div>
 </div>
 
 <div class="dashboard-section">
@@ -116,8 +148,28 @@ include '../../includes/header.php';
         <?php else: ?>
             <div class="appointments-list">
                 <?php foreach ($pendingAppointments as $appointment): ?>
-                    <div class="appointment-item pending">
+                <?php
+                $itemClass = 'appointment-item';
+                if ($appointment['is_missed']) {
+                    $itemClass .= ' missed';
+                } elseif ($appointment['is_cancelled']) {
+                    $itemClass .= ' cancelled';
+                } elseif ($appointment['is_approved']) {
+                    $itemClass .= ' approved';  
+                } else {
+                    $itemClass .= ' pending';
+                }
+                ?>
+                <div class="<?php echo $itemClass; ?>">
+                    <?php if ($appointment['is_missed']): ?>
+                        <div class="appointment-status-indicator missed"></div>
+                    <?php elseif ($appointment['is_cancelled']): ?>
+                        <div class="appointment-status-indicator cancelled"></div>
+                    <?php elseif ($appointment['is_approved']): ?>
+                        <div class="appointment-status-indicator approved"></div>
+                    <?php else: ?>
                         <div class="appointment-status-indicator pending"></div>
+                    <?php endif; ?>
                         <div class="appointment-info">
                             <div class="appointment-header">
                                 <h4 class="appointment-title"><?php echo $appointment['first_name'] . ' ' . $appointment['last_name']; ?></h4>
@@ -139,23 +191,28 @@ include '../../includes/header.php';
                         <div class="appointment-actions">
                             <a href="appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
                             <?php
-                            // Check if can be canceled (24 hours before)
+                            // Check if can be canceled (24 hours before) and not missed
                             $appointmentTime = $appointment['appointment_date'] . ' ' . $appointment['start_time'];
                             $hoursDifference = getHoursDifference($appointmentTime, date('Y-m-d H:i:s'));
                             
-                            if ($hoursDifference >= MIN_CANCEL_HOURS && empty($appointment['completed_at'])):
+                            if (!$appointment['is_missed'] && $hoursDifference >= MIN_CANCEL_HOURS && empty($appointment['completed_at'])):
                             ?>
                                 <a href="cancel_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" 
                                 class="btn btn-danger btn-sm" 
                                 onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
-                            <?php elseif (canStudentCompleteAppointment($appointment['appointment_id'], $studentId) && empty($appointment['completed_at'])): ?>
+                            <?php elseif (canStudentCompleteAppointment($appointment['appointment_id'], $studentId) && empty($appointment['completed_at']) && !$appointment['is_missed']): ?>
                                 <a href="complete_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" 
                                 class="btn btn-success btn-sm">Mark Complete</a>
-                            <?php else: ?>
+                            <?php elseif (!$appointment['is_missed']): ?>
                                 <button class="btn btn-secondary btn-sm" disabled 
                                         title="Cannot cancel appointments less than <?php echo MIN_CANCEL_HOURS; ?> hours before the scheduled time">
                                     Cannot Cancel
                                 </button>
+                            <?php endif; ?>
+                            
+                            <?php if (canMarkAppointmentAsMissed($appointment['appointment_id'], 'student')): ?>
+                                <a href="mark_missed.php?id=<?php echo $appointment['appointment_id']; ?>" 
+                                class="btn btn-warning btn-sm" title="Mark faculty as missed">Mark Missed</a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -184,8 +241,22 @@ include '../../includes/header.php';
         <?php else: ?>
             <div class="appointments-list">
                 <?php foreach ($upcomingAppointments as $appointment): ?>
-                    <div class="appointment-item approved">
+                <?php
+                $itemClass = 'appointment-item';
+                if ($appointment['is_missed']) {
+                    $itemClass .= ' missed';
+                } elseif ($appointment['is_approved']) {
+                    $itemClass .= ' approved';
+                } else {
+                    $itemClass .= ' pending';
+                }
+                ?>
+                <div class="<?php echo $itemClass; ?>">
+                    <?php if ($appointment['is_missed']): ?>
+                        <div class="appointment-status-indicator missed"></div>
+                    <?php else: ?>
                         <div class="appointment-status-indicator approved"></div>
+                    <?php endif; ?>
                         <div class="appointment-info">
                             <div class="appointment-header">
                                 <h4 class="appointment-title"><?php echo $appointment['first_name'] . ' ' . $appointment['last_name']; ?></h4>
@@ -217,20 +288,25 @@ include '../../includes/header.php';
                         <div class="appointment-actions">
                             <a href="appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-primary btn-sm">View Details</a>
                             <?php
-                            // Check if can be canceled (24 hours before)
+                            // Check if can be canceled (24 hours before) and not missed
                             $appointmentTime = $appointment['appointment_date'] . ' ' . $appointment['start_time'];
                             $hoursDifference = getHoursDifference($appointmentTime, date('Y-m-d H:i:s'));
                             
-                            if ($hoursDifference >= MIN_CANCEL_HOURS):
+                            if (!$appointment['is_missed'] && $hoursDifference >= MIN_CANCEL_HOURS):
                             ?>
                                 <a href="cancel_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" 
-                                   class="btn btn-danger btn-sm" 
-                                   onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
-                            <?php else: ?>
+                                class="btn btn-danger btn-sm" 
+                                onclick="return confirm('Are you sure you want to cancel this appointment?')">Cancel</a>
+                            <?php elseif (!$appointment['is_missed']): ?>
                                 <button class="btn btn-secondary btn-sm" disabled 
                                         title="Cannot cancel appointments less than <?php echo MIN_CANCEL_HOURS; ?> hours before the scheduled time">
                                     Cannot Cancel
                                 </button>
+                            <?php endif; ?>
+                            
+                            <?php if (canMarkAppointmentAsMissed($appointment['appointment_id'], 'student')): ?>
+                                <a href="mark_missed.php?id=<?php echo $appointment['appointment_id']; ?>" 
+                                class="btn btn-warning btn-sm" title="Mark faculty as missed">Mark Missed</a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -463,6 +539,51 @@ include '../../includes/header.php';
     .stat-number {
         font-size: 1.5rem;
     }
+}
+
+.stat-box.warning {
+    border-left-color: var(--warning);
+}
+
+.stat-box.info {
+    border-left-color: var(--info);
+}
+
+.appointment-status-indicator.missed {
+    background-color: var(--warning);
+}
+
+.appointment-item.missed {
+    border-left-color: var(--warning);
+    background-color: rgba(255, 193, 7, 0.02);
+}
+
+.appointment-status-indicator.cancelled {
+    background-color: var(--danger);
+}
+
+.btn-warning {
+    background-color: var(--warning);
+    border-color: var(--warning);
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+
+.btn-info {
+    background-color: var(--info);
+    border-color: var(--info);
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #258391;
+    border-color: #1e6b73;
+    color: white;
 }
 </style>
 

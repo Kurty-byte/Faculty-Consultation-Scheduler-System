@@ -119,15 +119,25 @@ include '../../includes/header.php';
         
         <div class="stat-box info">
             <div class="stat-content">
-                <h3>Total Appointments</h3>
-                <p class="stat-number"><?php echo $appointmentStats['total']; ?></p>
-                <p class="stat-text">All time</p>
+                <h3>Completed</h3>
+                <p class="stat-number"><?php echo $appointmentStats['completed']; ?></p>
+                <p class="stat-text">Finished consultations</p>
             </div>
-            <div class="stat-icon">📊</div>
-            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" class="btn btn-info btn-sm">View All</a>
+            <div class="stat-icon">✅</div>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=completed" class="btn btn-info btn-sm">View Completed</a>
         </div>
         
         <div class="stat-box warning">
+            <div class="stat-content">
+                <h3>Missed</h3>
+                <p class="stat-number"><?php echo $appointmentStats['missed']; ?></p>
+                <p class="stat-text">Student no-shows</p>
+            </div>
+            <div class="stat-icon">⚠️</div>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=missed" class="btn btn-warning btn-sm">View Missed</a>
+        </div>
+        
+        <div class="stat-box info">
             <div class="stat-content">
                 <h3>Weekly Hours</h3>
                 <p class="stat-number">
@@ -145,17 +155,17 @@ include '../../includes/header.php';
                 <p class="stat-text">Hours available</p>
             </div>
             <div class="stat-icon">⏰</div>
-            <a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" class="btn btn-warning btn-sm">Manage Hours</a>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/consultation_hours.php" class="btn btn-info btn-sm">Manage Hours</a>
         </div>
-
-        <div class="stat-box info">
+        
+        <div class="stat-box secondary">
             <div class="stat-content">
-                <h3>Completed</h3>
-                <p class="stat-number"><?php echo $appointmentStats['completed']; ?></p>
-                <p class="stat-text">Finished consultations</p>
+                <h3>Total Appointments</h3>
+                <p class="stat-number"><?php echo $appointmentStats['total']; ?></p>
+                <p class="stat-text">All time</p>
             </div>
-            <div class="stat-icon">✅</div>
-            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php?status=completed" class="btn btn-info btn-sm">View Completed</a>
+            <div class="stat-icon">📊</div>
+            <a href="<?php echo BASE_URL; ?>pages/faculty/view_appointments.php" class="btn btn-secondary btn-sm">View All</a>
         </div>
     </div>
 <?php endif; ?>
@@ -179,7 +189,17 @@ include '../../includes/header.php';
             <?php else: ?>
                 <div class="appointments-list">
                     <?php foreach ($pendingAppointments as $appointment): ?>
-                        <div class="appointment-item pending">
+                        <?php
+                        $itemClass = 'appointment-item';
+                        if ($appointment['is_missed']) {
+                            $itemClass .= ' missed';
+                        } elseif ($appointment['is_approved']) {
+                            $itemClass .= ' approved';
+                        } else {
+                            $itemClass .= ' pending';
+                        }
+                        ?>
+                        <div class="<?php echo $itemClass; ?>">
                             <div class="appointment-status-indicator pending"></div>
                             <div class="appointment-info">
                                 <div class="appointment-header">
@@ -228,8 +248,18 @@ include '../../includes/header.php';
                 </div>
             <?php else: ?>
                 <div class="appointments-list">
-                    <?php foreach ($upcomingAppointments as $appointment): ?>
-                        <div class="appointment-item approved">
+                <?php foreach ($upcomingAppointments as $appointment): ?>
+                    <?php
+                    $itemClass = 'appointment-item';
+                    if ($appointment['is_missed']) {
+                        $itemClass .= ' missed';
+                    } elseif ($appointment['is_approved']) {
+                        $itemClass .= ' approved';
+                    } else {
+                        $itemClass .= ' pending';
+                    }
+                    ?>
+                    <div class="<?php echo $itemClass; ?>">
                             <div class="appointment-status-indicator approved"></div>
                             <div class="appointment-info">
                                 <div class="appointment-header">
@@ -251,10 +281,14 @@ include '../../includes/header.php';
                                     </span>
                                     <span class="appointment-time"><?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?></span>
                                     <span class="appointment-type"><?php echo ucfirst($appointment['modality']); ?>
-                                        <?php if ($appointment['modality'] === 'virtual' && $appointment['platform']): ?>
-                                            (<?php echo $appointment['platform']; ?>)
-                                        <?php elseif ($appointment['modality'] === 'physical' && $appointment['location']): ?>
-                                            (<?php echo $appointment['location']; ?>)
+                                        <?php if ($appointment['is_missed']): ?>
+                                            <div class="appointment-status-indicator missed"></div>
+                                        <?php elseif ($appointment['is_cancelled']): ?>
+                                            <div class="appointment-status-indicator cancelled"></div>
+                                        <?php elseif ($appointment['is_approved']): ?>
+                                            <div class="appointment-status-indicator approved"></div>
+                                        <?php else: ?>
+                                            <div class="appointment-status-indicator pending"></div>
                                         <?php endif; ?>
                                     </span>
                                 </div>
@@ -511,7 +545,7 @@ include '../../includes/header.php';
     }
     
     .dashboard-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .appointment-item {
@@ -546,6 +580,57 @@ include '../../includes/header.php';
     .stat-number {
         font-size: 1.5rem;
     }
+}
+
+@media (max-width: 576px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+.stat-box.warning {
+    border-left-color: var(--warning);
+}
+
+.stat-box.secondary {
+    border-left-color: var(--gray);
+}
+
+.appointment-status-indicator.missed {
+    background-color: var(--warning);
+}
+
+.appointment-item.missed {
+    border-left-color: var(--warning);
+    background-color: rgba(255, 193, 7, 0.02);
+}
+
+.appointment-status-indicator.cancelled {
+    background-color: var(--danger);
+}
+
+.btn-warning {
+    background-color: var(--warning);
+    border-color: var(--warning);
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+
+.btn-secondary {
+    background-color: var(--gray);
+    border-color: var(--gray);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: white;
 }
 </style>
 

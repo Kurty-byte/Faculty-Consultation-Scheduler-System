@@ -28,13 +28,15 @@ $query = "SELECT a.*, s.day_of_week, st.student_id, u.first_name, u.last_name, u
 $params = [$facultyId];
 
 if ($statusFilter === 'pending') {
-    $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
+    $query .= " AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.is_missed = 0 AND a.completed_at IS NULL";
 } else if ($statusFilter === 'approved') {
-    $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL";
+    $query .= " AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.is_missed = 0 AND a.completed_at IS NULL";
 } else if ($statusFilter === 'completed') {
     $query .= " AND a.completed_at IS NOT NULL";
 } else if ($statusFilter === 'cancelled') {
     $query .= " AND a.is_cancelled = 1";
+} else if ($statusFilter === 'missed') {
+    $query .= " AND a.is_missed = 1";
 }
 
 $query .= " ORDER BY a.appointment_date ASC, a.start_time ASC";
@@ -45,14 +47,14 @@ $appointments = fetchRows($query, $params);
 $pendingCount = count(fetchRows(
     "SELECT a.appointment_id FROM appointments a 
      JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
-     WHERE s.faculty_id = ? AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.completed_at IS NULL",
+     WHERE s.faculty_id = ? AND a.is_approved = 0 AND a.is_cancelled = 0 AND a.is_missed = 0 AND a.completed_at IS NULL",
     [$facultyId]
 ));
 
 $approvedCount = count(fetchRows(
     "SELECT a.appointment_id FROM appointments a 
      JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
-     WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.completed_at IS NULL",
+     WHERE s.faculty_id = ? AND a.is_approved = 1 AND a.is_cancelled = 0 AND a.is_missed = 0 AND a.completed_at IS NULL",
     [$facultyId]
 ));
 
@@ -70,8 +72,15 @@ $cancelledCount = count(fetchRows(
     [$facultyId]
 ));
 
+$missedCount = count(fetchRows(
+    "SELECT a.appointment_id FROM appointments a 
+     JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
+     WHERE s.faculty_id = ? AND a.is_missed = 1",
+    [$facultyId]
+));
+
 // Fix the total count calculation
-$totalCount = $pendingCount + $approvedCount + $completedCount + $cancelledCount;
+$totalCount = $pendingCount + $approvedCount + $completedCount + $cancelledCount + $missedCount;
 
 // Include header
 include '../../includes/header.php';
@@ -97,6 +106,10 @@ include '../../includes/header.php';
     <a href="view_appointments.php?status=cancelled" class="stat-box <?php echo $statusFilter === 'cancelled' ? 'active' : ''; ?>">
         <h3>Cancelled/Rejected</h3>
         <p class="stat-number"><?php echo $cancelledCount; ?></p>
+    </a>
+    <a href="view_appointments.php?status=missed" class="stat-box <?php echo $statusFilter === 'missed' ? 'active' : ''; ?>">
+        <h3>Missed</h3>
+        <p class="stat-number"><?php echo $missedCount; ?></p>
     </a>
     <a href="view_appointments.php" class="stat-box <?php echo $statusFilter === null ? 'active' : ''; ?>">
         <h3>All</h3>
@@ -130,6 +143,8 @@ include '../../includes/header.php';
                     <td>
                         <?php if (!empty($appointment['completed_at'])): ?>
                             <span class="badge badge-success">Completed</span>
+                        <?php elseif ($appointment['is_missed']): ?>
+                            <span class="badge badge-warning">Missed</span>
                         <?php elseif ($appointment['is_cancelled']): ?>
                             <span class="badge badge-danger">Cancelled</span>
                         <?php elseif ($appointment['is_approved']): ?>
@@ -141,11 +156,16 @@ include '../../includes/header.php';
                     <td>
                         <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-primary">View</a>
                         
-                        <?php if (!$appointment['is_approved'] && !$appointment['is_cancelled']): ?>
+                        <?php if (!$appointment['is_approved'] && !$appointment['is_cancelled'] && !$appointment['is_missed']): ?>
                             <a href="<?php echo BASE_URL; ?>pages/faculty/approve_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-success">Approve</a>
                             <a href="<?php echo BASE_URL; ?>pages/faculty/reject_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-danger">Reject</a>
                         <?php elseif (canCompleteAppointment($appointment['appointment_id'])): ?>
                             <a href="<?php echo BASE_URL; ?>pages/faculty/complete_appointment.php?id=<?php echo $appointment['appointment_id']; ?>" class="btn btn-sm btn-info">Mark Complete</a>
+                        <?php endif; ?>
+                        
+                        <?php if (canMarkAppointmentAsMissed($appointment['appointment_id'], 'faculty')): ?>
+                            <a href="<?php echo BASE_URL; ?>pages/faculty/mark_missed.php?id=<?php echo $appointment['appointment_id']; ?>" 
+                            class="btn btn-sm btn-warning" title="Mark student as missed">Mark Missed</a>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -153,6 +173,19 @@ include '../../includes/header.php';
         </tbody>
     </table>
 <?php endif; ?>
+
+<style>
+
+.badge-warning {
+    color: #212529;
+    background-color: #ffc107;
+}
+
+.stat-box:nth-child(6) {
+    border-left-color: var(--warning);
+}
+
+</style>
 
 <?php
 // Include footer
