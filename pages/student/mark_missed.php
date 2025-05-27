@@ -75,9 +75,9 @@ include '../../includes/header.php';
     <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Back to Appointment</a>
 </div>
 
-<div class="missed-appointment-form">
-    <div class="appointment-summary-card">
-        <h2>📅 Appointment Details</h2>
+<div class="card">
+    <div class="card-body">
+        <h2>Appointment Details</h2>
         <table class="detail-table">
             <tr>
                 <th>Faculty:</th>
@@ -116,27 +116,17 @@ include '../../includes/header.php';
                 <td><span id="currentTime"><?php echo date('g:i A'); ?></span></td>
             </tr>
         </table>
-    </div>
-    
-    <div class="missed-form-card">
-        <div class="alert alert-warning">
-            <h4>⚠️ Mark Faculty as Missed</h4>
-            <p>You are about to mark this appointment as missed because the faculty member did not show up or was significantly late (20+ minutes).</p>
-            <p><strong>This action will:</strong></p>
-            <ul>
-                <li>Record the appointment as missed in the system</li>
-                <li>Notify the faculty member about being marked as missed</li>
-                <li>Create a permanent record in the appointment history</li>
-                <li>Allow you to book another appointment if needed</li>
-            </ul>
+        
+        <div class="alert alert-warning mt-3">
+            <strong>Are you sure you want to mark this appointment as missed?</strong> This action will notify the faculty member and create a permanent record in the appointment history.
         </div>
         
-        <form action="<?php echo BASE_URL; ?>pages/student/mark_missed_process.php" method="POST" class="missed-form" id="missedForm">
+        <form action="<?php echo BASE_URL; ?>pages/student/mark_missed_process.php" method="POST" class="mt-4" id="missedForm">
             <input type="hidden" name="appointment_id" value="<?php echo $appointmentId; ?>">
             <input type="hidden" name="missed_by" value="student">
             
             <div class="form-group">
-                <label for="missed_reason" class="required">Reason for Marking as Missed</label>
+                <label for="missed_reason" class="required">Reason for Marking as Missed:</label>
                 <textarea name="missed_reason" id="missed_reason" class="form-control" rows="4" required 
                           placeholder="Please specify why you're marking this appointment as missed (e.g., faculty did not show up, faculty was 30 minutes late, no communication from faculty, etc.)"></textarea>
                 <small class="form-text text-muted">This information will be included in the notification to the faculty member.</small>
@@ -145,77 +135,189 @@ include '../../includes/header.php';
                 </div>
             </div>
             
-            <div class="form-group">
-                <label class="confirmation-checkbox">
-                    <input type="checkbox" name="confirm_missed" required>
-                    <span class="checkmark"></span>
-                    <span class="checkbox-text">I confirm that the faculty member did not attend this appointment or was significantly late (20+ minutes), and I want to mark this appointment as missed.</span>
-                </label>
-            </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn btn-danger btn-lg" id="submitBtn">
-                    <span class="btn-icon">❌</span>
-                    Mark as Missed
-                </button>
-                <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointmentId; ?>" 
-                   class="btn btn-secondary btn-lg">Cancel</a>
+            <div class="form-group text-right">
+                <button type="submit" class="btn btn-danger" id="submitBtn">Mark as Missed</button>
+                <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>
 </div>
 
 <style>
-.missed-appointment-form {
-    max-width: 800px;
-    margin: 0 auto;
-    display: grid;
-    gap: 2rem;
+    /* Updated CSS to match cancellation interface */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--gray-light);
 }
 
-.appointment-summary-card, .missed-form-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    padding: 2rem;
+.card {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
 }
 
-.appointment-summary-card h2 {
+.card-body {
+    padding: 1.25rem;
+}
+
+.card h2 {
     margin-top: 0;
     margin-bottom: 1.5rem;
-    color: var(--primary);
-    text-align: center;
+    color: var(--dark);
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
-.missed-form-card .alert {
-    background-color: #fff3cd;
-    border: 1px solid #ffeaa7;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
 }
 
-.missed-form-card .alert h4 {
+.detail-table th {
+    width: 30%;
+    text-align: right;
+    padding: 8px 15px 8px 0;
+    vertical-align: top;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+.detail-table td {
+    padding: 8px 0;
+    color: var(--dark);
+}
+
+.alert {
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+}
+
+.alert-warning {
     color: #856404;
-    margin-top: 0;
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+.alert strong {
+    font-weight: 600;
+}
+
+.form-group {
     margin-bottom: 1rem;
 }
 
-.missed-form-card .alert p {
-    color: #856404;
+.form-group label {
+    display: block;
     margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark);
+    font-size: 0.9rem;
 }
 
-.missed-form-card .alert ul {
-    color: #856404;
-    margin-bottom: 0;
-    padding-left: 1.5rem;
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--dark);
+    background-color: var(--white);
+    background-clip: padding-box;
+    border: 1px solid #d1d3e2;
+    border-radius: var(--border-radius);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.missed-form-card .alert li {
-    margin-bottom: 0.25rem;
+.form-control:focus {
+    color: var(--dark);
+    background-color: var(--white);
+    border-color: var(--primary-light);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
 }
 
+textarea.form-control {
+    height: auto;
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: var(--secondary);
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+
+/* Button styling to match other pages */
+.btn {
+    display: inline-block;
+    font-weight: var(--font-weight-normal);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    border-radius: var(--border-radius);
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, 
+                border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
+    margin-right: 0.5rem;
+}
+
+.btn-danger {
+    color: var(--white);
+    background-color: var(--danger);
+    border-color: var(--danger);
+}
+
+.btn-danger:hover {
+    color: var(--white);
+    background-color: #d52a1a;
+    border-color: #d52a1a;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    color: var(--white);
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+}
+
+.btn-secondary:hover {
+    color: var(--white);
+    background-color: #6b6d7d;
+    border-color: #6b6d7d;
+    text-decoration: none;
+}
+
+/* Character counter styling */
 .char-counter {
     text-align: right;
     margin-top: 0.5rem;
@@ -227,85 +329,57 @@ include '../../includes/header.php';
     color: var(--primary);
 }
 
-.confirmation-checkbox {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    cursor: pointer;
-    line-height: 1.5;
-    padding: 1rem;
-    background-color: #f8f9fc;
-    border-radius: 8px;
-    border-left: 4px solid var(--warning);
-}
-
-.confirmation-checkbox input[type="checkbox"] {
-    display: none;
-}
-
-.checkmark {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-    margin-top: 2px;
-    background-color: white;
-}
-
-.confirmation-checkbox input[type="checkbox"]:checked + .checkmark {
-    background-color: var(--danger);
-    border-color: var(--danger);
-}
-
-.confirmation-checkbox input[type="checkbox"]:checked + .checkmark::after {
-    content: '✓';
-    color: white;
-    font-weight: bold;
-    font-size: 1rem;
-}
-
-.checkbox-text {
-    color: var(--gray);
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-top: 2rem;
-}
-
-.btn-icon {
-    margin-right: 0.5rem;
-}
-
+/* Current time styling */
 #currentTime {
     font-weight: 600;
     color: var(--primary);
 }
 
+/* Responsive design */
 @media (max-width: 768px) {
-    .missed-appointment-form {
-        margin: 1rem;
-    }
-    
-    .appointment-summary-card, .missed-form-card {
-        padding: 1.5rem;
-    }
-    
-    .form-actions {
+    .page-header {
         flex-direction: column;
+        align-items: flex-start;
     }
     
-    .form-actions .btn {
+    .page-header h1 {
+        margin-bottom: 15px;
+    }
+    
+    .text-right {
+        text-align: left !important;
+    }
+    
+    .btn {
         width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+    
+    .detail-table th {
+        width: 40%;
+    }
+}
+
+@media (max-width: 576px) {
+    .detail-table {
+        display: block;
+    }
+    
+    .detail-table th,
+    .detail-table td {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .detail-table th {
+        padding-bottom: 0;
+    }
+    
+    .detail-table td {
+        padding-top: 0;
+        padding-bottom: 15px;
     }
 }
 </style>
@@ -316,7 +390,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submitBtn');
     const reasonTextarea = document.getElementById('missed_reason');
     const charCount = document.querySelector('.char-count');
-    const confirmCheckbox = document.querySelector('input[name="confirm_missed"]');
     
     // Update current time every second
     function updateCurrentTime() {
@@ -326,7 +399,10 @@ document.addEventListener('DOMContentLoaded', function() {
             minute: '2-digit',
             hour12: true 
         });
-        document.getElementById('currentTime').textContent = timeString;
+        const currentTimeElement = document.getElementById('currentTime');
+        if (currentTimeElement) {
+            currentTimeElement.textContent = timeString;
+        }
     }
     
     setInterval(updateCurrentTime, 1000);
@@ -366,21 +442,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (!confirmCheckbox.checked) {
-            e.preventDefault();
-            alert('Please confirm that you want to mark this appointment as missed.');
-            return;
-        }
-        
         // Final confirmation
-        const confirmAction = confirm(
-            'Are you sure you want to mark this appointment as missed?\n\n' +
-            'This action will:\n' +
-            '• Notify the faculty member\n' +
-            '• Record the appointment as missed\n' +
-            '• Create a permanent record\n\n' +
-            'This action cannot be undone.'
-        );
+        const confirmAction = confirm('Are you sure you want to mark this appointment as missed? This action cannot be undone.');
         
         if (!confirmAction) {
             e.preventDefault();
@@ -389,13 +452,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show loading state
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="btn-icon">⏳</span> Marking as Missed...';
+        submitBtn.textContent = 'Marking as Missed...';
         submitBtn.style.opacity = '0.7';
         
         // Re-enable after timeout (fallback)
         setTimeout(() => {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span class="btn-icon">❌</span> Mark as Missed';
+            submitBtn.textContent = 'Mark as Missed';
             submitBtn.style.opacity = '1';
         }, 10000);
     });
