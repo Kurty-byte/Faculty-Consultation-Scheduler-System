@@ -730,6 +730,25 @@ document.addEventListener('DOMContentLoaded', function() {
     border-top: 1px solid #e9ecef;
     text-align: center;
 }
+
+/* Move calendar button to the right side for date inputs */
+input[type="date"] {
+    direction: rtl;
+    text-align: left;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 8px;
+    cursor: pointer;
+}
+
+/* Firefox date input styling */
+input[type="date"]::-moz-calendar-picker-indicator {
+    position: absolute;
+    right: 8px;
+    cursor: pointer;
+}
 </style>
 
 <?php
