@@ -348,12 +348,15 @@ function cleanOldNotifications() {
 function createCompletionNotification($appointmentId) {
     // Get appointment details
     $appointment = fetchRow(
-        "SELECT a.*, st.user_id as student_user_id, u.first_name, u.last_name
-         FROM appointments a
-         JOIN students st ON a.student_id = st.student_id
-         JOIN availability_schedules s ON a.schedule_id = s.schedule_id
-         JOIN faculty f ON s.faculty_id = f.faculty_id
-         JOIN users u ON f.user_id = u.user_id
+        "SELECT a.*, st.user_id as student_user_id, f.user_id as faculty_user_id, 
+                us.first_name as student_first_name, us.last_name as student_last_name,
+                uf.first_name as faculty_first_name, uf.last_name as faculty_last_name
+         FROM appointments a 
+         JOIN students st ON a.student_id = st.student_id 
+         JOIN users us ON st.user_id = us.user_id
+         JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
+         JOIN faculty f ON s.faculty_id = f.faculty_id 
+         JOIN users uf ON f.user_id = uf.user_id
          WHERE a.appointment_id = ?",
         [$appointmentId]
     );
@@ -362,10 +365,21 @@ function createCompletionNotification($appointmentId) {
         return false;
     }
     
-    $message = $appointment['first_name'] . ' ' . $appointment['last_name'] . ' marked your consultation as completed';
+    // Determine who completed the appointment and who should be notified
+    $currentUserRole = getCurrentUserRole();
+    
+    if ($currentUserRole === 'student') {
+        // Student completed the appointment, notify faculty
+        $notifyUserId = $appointment['faculty_user_id'];
+        $message = $appointment['student_first_name'] . ' ' . $appointment['student_last_name'] . ' marked your consultation as completed';
+    } else {
+        // Faculty completed the appointment, notify student
+        $notifyUserId = $appointment['student_user_id'];
+        $message = $appointment['faculty_first_name'] . ' ' . $appointment['faculty_last_name'] . ' marked your consultation as completed';
+    }
     
     return createNotification(
-        $appointment['student_user_id'],
+        $notifyUserId,
         $appointmentId,
         'appointment_completed',
         $message

@@ -48,6 +48,8 @@ include '../../includes/header.php';
                                 ⚠️
                             <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
                                 ❌
+                            <?php elseif ($notification['notification_type'] == 'appointment_completed'): ?>
+                                ✅
                             <?php endif; ?>
                         </div>
                         <div class="notification-meta">

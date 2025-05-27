@@ -678,7 +678,12 @@ function completeAppointment($appointmentId, $notes = null) {
         }
         
         // Record in appointment history
-        $historyNotes = $notes ? $notes : 'Appointment marked as completed by faculty';
+        if ($notes) {
+            $historyNotes = $notes;
+        } else {
+            $historyNotes = 'Appointment marked as completed by ' . getCurrentUserRole();
+        }
+
         $historyResult = insertData(
             "INSERT INTO appointment_history (appointment_id, status_change, changed_by_user_id, notes) 
              VALUES (?, 'completed', ?, ?)",
