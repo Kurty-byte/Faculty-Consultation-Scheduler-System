@@ -5,19 +5,18 @@
  Source Server Type    : MySQL
  Source Server Version : 100432 (10.4.32-MariaDB)
  Source Host           : localhost:3306
- Source Schema         : fcss_db
+ Source Schema         : fcss_database
 
  Target Server Type    : MySQL
  Target Server Version : 100432 (10.4.32-MariaDB)
  File Encoding         : 65001
 
- Date: 27/05/2025 15:01:35
+ Date: 27/05/2025 17:55:17
 */
 
 DROP DATABASE IF EXISTS fcss_database;
 CREATE DATABASE fcss_database;
 USE fcss_database;
-
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
