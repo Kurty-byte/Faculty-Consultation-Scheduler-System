@@ -14,9 +14,9 @@
  Date: 27/05/2025 15:01:35
 */
 
-DROP DATABASE IF EXISTS fcss_db;
-CREATE DATABASE fcss_db;
-USE fcss_db;
+DROP DATABASE IF EXISTS fcss_database;
+CREATE DATABASE fcss_database;
+USE fcss_database;
 
 
 SET NAMES utf8mb4;
