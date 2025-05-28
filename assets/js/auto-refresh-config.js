@@ -4,12 +4,11 @@
  */
 
 const AutoRefreshConfig = {
-    // Refresh intervals (in milliseconds)
     intervals: {
-        dashboard: 0,
-        notifications: 0,
-        appointments: 0,
-        default: 0
+        dashboard: 2000,
+        notifications: 2000,
+        appointments: 2000,
+        default: 2000
     },
     
     // Page detection patterns

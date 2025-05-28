@@ -1,5 +1,4 @@
 <?php
-// Include config file
 require_once '../../config.php';
 
 // Check if user is logged in and has student role

@@ -1,12 +1,11 @@
 <?php
-// Include config file
 require_once '../../config.php';
 
 // Check if user is logged in and has faculty role
 requireRole('faculty');
 
-// Include required functions
 require_once '../../includes/appointment_functions.php';
+require_once '../../includes/notification_system.php'; 
 
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -38,10 +37,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     try {
+        // Mark appointment as completed
         $result = completeAppointment($appointmentId, $notes);
         
-        setFlashMessage('success', 'Appointment marked as completed successfully.');
-        redirect('pages/faculty/view_appointments.php');
+        if ($result) {
+            // Create completion notification for student
+            $notificationResult = createCompletionNotification($appointmentId);
+            
+            if ($notificationResult) {
+                setFlashMessage('success', 'Appointment marked as completed successfully. The student has been notified.');
+            } else {
+                setFlashMessage('success', 'Appointment marked as completed successfully.');
+                // Log notification failure for debugging
+                error_log("Failed to create completion notification for appointment ID: $appointmentId");
+            }
+            
+            redirect('pages/faculty/view_appointments.php');
+        } else {
+            throw new Exception('Failed to mark appointment as completed.');
+        }
+        
     } catch (Exception $e) {
         setFlashMessage('danger', 'Failed to complete appointment: ' . $e->getMessage());
         redirect('pages/faculty/complete_appointment.php?id=' . $appointmentId);

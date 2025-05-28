@@ -1,5 +1,5 @@
 /**
- * Enhanced Dynamic Notification System JavaScript
+ * Enhanced Dynamic Notification System JavaScript - FINAL FIXED VERSION
  * Handles real-time time updates and notification management with auto-refresh
  */
 
@@ -19,6 +19,14 @@ class EnhancedNotificationManager {
         this.toastContainer = null;
         this.activeToasts = new Set();
         
+        // FIX: Track dismissed notifications permanently
+        this.dismissedNotifications = new Set();
+        this.shownNotifications = new Set();
+        this.lastNotificationTimestamp = null;
+        
+        // FIX: Load dismissed notifications from localStorage
+        this.loadDismissedNotifications();
+        
         // Get configuration
         this.config = window.AutoRefreshConfig || this.getDefaultConfig();
         this.refreshIntervalTime = getCurrentRefreshInterval ? getCurrentRefreshInterval() : 120000;
@@ -27,6 +35,31 @@ class EnhancedNotificationManager {
         const badge = document.getElementById('notificationBadge');
         if (badge) {
             this.lastKnownCount = parseInt(badge.textContent) || 0;
+        }
+        
+        // Store initial timestamp to prevent showing old notifications
+        this.initializationTime = Date.now();
+    }
+    
+    // FIX: Load dismissed notifications from localStorage
+    loadDismissedNotifications() {
+        try {
+            const dismissed = localStorage.getItem('dismissedNotifications');
+            if (dismissed) {
+                this.dismissedNotifications = new Set(JSON.parse(dismissed));
+            }
+        } catch (e) {
+            console.warn('Could not load dismissed notifications:', e);
+            this.dismissedNotifications = new Set();
+        }
+    }
+    
+    // FIX: Save dismissed notifications to localStorage
+    saveDismissedNotifications() {
+        try {
+            localStorage.setItem('dismissedNotifications', JSON.stringify([...this.dismissedNotifications]));
+        } catch (e) {
+            console.warn('Could not save dismissed notifications:', e);
         }
     }
     
@@ -62,6 +95,15 @@ class EnhancedNotificationManager {
         this.toastContainer = document.createElement('div');
         this.toastContainer.className = 'notification-toast-container';
         this.toastContainer.id = 'notificationToastContainer';
+        
+        this.toastContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            pointer-events: none;
+        `;
+        
         document.body.appendChild(this.toastContainer);
     }
     
@@ -70,25 +112,25 @@ class EnhancedNotificationManager {
             this.isPageVisible = !document.hidden;
             
             if (this.isPageVisible) {
-                // Page became visible - immediate update and resume auto-refresh
                 this.updateNotificationBadge();
                 this.updateTimeDisplays();
                 this.startAutoRefresh();
             } else if (this.config.performance.pauseWhenHidden) {
-                // Page hidden - pause auto-refresh to save resources
                 this.stopAutoRefresh();
             }
         });
     }
     
     startAutoRefresh() {
-        this.stopAutoRefresh(); // Clear any existing interval
+        this.stopAutoRefresh();
         
-        this.refreshInterval = setInterval(() => {
-            if (this.isPageVisible || !this.config.performance.pauseWhenHidden) {
-                this.updateNotificationBadge();
-            }
-        }, this.refreshIntervalTime);
+        if (this.refreshIntervalTime > 0) {
+            this.refreshInterval = setInterval(() => {
+                if (this.isPageVisible || !this.config.performance.pauseWhenHidden) {
+                    this.updateNotificationBadge();
+                }
+            }, this.refreshIntervalTime);
+        }
     }
     
     stopAutoRefresh() {
@@ -110,7 +152,7 @@ class EnhancedNotificationManager {
             
             if (data.success) {
                 this.handleNotificationUpdate(data);
-                this.retryCount = 0; // Reset retry count on success
+                this.retryCount = 0;
             } else {
                 throw new Error(data.message || 'Failed to get notification count');
             }
@@ -130,12 +172,10 @@ class EnhancedNotificationManager {
             if (badge) {
                 badge.textContent = data.count;
                 
-                // Add new notification animation if count increased
                 if (data.has_new_notifications && this.config.badge.pulseOnNew) {
                     this.animateNewNotification(badge);
                 }
             } else if (notificationIcon && !notificationIcon.querySelector('.notification-badge')) {
-                // Create new badge
                 const newBadge = document.createElement('span');
                 newBadge.className = 'notification-badge';
                 newBadge.id = 'notificationBadge';
@@ -147,27 +187,48 @@ class EnhancedNotificationManager {
                 }
             }
         } else {
-            // Remove badge if count is 0
             if (badge) {
                 badge.remove();
             }
         }
         
-        // Show toast for new notifications
-        if (data.has_new_notifications && data.latest_notification) {
+        // FIX: Show toast only for truly new notifications that haven't been dismissed
+        if (data.has_new_notifications && data.latest_notification && this.shouldShowToast(data.latest_notification)) {
             this.showNotificationToast(data.latest_notification);
         }
         
-        // Update last known count
         this.lastKnownCount = data.count;
-        
-        // Trigger page-specific updates
         this.triggerPageSpecificUpdates(data);
+    }
+    
+    // FIX: Improved logic to determine if we should show a toast
+    shouldShowToast(notification) {
+        // Don't show if notification has been dismissed
+        if (this.dismissedNotifications.has(notification.id)) {
+            return false;
+        }
+        
+        // Don't show if we've already shown this notification in this session
+        if (this.shownNotifications.has(notification.id)) {
+            return false;
+        }
+        
+        // Don't show toasts for notifications created before page load
+        const notificationTime = new Date(notification.created_at).getTime();
+        if (notificationTime < this.initializationTime) {
+            return false;
+        }
+        
+        // Don't show if we're on the notifications page
+        if (window.location.pathname.includes('notifications.php')) {
+            return false;
+        }
+        
+        return true;
     }
     
     animateNewNotification(badge) {
         badge.classList.remove('new-notification-bounce');
-        // Force reflow
         badge.offsetHeight;
         badge.classList.add('new-notification-bounce');
         
@@ -182,8 +243,28 @@ class EnhancedNotificationManager {
             return;
         }
         
+        // Mark this notification as shown
+        this.shownNotifications.add(notification.id);
+        
         const toast = document.createElement('div');
         toast.className = 'notification-toast';
+        toast.dataset.notificationId = notification.id; // FIX: Store notification ID
+        
+        toast.style.cssText = `
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px;
+            margin-bottom: 12px;
+            max-width: 350px;
+            border-left: 4px solid #4e73df;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            cursor: pointer;
+        `;
+        
         toast.innerHTML = this.createToastHTML(notification);
         
         // Add to container
@@ -191,29 +272,50 @@ class EnhancedNotificationManager {
         this.activeToasts.add(toast);
         
         // Animate in
-        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
+            toast.classList.add('show');
+        }, 100);
         
-        // Auto remove
-        setTimeout(() => this.removeToast(toast), this.config.toast.duration);
+        // Auto remove after duration
+        const autoRemoveTimeout = setTimeout(() => this.removeToast(toast, false), this.config.toast.duration);
         
-        // Click to dismiss
-        toast.addEventListener('click', () => this.removeToast(toast));
+        // FIX: Handle manual dismissal (clicking X)
+        const closeBtn = toast.querySelector('.toast-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearTimeout(autoRemoveTimeout); // Cancel auto-removal
+                this.removeToast(toast, true); // Manual dismissal
+            });
+        }
+        
+        // Click anywhere else on toast to dismiss
+        toast.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('toast-close')) {
+                clearTimeout(autoRemoveTimeout);
+                this.removeToast(toast, true);
+            }
+        });
     }
     
     createToastHTML(notification) {
         const icon = this.getNotificationIcon(notification.type);
         
         return `
-            <div class="toast-icon">${icon}</div>
-            <div class="toast-content">
-                <div class="toast-title">New Notification</div>
-                <div class="toast-message">${this.escapeHtml(notification.message)}</div>
-                <div class="toast-details">
-                    ${notification.appointment_date} at ${notification.appointment_time}
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div style="font-size: 20px; flex-shrink: 0;">${icon}</div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; color: #2c3e50; margin-bottom: 4px;">New Notification</div>
+                    <div style="color: #555; margin-bottom: 8px; word-wrap: break-word;">${this.escapeHtml(notification.message)}</div>
+                    <div style="font-size: 12px; color: #888;">
+                        ${notification.appointment_date} at ${notification.appointment_time}
+                    </div>
+                    <div style="font-size: 11px; color: #999; margin-top: 4px;">${notification.time_ago}</div>
                 </div>
-                <div class="toast-time">${notification.time_ago}</div>
+                <div class="toast-close" style="font-size: 16px; color: #ccc; cursor: pointer; flex-shrink: 0; padding: 4px;">×</div>
             </div>
-            <div class="toast-close">×</div>
         `;
     }
     
@@ -222,13 +324,25 @@ class EnhancedNotificationManager {
             'appointment_request': '📅',
             'appointment_approved': '✅',
             'appointment_rejected': '❌',
-            'appointment_cancelled': '⚠️'
+            'appointment_cancelled': '⚠️',
+            'appointment_missed': '⚠️',
+            'appointment_completed': '✅'
         };
         return icons[type] || '🔔';
     }
     
-    removeToast(toast) {
-        toast.classList.add('fade-out');
+    // FIX: Enhanced removeToast method with proper dismissal handling
+    removeToast(toast, manuallyDismissed = false) {
+        const notificationId = toast.dataset.notificationId;
+        
+        // If manually dismissed, permanently dismiss this notification
+        if (manuallyDismissed && notificationId) {
+            this.dismissedNotifications.add(parseInt(notificationId));
+            this.saveDismissedNotifications();
+        }
+        
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
         this.activeToasts.delete(toast);
         
         setTimeout(() => {
@@ -242,24 +356,21 @@ class EnhancedNotificationManager {
         this.retryCount++;
         
         if (this.retryCount < this.maxRetries) {
-            // Retry after delay
             setTimeout(() => {
                 this.updateNotificationBadge();
             }, this.config.performance?.retryDelay || 10000);
         } else {
             console.warn('Max retry attempts reached for notification updates');
-            this.retryCount = 0; // Reset for future attempts
+            this.retryCount = 0;
         }
     }
     
     updateTimeDisplays() {
-        // Update elements with data-timestamp attribute
         document.querySelectorAll('[data-timestamp]').forEach(element => {
             const timestamp = parseInt(element.dataset.timestamp);
             if (timestamp && timestamp > 0) {
                 const timeAgo = this.calculateTimeAgo(timestamp);
                 
-                // Handle different prefixes for different contexts
                 const originalText = element.textContent;
                 if (originalText.includes('Approved ')) {
                     element.textContent = 'Approved ' + timeAgo;
@@ -275,7 +386,6 @@ class EnhancedNotificationManager {
             }
         });
         
-        // Update generic time-ago elements
         document.querySelectorAll('.time-ago:not([data-timestamp])').forEach(element => {
             const timestampElement = element.parentNode.querySelector('.timestamp-data');
             if (timestampElement) {
@@ -322,7 +432,6 @@ class EnhancedNotificationManager {
     setupPageSpecificHandlers() {
         const currentPath = window.location.pathname;
         
-        // Auto-refresh notification pages every 30 seconds
         if (currentPath.includes('/notifications.php')) {
             setInterval(() => {
                 if (this.isPageVisible) {
@@ -331,7 +440,6 @@ class EnhancedNotificationManager {
             }, 30000);
         }
         
-        // Enhanced dashboard updates
         if (currentPath.includes('/dashboard.php')) {
             setInterval(() => {
                 if (this.isPageVisible) {
@@ -349,7 +457,6 @@ class EnhancedNotificationManager {
                 const data = await response.json();
                 
                 if (data.success && data.count > 0) {
-                    // Reload page to show new notifications
                     window.location.reload();
                 }
             } catch (error) {
@@ -359,13 +466,10 @@ class EnhancedNotificationManager {
     }
     
     async updateDashboardData() {
-        // This could be expanded to update dashboard statistics
-        // For now, just ensure notification count is current
         this.updateNotificationBadge();
     }
     
     triggerPageSpecificUpdates(data) {
-        // Trigger custom events that pages can listen to
         const event = new CustomEvent('notificationsUpdated', {
             detail: {
                 count: data.count,
@@ -378,7 +482,6 @@ class EnhancedNotificationManager {
     }
     
     setupGlobalFunctions() {
-        // Maintain compatibility with existing code
         window.markNotificationAsRead = (notificationId, callback) => {
             fetch(`${this.getBaseUrl()}ajax/mark_notification_read.php`, {
                 method: 'POST',
@@ -422,7 +525,6 @@ class EnhancedNotificationManager {
             });
         };
         
-        // Expose manager instance
         window.NotificationManager = this;
         window.updateTimeDisplays = () => this.updateTimeDisplays();
         window.calculateTimeAgo = (timestamp) => this.calculateTimeAgo(timestamp);
@@ -461,6 +563,8 @@ class EnhancedNotificationManager {
         }
         
         this.activeToasts.clear();
+        this.shownNotifications.clear();
+        this.saveDismissedNotifications();
     }
 }
 
@@ -470,3 +574,58 @@ window.addEventListener('beforeunload', () => {
         window.NotificationManager.destroy();
     }
 });
+
+// Add required CSS for notification badge animation
+const style = document.createElement('style');
+style.textContent = `
+    .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 2s infinite;
+        z-index: 10;
+    }
+    
+    .notification-badge.new-notification-bounce {
+        animation: bounce 0.6s ease-in-out;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 60%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        80% { transform: translateY(-5px); }
+    }
+    
+    .notification-toast.show {
+        opacity: 1 !important;
+        transform: translateX(0) !important;
+    }
+    
+    .notification-toast.fade-out {
+        opacity: 0 !important;
+        transform: translateX(100%) !important;
+    }
+    
+    .toast-close:hover {
+        color: #999 !important;
+        background-color: rgba(0,0,0,0.1);
+        border-radius: 50%;
+    }
+`;
+document.head.appendChild(style);

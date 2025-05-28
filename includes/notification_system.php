@@ -1,10 +1,10 @@
 <?php
 /**
  * New Notification System with Dynamic Time Display
- * Simple and clean notification management
+ * Simple and clean notification management with duplicate prevention
  */
 
-// Create a new notification
+// Create a new notification with enhanced duplicate prevention
 function createNotification($userId, $appointmentId, $type, $message) {
     global $conn;
     
@@ -19,15 +19,29 @@ function createNotification($userId, $appointmentId, $type, $message) {
         return false;
     }
     
-    // Check if notification already exists to avoid duplicates
-    $existing = fetchRow(
+    // Enhanced duplicate check - look for recent notifications of the same type
+    $existingRecent = fetchRow(
         "SELECT notification_id FROM notifications 
-         WHERE user_id = ? AND appointment_id = ? AND notification_type = ?",
+         WHERE user_id = ? AND appointment_id = ? AND notification_type = ?
+         AND created_at > DATE_SUB(NOW(), INTERVAL 5 MINUTE)",
         [$userId, $appointmentId, $type]
     );
     
-    if ($existing) {
-        return $existing['notification_id']; // Return existing notification ID
+    if ($existingRecent) {
+        return $existingRecent['notification_id']; // Return existing recent notification ID
+    }
+    
+    // For certain types, also check if there's any existing notification
+    if (in_array($type, ['appointment_request', 'appointment_approved', 'appointment_rejected'])) {
+        $existingAny = fetchRow(
+            "SELECT notification_id FROM notifications 
+             WHERE user_id = ? AND appointment_id = ? AND notification_type = ?",
+            [$userId, $appointmentId, $type]
+        );
+        
+        if ($existingAny) {
+            return $existingAny['notification_id']; // Return existing notification ID
+        }
     }
     
     // Insert new notification
@@ -46,6 +60,7 @@ function getUnreadNotifications($userId, $limit = 50) {
         return [];
     }
     
+    // FIX: Order by creation time and group by appointment to avoid duplicates
     $notifications = fetchRows(
         "SELECT n.*, a.appointment_date, a.start_time, a.end_time, a.modality, a.platform, a.location,
                 UNIX_TIMESTAMP(n.created_at) as timestamp,
@@ -118,7 +133,7 @@ function getNotificationLink($notification) {
     return $basePath . 'appointment_details.php?id=' . $notification['appointment_id'];
 }
 
-// Create notification when student books appointment
+// FIX: Enhanced booking notification creation with duplicate prevention
 function createBookingNotification($appointmentId) {
     // Get appointment details
     $appointment = fetchRow(
@@ -155,7 +170,7 @@ function createBookingNotification($appointmentId) {
     );
 }
 
-// Create notification when faculty approves appointment
+// FIX: Enhanced approval notification creation
 function createApprovalNotification($appointmentId) {
     // Get appointment details
     $appointment = fetchRow(
@@ -183,7 +198,7 @@ function createApprovalNotification($appointmentId) {
     );
 }
 
-// Create notification when faculty rejects appointment
+// Enhanced rejection notification creation
 function createRejectionNotification($appointmentId) {
     // Get appointment details
     $appointment = fetchRow(
@@ -211,7 +226,7 @@ function createRejectionNotification($appointmentId) {
     );
 }
 
-// Create notification when student cancels appointment
+// Enhanced cancellation notification creation
 function createCancellationNotification($appointmentId, $cancellationReason = null) {
     // Get appointment details
     $appointment = fetchRow(
@@ -345,6 +360,7 @@ function cleanOldNotifications() {
     return $result;
 }
 
+// Enhanced completion notification creation
 function createCompletionNotification($appointmentId) {
     // Get appointment details
     $appointment = fetchRow(
@@ -386,7 +402,7 @@ function createCompletionNotification($appointmentId) {
     );
 }
 
-// Create notification when appointment is marked as missed
+// Enhanced missed notification creation
 function createMissedNotification($appointmentId, $missedBy) {
     // Get appointment details
     $appointment = fetchRow(
@@ -426,5 +442,170 @@ function createMissedNotification($appointmentId, $missedBy) {
         'appointment_missed',
         $message
     );
+}
+
+// Function to remove duplicate notifications (cleanup utility)
+function removeDuplicateNotifications() {
+    global $conn;
+    
+    // Remove duplicate notifications keeping the most recent one
+    $query = "
+        DELETE n1 FROM notifications n1
+        INNER JOIN notifications n2 
+        WHERE n1.notification_id < n2.notification_id 
+        AND n1.user_id = n2.user_id 
+        AND n1.appointment_id = n2.appointment_id 
+        AND n1.notification_type = n2.notification_type
+        AND n1.created_at < n2.created_at
+    ";
+    
+    return mysqli_query($conn, $query);
+}
+
+// Function to get latest notification with better duplicate handling
+function getLatestNotification($userId) {
+    if (!$userId) {
+        return null;
+    }
+    
+    return fetchRow(
+        "SELECT n.*, a.appointment_date, a.start_time, a.end_time,
+                UNIX_TIMESTAMP(n.created_at) as timestamp,
+                n.created_at as raw_timestamp
+         FROM notifications n
+         JOIN appointments a ON n.appointment_id = a.appointment_id
+         WHERE n.user_id = ? AND n.is_read = 0
+         ORDER BY n.created_at DESC
+         LIMIT 1",
+        [$userId]
+    );
+}
+
+// Additional utility functions
+
+// Get notification statistics for admin/debugging
+function getNotificationStats() {
+    $stats = [
+        'total_notifications' => 0,
+        'unread_notifications' => 0,
+        'notifications_by_type' => [],
+        'notifications_by_user_role' => []
+    ];
+    
+    // Total notifications
+    $total = fetchRow("SELECT COUNT(*) as count FROM notifications");
+    $stats['total_notifications'] = $total ? $total['count'] : 0;
+    
+    // Unread notifications
+    $unread = fetchRow("SELECT COUNT(*) as count FROM notifications WHERE is_read = 0");
+    $stats['unread_notifications'] = $unread ? $unread['count'] : 0;
+    
+    // Notifications by type
+    $byType = fetchRows(
+        "SELECT notification_type, COUNT(*) as count 
+         FROM notifications 
+         GROUP BY notification_type 
+         ORDER BY count DESC"
+    );
+    foreach ($byType as $type) {
+        $stats['notifications_by_type'][$type['notification_type']] = $type['count'];
+    }
+    
+    // Notifications by user role
+    $byRole = fetchRows(
+        "SELECT u.role, COUNT(n.notification_id) as count
+         FROM notifications n
+         JOIN users u ON n.user_id = u.user_id
+         GROUP BY u.role
+         ORDER BY count DESC"
+    );
+    foreach ($byRole as $role) {
+        $stats['notifications_by_user_role'][$role['role']] = $role['count'];
+    }
+    
+    return $stats;
+}
+
+// Get all notifications for a user (read and unread) with pagination
+function getAllNotifications($userId, $page = 1, $limit = 20) {
+    if (!$userId) {
+        return [];
+    }
+    
+    $offset = ($page - 1) * $limit;
+    
+    $notifications = fetchRows(
+        "SELECT n.*, a.appointment_date, a.start_time, a.end_time, a.modality, a.platform, a.location,
+                UNIX_TIMESTAMP(n.created_at) as timestamp,
+                n.created_at as raw_timestamp
+         FROM notifications n
+         JOIN appointments a ON n.appointment_id = a.appointment_id
+         WHERE n.user_id = ?
+         ORDER BY n.created_at DESC
+         LIMIT ? OFFSET ?",
+        [$userId, $limit, $offset]
+    );
+    
+    // Add dynamic time display data
+    foreach ($notifications as &$notification) {
+        $notification['time_ago'] = getTimeAgo($notification['raw_timestamp']);
+        $notification['link'] = getNotificationLink($notification);
+    }
+    
+    return $notifications;
+}
+
+// Check if user has specific type of notification
+function hasNotificationType($userId, $appointmentId, $type) {
+    if (!$userId || !$appointmentId || !$type) {
+        return false;
+    }
+    
+    $result = fetchRow(
+        "SELECT notification_id FROM notifications 
+         WHERE user_id = ? AND appointment_id = ? AND notification_type = ?",
+        [$userId, $appointmentId, $type]
+    );
+    
+    return $result !== null;
+}
+
+// Bulk mark notifications as read by type
+function markNotificationsByTypeAsRead($userId, $type) {
+    if (!$userId || !$type) {
+        return false;
+    }
+    
+    return updateOrDeleteData(
+        "UPDATE notifications SET is_read = 1 
+         WHERE user_id = ? AND notification_type = ? AND is_read = 0",
+        [$userId, $type]
+    );
+}
+
+// Get notification count by type for a user
+function getNotificationCountByType($userId, $type) {
+    if (!$userId || !$type) {
+        return 0;
+    }
+    
+    $result = fetchRow(
+        "SELECT COUNT(*) as count FROM notifications 
+         WHERE user_id = ? AND notification_type = ? AND is_read = 0",
+        [$userId, $type]
+    );
+    
+    return $result ? (int)$result['count'] : 0;
+}
+
+// Delete old read notifications (cleanup function)
+function deleteOldReadNotifications($daysOld = 90) {
+    $result = updateOrDeleteData(
+        "DELETE FROM notifications 
+         WHERE is_read = 1 AND created_at < DATE_SUB(NOW(), INTERVAL ? DAY)",
+        [$daysOld]
+    );
+    
+    return $result;
 }
 ?>
