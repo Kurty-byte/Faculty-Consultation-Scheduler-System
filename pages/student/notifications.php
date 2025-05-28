@@ -70,7 +70,7 @@ include '../../includes/header.php';
                     </div>
                     
                     <div class="notification-card-body">
-                        <h3 class="notification-title"><?php echo htmlspecialchars($notification['message']); ?></h3>
+                        <h3 class="notification-title"><?php echo displayTextContent($notification['message']); ?></h3>
                         
                         <!-- Get additional appointment details -->
                         <?php 

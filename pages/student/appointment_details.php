@@ -139,7 +139,7 @@ include '../../includes/header.php';
                 <?php if (!empty($appointment['missed_reason'])): ?>
                     <tr>
                         <th>Missed Reason:</th>
-                        <td style="color: var(--warning); font-weight: 500;"><?php echo nl2br(htmlspecialchars($appointment['missed_reason'])); ?></td>
+                        <td style="color: var(--warning); font-weight: 500;"><?php echo displayTextContent($appointment['missed_reason']); ?></td>
                     </tr>
                 <?php endif; ?>
             <?php endif; ?>
@@ -151,12 +151,12 @@ include '../../includes/header.php';
             <?php endif; ?>
             <tr>
                 <th>Reason for Consultation:</th>
-                <td><?php echo nl2br(htmlspecialchars($appointment['remarks'])); ?></td>
+                <td><?php echo displayTextContent($appointment['remarks']); ?></td>
             </tr>
             <?php if ($appointment['is_cancelled'] && !empty($appointment['cancellation_reason'])): ?>
             <tr>
                 <th>Cancellation Reason:</th>
-                <td style="color: var(--danger); font-weight: 500;"><?php echo nl2br(htmlspecialchars($appointment['cancellation_reason'])); ?></td>
+                <td style="color: var(--danger); font-weight: 500;"><?php displayTextContent($appointment['cancellation_reason']); ?></td>
             </tr>
             <?php endif; ?>
         </table>

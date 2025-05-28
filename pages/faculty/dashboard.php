@@ -215,7 +215,7 @@ include '../../includes/header.php';
                                 </div>
                                 <?php if (!empty($appointment['remarks'])): ?>
                                     <div class="appointment-reason">
-                                        <strong>Reason:</strong> <?php echo htmlspecialchars(substr($appointment['remarks'], 0, 100)) . (strlen($appointment['remarks']) > 100 ? '...' : ''); ?>
+                                        <strong>Reason:</strong> <?php echo displayPlainText(substr($appointment['remarks'], 0, 100)) . (strlen($appointment['remarks']) > 100 ? '...' : ''); ?>
                                     </div>
                                 <?php endif; ?>
                             </div>

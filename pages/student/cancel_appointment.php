@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </tr>
             <tr>
                 <th>Reason for Consultation:</th>
-                <td><?php echo nl2br(htmlspecialchars($appointment['remarks'])); ?></td>
+                <td><?php echo displayTextContent($appointment['remarks']); ?></td>
             </tr>
         </table>
         

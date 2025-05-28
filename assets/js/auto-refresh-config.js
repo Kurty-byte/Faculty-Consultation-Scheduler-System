@@ -6,10 +6,10 @@
 const AutoRefreshConfig = {
     // Refresh intervals (in milliseconds)
     intervals: {
-        dashboard: 60000,      // 1 minute for dashboard pages
-        notifications: 30000,  // 30 seconds for notification pages
-        appointments: 90000,   // 1.5 minutes for appointment pages
-        default: 120000        // 2 minutes for other pages
+        dashboard: 0,
+        notifications: 0,
+        appointments: 0,
+        default: 0
     },
     
     // Page detection patterns

@@ -114,13 +114,13 @@ include '../../includes/header.php';
                 <?php if (!empty($appointment['missed_reason'])): ?>
                     <tr>
                         <th>Missed Reason:</th>
-                        <td style="color: var(--warning); font-weight: 500;"><?php echo nl2br(htmlspecialchars($appointment['missed_reason'])); ?></td>
+                        <td style="color: var(--warning); font-weight: 500;"><?php echo displayTextContent($appointment['missed_reason']); ?></td>
                     </tr>
                 <?php endif; ?>
             <?php endif; ?>            
             <tr>
                 <th>Reason for Consultation:</th>
-                <td><?php echo nl2br(htmlspecialchars($appointment['remarks'])); ?></td>
+                <td><?php echo displayTextContent($appointment['remarks']); ?></td>
             </tr>
         </table>
     </div>

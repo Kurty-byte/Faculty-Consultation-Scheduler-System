@@ -72,7 +72,7 @@ include '../../includes/header.php';
                     </div>
                     
                     <div class="notification-card-body">
-                        <h3 class="notification-title"><?php echo htmlspecialchars($notification['message']); ?></h3>
+                        <h3 class="notification-title"><?php echo displayTextContent($notification['message']); ?></h3>
                         
                         <!-- Get additional appointment details -->
                         <?php 
@@ -93,7 +93,7 @@ include '../../includes/header.php';
                                         <br><strong>Reason:</strong> <?php echo htmlspecialchars($appointment['remarks']); ?>
                                     <?php endif; ?> -->
                                     <?php if ($notification['notification_type'] == 'appointment_cancelled' && !empty($appointment['cancellation_reason'])): ?>
-                                        <br><strong>Cancellation Reason:</strong> <span style="color: var(--danger);"><?php echo htmlspecialchars($appointment['cancellation_reason']); ?></span>
+                                        <br><strong>Cancellation Reason:</strong> <span style="color: var(--danger);"><?php displayTextContent($appointment['cancellation_reason']); ?></span>
                                     <?php endif; ?>
                                 </div>
                             </div>
