@@ -89,9 +89,9 @@ include '../../includes/header.php';
                                     <?php elseif ($appointment['modality'] === 'physical' && $appointment['location']): ?>
                                         (<?php echo $appointment['location']; ?>)
                                     <?php endif; ?>
-                                    <?php if (!empty($appointment['remarks'])): ?>
+                                    <!-- <?php if (!empty($appointment['remarks'])): ?>
                                         <br><strong>Reason:</strong> <?php echo htmlspecialchars($appointment['remarks']); ?>
-                                    <?php endif; ?>
+                                    <?php endif; ?> -->
                                     <?php if ($notification['notification_type'] == 'appointment_cancelled' && !empty($appointment['cancellation_reason'])): ?>
                                         <br><strong>Cancellation Reason:</strong> <span style="color: var(--danger);"><?php echo htmlspecialchars($appointment['cancellation_reason']); ?></span>
                                     <?php endif; ?>

@@ -15,19 +15,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $appointmentId = isset($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : 0;
     $missedBy = isset($_POST['missed_by']) ? sanitize($_POST['missed_by']) : '';
     $missedReason = isset($_POST['missed_reason']) ? sanitize($_POST['missed_reason']) : '';
-    $confirmMissed = isset($_POST['confirm_missed']) ? true : false;
+    
+    // Debug logging (remove in production)
+    if (DEBUG_MODE) {
+        error_log("Faculty Mark Missed Debug - appointmentId: $appointmentId, missedBy: '$missedBy', reasonLength: " . strlen($missedReason));
+    }
     
     // Validate required fields
-    if (!$appointmentId || !$missedBy || !$missedReason || !$confirmMissed) {
-        setFlashMessage('danger', 'All required fields must be filled out and confirmed.');
+    if (!$appointmentId) {
+        setFlashMessage('danger', 'Appointment ID is required.');
         redirect('pages/faculty/view_appointments.php');
     }
     
-    // Validate missed_by value
-    if ($missedBy !== 'faculty') {
-        setFlashMessage('danger', 'Invalid request source.');
-        redirect('pages/faculty/view_appointments.php');
+    if (empty($missedReason)) {
+        setFlashMessage('danger', 'Please provide a reason for marking this appointment as missed.');
+        redirect('pages/faculty/mark_missed.php?id=' . $appointmentId);
     }
+    
+    // Set missed_by to 'faculty' if not provided or incorrect (faculty should always mark as faculty)
+    $missedBy = 'faculty';
     
     // Validate reason length
     if (strlen($missedReason) > 500) {

@@ -99,7 +99,7 @@ include '../../includes/header.php';
             </div>
         </div>
         
-        <div class="schedule-actions">
+        <!-- <div class="schedule-actions">
             <div class="action-card">
                 <h3>Quick Actions</h3>
                 <div class="action-buttons">
@@ -116,7 +116,7 @@ include '../../includes/header.php';
                         Dashboard
                     </a>
                 </div>
-            </div>
+            </div> -->
             
             <div class="stats-card">
                 <h3>This Week's Overview</h3>

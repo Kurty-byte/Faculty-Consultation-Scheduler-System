@@ -28,7 +28,7 @@ if (!$appointment || $appointment['faculty_id'] != $facultyId) {
     setFlashMessage('danger', 'Appointment not found or you do not have permission to mark it as missed.');
     redirect('pages/faculty/view_appointments.php');
 }
-
+    
 // Check if appointment can be marked as missed
 if (!canMarkAppointmentAsMissed($appointmentId, 'faculty')) {
     $message = 'This appointment cannot be marked as missed at this time.';
@@ -71,7 +71,7 @@ include '../../includes/header.php';
 
 <div class="page-header">
     <h1>Mark Appointment as Missed</h1>
-    <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Back to Appointment</a>
+    <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Back to Appointment</a>
 </div>
 
 <div class="card">
@@ -120,7 +120,7 @@ include '../../includes/header.php';
             <strong>Are you sure you want to mark this appointment as missed?</strong> This action will notify the faculty member and create a permanent record in the appointment history.
         </div>
         
-        <form action="<?php echo BASE_URL; ?>pages/student/mark_missed_process.php" method="POST" class="mt-4" id="missedForm">
+        <form action="<?php echo BASE_URL; ?>pages/faculty/mark_missed_process.php" method="POST" class="mt-4" id="missedForm">
             <input type="hidden" name="appointment_id" value="<?php echo $appointmentId; ?>">
             <input type="hidden" name="missed_by" value="student">
             
@@ -136,7 +136,7 @@ include '../../includes/header.php';
             
             <div class="form-group text-right">
                 <button type="submit" class="btn btn-danger" id="submitBtn">Mark as Missed</button>
-                <a href="<?php echo BASE_URL; ?>pages/student/appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Cancel</a>
+                <a href="<?php echo BASE_URL; ?>pages/faculty/appointment_details.php?id=<?php echo $appointmentId; ?>" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (field.type === 'password') {
             field.type = 'text';
-            icon.textContent = '🙈';
+            icon.textContent = '🚫';
         } else {
             field.type = 'password';
             icon.textContent = '👁️';
