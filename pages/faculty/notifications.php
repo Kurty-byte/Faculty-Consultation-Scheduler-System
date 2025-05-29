@@ -49,7 +49,7 @@ include '../../includes/header.php';
                             <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
                                 ❌
                             <?php elseif ($notification['notification_type'] == 'appointment_completed'): ?>
-                                ✅
+                                🟢
                             <?php endif; ?>
                         </div>
                         <div class="notification-meta">
@@ -81,6 +81,7 @@ include '../../includes/header.php';
                         ?>
                             <div class="appointment-preview">
                                 <div class="appointment-info">
+                                    <strong>Student:</strong> <?php echo $appointment['student_first_name'] . ' ' . $appointment['student_last_name']; ?><br>
                                     <strong>Date:</strong> <?php echo formatDate($appointment['appointment_date']); ?><br>
                                     <strong>Time:</strong> <?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?><br>
                                     <strong>Modality:</strong> <?php echo ucfirst($appointment['modality']); ?>
@@ -88,12 +89,6 @@ include '../../includes/header.php';
                                         (<?php echo $appointment['platform']; ?>)
                                     <?php elseif ($appointment['modality'] === 'physical' && $appointment['location']): ?>
                                         (<?php echo $appointment['location']; ?>)
-                                    <?php endif; ?>
-                                    <!-- <?php if (!empty($appointment['remarks'])): ?>
-                                        <br><strong>Reason:</strong> <?php echo htmlspecialchars($appointment['remarks']); ?>
-                                    <?php endif; ?> -->
-                                    <?php if ($notification['notification_type'] == 'appointment_cancelled' && !empty($appointment['cancellation_reason'])): ?>
-                                        <br><strong>Cancellation Reason:</strong> <span style="color: var(--danger);"><?php displayTextContent($appointment['cancellation_reason']); ?></span>
                                     <?php endif; ?>
                                 </div>
                             </div>

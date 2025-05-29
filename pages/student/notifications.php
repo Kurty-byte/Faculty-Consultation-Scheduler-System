@@ -48,6 +48,8 @@ include '../../includes/header.php';
                                 ❌
                             <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
                                 ⚠️
+                            <?php elseif ($notification['notification_type'] == 'appointment_completed'): ?>
+                                🟢
                             <?php endif; ?>
                         </div>
                         <div class="notification-meta">
@@ -58,6 +60,8 @@ include '../../includes/header.php';
                                     <span class="badge badge-danger">Appointment Rejected</span>
                                 <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
                                     <span class="badge badge-warning">Faculty Marked as Missed</span>
+                                <?php elseif ($notification['notification_type'] == 'appointment_completed'): ?>
+                                    <span class="badge badge-success">Appointment Completed</span>
                                 <?php endif; ?>
                                 <span class="badge badge-info">New</span>
                             </div>
@@ -121,6 +125,9 @@ include '../../includes/header.php';
                             <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
                                 <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=missed"
                                 class="btn btn-sm btn-warning">View Missed Appointments</a>
+                            <?php elseif ($notification['notification_type'] == 'appointment_completed'): ?>
+                                <a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php?status=completed"
+                                class="btn btn-sm btn-success">View Completed Appointments</a>
                             <?php endif; ?>
                             <button class="btn btn-sm btn-secondary mark-read-btn" 
                                     data-notification-id="<?php echo $notification['notification_id']; ?>">
@@ -255,9 +262,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const missedNotifications = document.querySelectorAll('.notification-card[data-type="appointment_missed"]').length;
         const approvedNotifications = document.querySelectorAll('.notification-card[data-type="appointment_approved"]').length;
         const rejectedNotifications = document.querySelectorAll('.notification-card[data-type="appointment_rejected"]').length;
+        const completedNotifications = document.querySelectorAll('.notification-card[data-type="appointment_completed"]').length;
         
         // You can add custom logic here to handle different notification types
-        console.log('Missed:', missedNotifications, 'Approved:', approvedNotifications, 'Rejected:', rejectedNotifications);
+        console.log('Missed:', missedNotifications, 'Approved:', approvedNotifications, 'Rejected:', rejectedNotifications, 'Completed:', completedNotifications);
     }
     
     updateNotificationDisplay();

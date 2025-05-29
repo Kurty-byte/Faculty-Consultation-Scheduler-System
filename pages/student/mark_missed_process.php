@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
 } else {
     // Not a POST request, redirect to view appointments page
-    setFlashMessage('danger', 'Invalid request method.');
+    setFlashMessage('danger', 'Invalid request method.');   
     redirect('pages/student/view_appointments.php');
 }
 ?>

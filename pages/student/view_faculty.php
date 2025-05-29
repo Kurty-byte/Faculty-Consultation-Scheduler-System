@@ -62,7 +62,6 @@ include '../../includes/header.php';
                 <?php endforeach; ?>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Filter</button>
         <?php if ($departmentFilter): ?>
             <a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" class="btn btn-secondary">Clear Filter</a>
         <?php endif; ?>

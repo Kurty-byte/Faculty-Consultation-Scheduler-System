@@ -70,7 +70,6 @@ if (DEBUG_MODE) {
     }
     
     echo "<pre>Debug: Current time = " . date('Y-m-d H:i:s') . "</pre>";
-    var_dump($availableSlots); // Temporary debug
     
 } else {
     // Get available consultation slots (30-minute appointments) - IMPROVED to filter booked slots and past times

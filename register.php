@@ -190,7 +190,7 @@ $currentAcademicYear = $currentYear . '-' . $nextYear;
                             <input type="text" name="academic_year" id="academic_year" class="form-control" 
                                    value="<?php echo $currentAcademicYear; ?>" readonly>
                         </div>
-                        <small class="form-text">Current academic year (automatically set)</small>
+                        <small class="form-text">Current academic year</small>
                     </div>
                 </div>
                 

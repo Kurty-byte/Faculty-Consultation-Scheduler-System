@@ -5,6 +5,10 @@
 
 const AutoRefreshConfig = {
     intervals: {
+        // dashboard: 30000,
+        // notifications: 30000,
+        // appointments: 30000,
+        // default: 30000
         dashboard: 2000,
         notifications: 2000,
         appointments: 2000,

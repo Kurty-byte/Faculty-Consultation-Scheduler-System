@@ -127,8 +127,8 @@ include '../../includes/header.php';
             <div class="form-group">
                 <label for="missed_reason" class="required">Reason for Marking as Missed:</label>
                 <textarea name="missed_reason" id="missed_reason" class="form-control" rows="4" required 
-                          placeholder="Please specify why you're marking this appointment as missed (e.g., faculty did not show up, faculty was 30 minutes late, no communication from faculty, etc.)"></textarea>
-                <small class="form-text text-muted">This information will be included in the notification to the faculty member.</small>
+                          placeholder="Please specify why you're marking this appointment as missed (e.g., student did not show up, student was 30 minutes late, no communication from student, etc.)"></textarea>
+                <small class="form-text text-muted">This information will be included in the notification to the student.</small>
                 <div class="char-counter">
                     <span class="char-count">0</span>/500 characters
                 </div>

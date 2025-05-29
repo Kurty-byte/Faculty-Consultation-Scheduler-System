@@ -83,7 +83,7 @@ include 'includes/header.php';
         <div class="container">
             <div class="hero-text">
                 <h1 class="hero-title">Faculty Consultation Scheduler System</h1>
-                <p class="hero-subtitle">Streamline academic consultations with an efficient scheduling platform</p>
+                <p class="hero-subtitle">Streamline academic consultations with a scheduling platform</p>
                 <p class="hero-description">Connect students with faculty members through organized, time-managed consultation sessions. Book appointments, manage schedules, and enhance academic collaboration.</p>
                 <div class="hero-actions">
                     <a href="<?php echo BASE_URL; ?>login.php" class="btn btn-primary btn-lg hero-btn">

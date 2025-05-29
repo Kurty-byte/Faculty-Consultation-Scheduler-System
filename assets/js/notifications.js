@@ -324,9 +324,9 @@ class EnhancedNotificationManager {
             'appointment_request': '📅',
             'appointment_approved': '✅',
             'appointment_rejected': '❌',
-            'appointment_cancelled': '⚠️',
+            'appointment_cancelled': '🔴',
             'appointment_missed': '⚠️',
-            'appointment_completed': '✅'
+            'appointment_completed': '🟢'
         };
         return icons[type] || '🔔';
     }
