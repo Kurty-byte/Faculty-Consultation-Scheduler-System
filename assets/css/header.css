@@ -581,16 +581,30 @@ header {
     margin-bottom: 0.5rem;
 }
 
-.main-navigation {
-    margin-top: 0;
+.main-navigation ul li a {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  padding: 0.6rem 1.2rem;
 }
 
-.main-navigation ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    margin: 0;
-    padding: 0;
+.main-navigation ul li a:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+}
+
+.main-navigation ul li a.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
 }
 
 /* Adjust user info section positioning */
@@ -621,6 +635,31 @@ header {
     
     .main-navigation ul li a {
         padding: 0.35rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .main-navigation ul li a {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-navigation ul {
+        gap: 0.5rem;
+    }
+    
+    .main-navigation ul li a {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-navigation ul li a {
+        padding: 0.35rem 0.6rem;
         font-size: 0.75rem;
     }
 }

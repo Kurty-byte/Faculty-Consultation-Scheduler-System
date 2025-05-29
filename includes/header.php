@@ -74,7 +74,7 @@
                     
                     <!-- User info section on the right -->
                     <div class="user-info-section">
-                        <span class="user-role-badge"><?php echo DEBUG_MODE ? "DEBUG": "NON-DEBUG"?></span>
+                        <!-- <span class="user-role-badge"><?php echo DEBUG_MODE ? "DEBUG": "NON-DEBUG"?></span> -->
                         <span class="user-role-badge"><?php echo ucfirst($_SESSION['role']); ?></span>
                         <span class="user-welcome">Welcome, <?php echo $_SESSION['first_name']; ?></span>
                         <span class="user-divider">|</span>
