@@ -18,8 +18,9 @@ $studentId = $student['student_id'];
 // Get appointment status filter
 $statusFilter = isset($_GET['status']) ? sanitize($_GET['status']) : null;
 
-// Build the base query - FIXED
+// Build the base query - to include appointment history for proper status detection
 $query = "SELECT a.*, s.day_of_week, u.first_name, u.last_name, d.department_name,
+                 ah.status_change as last_status_change,
                  CASE 
                      WHEN a.completed_at IS NOT NULL THEN 'completed'
                      WHEN a.is_cancelled = 1 THEN 'cancelled'
@@ -31,6 +32,12 @@ $query = "SELECT a.*, s.day_of_week, u.first_name, u.last_name, d.department_nam
           JOIN faculty f ON s.faculty_id = f.faculty_id 
           JOIN users u ON f.user_id = u.user_id 
           JOIN departments d ON f.department_id = d.department_id 
+          LEFT JOIN (
+              SELECT appointment_id, status_change,
+                     ROW_NUMBER() OVER (PARTITION BY appointment_id ORDER BY changed_at DESC) as rn
+              FROM appointment_history 
+              WHERE status_change IN ('cancelled', 'rejected')
+          ) ah ON a.appointment_id = ah.appointment_id AND ah.rn = 1
           WHERE a.student_id = ?";
 
 $params = [$studentId];
@@ -146,7 +153,13 @@ include '../../includes/header.php';
                         <?php elseif ($appointment['is_missed']): ?>
                             <span class="badge badge-warning">Missed</span>
                         <?php elseif ($appointment['is_cancelled']): ?>
-                            <span class="badge badge-danger">Cancelled</span>
+                            <?php 
+                            // Check if it was rejected or cancelled based on appointment history
+                            if ($appointment['last_status_change'] === 'rejected'): ?>
+                                <span class="badge badge-danger">Rejected</span>
+                            <?php else: ?>
+                                <span class="badge badge-danger">Cancelled</span>
+                            <?php endif; ?>
                         <?php elseif ($appointment['is_approved']): ?>
                             <span class="badge badge-success">Approved</span>
                         <?php else: ?>

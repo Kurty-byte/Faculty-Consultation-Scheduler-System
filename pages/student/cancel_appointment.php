@@ -119,9 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="POST" class="mt-4">
             <div class="form-group">
-                <label for="cancellation_reason">Reason for Cancellation (Optional):</label>
+                <label for="cancellation_reason" class="required">Reason for Cancellation:</label>
                 <textarea name="cancellation_reason" id="cancellation_reason" class="form-control" rows="4" 
-                          placeholder="Please provide a reason for cancelling this appointment (e.g., schedule conflict, emergency, etc.)"></textarea>
+                          placeholder="Please provide a reason for cancelling this appointment (e.g., schedule conflict, emergency, etc.)" required></textarea>
                 <small class="form-text text-muted">This will help the faculty member understand why you cancelled.</small>
             </div>
             

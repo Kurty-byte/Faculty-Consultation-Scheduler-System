@@ -17,12 +17,19 @@ $facultyId = getFacultyIdFromUserId($_SESSION['user_id']);
 // Get appointment status filter
 $statusFilter = isset($_GET['status']) ? sanitize($_GET['status']) : null;
 
-// Get appointments
-$query = "SELECT a.*, s.day_of_week, st.student_id, u.first_name, u.last_name, u.email 
+// Get appointments - FIXED to properly distinguish between cancelled and rejected
+$query = "SELECT a.*, s.day_of_week, st.student_id, u.first_name, u.last_name, u.email,
+                 ah.status_change as last_status_change
          FROM appointments a 
          JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
          JOIN students st ON a.student_id = st.student_id 
          JOIN users u ON st.user_id = u.user_id 
+         LEFT JOIN (
+             SELECT appointment_id, status_change,
+                    ROW_NUMBER() OVER (PARTITION BY appointment_id ORDER BY changed_at DESC) as rn
+             FROM appointment_history 
+             WHERE status_change IN ('cancelled', 'rejected')
+         ) ah ON a.appointment_id = ah.appointment_id AND ah.rn = 1
          WHERE s.faculty_id = ?";
 
 $params = [$facultyId];
@@ -43,7 +50,7 @@ $query .= " ORDER BY a.appointment_date ASC, a.start_time ASC";
 
 $appointments = fetchRows($query, $params);
 
-// Count appointments by status - FIXED
+// Count appointments by status - FIXED to properly count rejected vs cancelled
 $pendingCount = count(fetchRows(
     "SELECT a.appointment_id FROM appointments a 
      JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
@@ -65,6 +72,7 @@ $completedCount = count(fetchRows(
     [$facultyId]
 ));
 
+// Count all cancelled appointments (both cancelled and rejected)
 $cancelledCount = count(fetchRows(
     "SELECT a.appointment_id FROM appointments a 
      JOIN availability_schedules s ON a.schedule_id = s.schedule_id 
@@ -146,7 +154,12 @@ include '../../includes/header.php';
                         <?php elseif ($appointment['is_missed']): ?>
                             <span class="badge badge-warning">Missed</span>
                         <?php elseif ($appointment['is_cancelled']): ?>
-                            <span class="badge badge-danger">Cancelled</span>
+                            <?php 
+                            if ($appointment['last_status_change'] === 'rejected'): ?>
+                                <span class="badge badge-danger">Rejected</span>
+                            <?php else: ?>
+                                <span class="badge badge-danger">Cancelled</span>
+                            <?php endif; ?>
                         <?php elseif ($appointment['is_approved']): ?>
                             <span class="badge badge-success">Approved</span>
                         <?php else: ?>

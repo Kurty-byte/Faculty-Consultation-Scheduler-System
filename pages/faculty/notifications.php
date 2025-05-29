@@ -82,14 +82,7 @@ include '../../includes/header.php';
                             <div class="appointment-preview">
                                 <div class="appointment-info">
                                     <strong>Student:</strong> <?php echo $appointment['student_first_name'] . ' ' . $appointment['student_last_name']; ?><br>
-                                    <strong>Date:</strong> <?php echo formatDate($appointment['appointment_date']); ?><br>
-                                    <strong>Time:</strong> <?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?><br>
-                                    <strong>Modality:</strong> <?php echo ucfirst($appointment['modality']); ?>
-                                    <?php if ($appointment['modality'] === 'virtual' && $appointment['platform']): ?>
-                                        (<?php echo $appointment['platform']; ?>)
-                                    <?php elseif ($appointment['modality'] === 'physical' && $appointment['location']): ?>
-                                        (<?php echo $appointment['location']; ?>)
-                                    <?php endif; ?>
+                                    <strong>Appointment Date:</strong> <?php echo formatDate($appointment['appointment_date']); ?><br>
                                 </div>
                             </div>
                         <?php endif; ?>

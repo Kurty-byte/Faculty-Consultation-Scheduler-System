@@ -84,14 +84,7 @@ include '../../includes/header.php';
                             <div class="appointment-preview">
                                 <div class="appointment-info">
                                     <strong>Faculty:</strong> <?php echo $appointment['faculty_first_name'] . ' ' . $appointment['faculty_last_name']; ?><br>
-                                    <strong>Date:</strong> <?php echo formatDate($appointment['appointment_date']); ?><br>
-                                    <strong>Time:</strong> <?php echo formatTime($appointment['start_time']) . ' - ' . formatTime($appointment['end_time']); ?><br>
-                                    <strong>Modality:</strong> <?php echo ucfirst($appointment['modality']); ?>
-                                    <?php if ($appointment['modality'] === 'virtual' && $appointment['platform']): ?>
-                                        (<?php echo $appointment['platform']; ?>)
-                                    <?php elseif ($appointment['modality'] === 'physical' && $appointment['location']): ?>
-                                        (<?php echo $appointment['location']; ?>)
-                                    <?php endif; ?>
+                                    <strong>Appointment Date:</strong> <?php echo formatDate($appointment['appointment_date']); ?><br>
                                     
                                     <?php if ($notification['notification_type'] == 'appointment_rejected'): ?>
                                         <?php
@@ -102,11 +95,8 @@ include '../../includes/header.php';
                                              ORDER BY changed_at DESC LIMIT 1",
                                             [$notification['appointment_id']]
                                         );
-                                        if ($rejectionReason && !empty($rejectionReason['notes'])):
                                         ?>
-                                            <br><strong>Reason:</strong> <?php echo htmlspecialchars($rejectionReason['notes']); ?>
                                         <?php endif; ?>
-                                    <?php endif; ?>
                                 </div>
                             </div>
                         <?php endif; ?>
