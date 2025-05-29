@@ -17,12 +17,13 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 // Get appointment ID
 $appointmentId = (int)$_GET['id'];
 
-// Get appointment details
+// Get appointment details with rejection status from appointment history
 $appointment = fetchRow(
     "SELECT a.*, s.day_of_week, s.faculty_id, f.user_id as faculty_user_id, 
             uf.first_name as faculty_first_name, uf.last_name as faculty_last_name, uf.email as faculty_email,
             us.first_name as student_first_name, us.last_name as student_last_name, us.email as student_email,
             d.department_name, a.cancellation_reason,
+            ah.status_change as last_status_change,
             CASE 
                 WHEN a.is_cancelled = 1 THEN 'cancelled'
                 WHEN a.is_approved = 1 THEN 'approved' 
@@ -40,6 +41,12 @@ $appointment = fetchRow(
      JOIN students st ON a.student_id = st.student_id 
      JOIN users us ON st.user_id = us.user_id 
      JOIN departments d ON f.department_id = d.department_id 
+     LEFT JOIN (
+         SELECT appointment_id, status_change,
+                ROW_NUMBER() OVER (PARTITION BY appointment_id ORDER BY changed_at DESC) as rn
+         FROM appointment_history 
+         WHERE status_change IN ('cancelled', 'rejected')
+     ) ah ON a.appointment_id = ah.appointment_id AND ah.rn = 1
      WHERE a.appointment_id = ?",
     [$appointmentId]
 );
@@ -119,7 +126,12 @@ include '../../includes/header.php';
                     <?php elseif ($appointment['is_missed']): ?>
                         <span class="badge badge-warning">Missed</span>
                     <?php elseif ($appointment['is_cancelled']): ?>
-                        <span class="badge badge-danger">Cancelled</span>
+                        <?php 
+                        if ($appointment['last_status_change'] === 'rejected'): ?>
+                            <span class="badge badge-danger">Rejected</span>
+                        <?php else: ?>
+                            <span class="badge badge-danger">Cancelled</span>
+                        <?php endif; ?>
                     <?php elseif ($appointment['is_approved']): ?>
                         <span class="badge badge-success">Approved</span>
                     <?php else: ?>
@@ -155,8 +167,8 @@ include '../../includes/header.php';
             </tr>
             <?php if ($appointment['is_cancelled'] && !empty($appointment['cancellation_reason'])): ?>
             <tr>
-                <th>Cancellation Reason:</th>
-                <td style="color: var(--danger); font-weight: 500;"><?php displayTextContent($appointment['cancellation_reason']); ?></td>
+                <th><?php echo ($appointment['last_status_change'] === 'rejected') ? 'Rejection Reason:' : 'Cancellation Reason:'; ?></th>
+                <td style="color: var(--danger); font-weight: 500;"><?php echo displayTextContent($appointment['cancellation_reason']); ?></td>
             </tr>
             <?php endif; ?>
         </table>

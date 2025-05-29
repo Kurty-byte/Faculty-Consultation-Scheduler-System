@@ -1,5 +1,5 @@
 <?php
-// Get all active faculty members - FIXED to always include department_name
+// Get all active faculty members
 
 require_once 'faculty_functions.php';
 require_once 'timeslot_functions.php';
@@ -38,7 +38,7 @@ function getFacultyName($facultyId) {
     return 'Unknown Faculty';
 }
 
-// Get faculty by department - FIXED to include department_name
+// Get faculty by department 
 function getFacultyByDepartment($departmentId) {
     return fetchRows(
         "SELECT f.faculty_id, u.first_name, u.last_name, d.department_name, f.office_email, f.office_phone_number 
