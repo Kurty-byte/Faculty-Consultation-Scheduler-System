@@ -61,7 +61,15 @@ include '../../includes/header.php';
                                 <?php elseif ($notification['notification_type'] == 'appointment_missed'): ?>
                                     <span class="badge badge-danger">Student Marked as Missed</span>
                                 <?php endif; ?>
-                                <span class="badge badge-info">New</span>
+
+                                <?php
+                                $createdAt = new DateTime($notification['created_at']);
+                                $now = new DateTime();
+                                $interval = $now->diff($createdAt);
+
+                                if ($interval->days < 2 && $now > $createdAt): ?>
+                                    <span class="badge badge-info">New</span>
+                                <?php endif; ?>
                             </div>
                             <div class="notification-time">
                                 <span class="time-ago" data-timestamp="<?php echo $notification['timestamp']; ?>">
