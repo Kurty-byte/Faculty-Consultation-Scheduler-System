@@ -63,8 +63,7 @@ include 'includes/header.php';
     .feature-list li {
         color: rgba(255, 255, 255, 0.8);
     }
-
-    /* Fix for responsiveness */
+    
     @media (max-width: 768px) {
         .features-grid {
             grid-template-columns: 1fr !important;

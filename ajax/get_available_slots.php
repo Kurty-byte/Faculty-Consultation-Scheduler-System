@@ -1,9 +1,4 @@
 <?php
-/*
- * AJAX Endpoint: Get Available Consultation Slots
- * Returns real-time availability for faculty consultation slots
- */
-
 // Include config file
 $configPath = dirname(__FILE__) . '/../config.php';
 if (!file_exists($configPath)) {

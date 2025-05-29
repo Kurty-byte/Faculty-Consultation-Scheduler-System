@@ -1,8 +1,4 @@
-/* ================================================================
-   CONSULTATION HOURS MANAGEMENT QUICK FIX NEEDS TOO BE FIXED LATER
-   ================================================================ */
-
-/* Fix 1: Weekly Schedule Cards Layout */
+/* Weekly Schedule Cards Layout */
 .schedule-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -29,7 +25,7 @@
     text-transform: capitalize;
 }
 
-/* Fix 2: "Not Available" Status Styling */
+/* "Not Available" Status Styling */
 .availability-status {
     font-size: 13px;
     font-weight: 500;
@@ -56,7 +52,7 @@
     border: 1px solid rgba(76, 175, 80, 0.5);
 }
 
-/* Fix 3: Time Slots in Cards */
+/* Time Slots in Cards */
 .time-slots {
     display: flex;
     flex-direction: column;
@@ -72,7 +68,7 @@
     text-align: center;
 }
 
-/* Fix 4: Weekly Availability Form Improvements */
+/* Weekly Availability Form Improvements */
 .availability-form {
     background: white;
     border-radius: 12px;
@@ -113,7 +109,7 @@
     color: #333;
 }
 
-/* Fix 5: Time Input Controls */
+/* Time Input Controls */
 .time-inputs {
     display: flex;
     align-items: center;
@@ -153,7 +149,7 @@
     box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
 }
 
-/* Fix 6: Available Slots Counter */
+/* Available Slots Counter */
 .slots-info {
     background: #e8f4f8;
     padding: 8px 12px;
@@ -164,7 +160,7 @@
     display: inline-block;
 }
 
-/* Fix 7: Notes Section */
+/* Notes Section */
 .notes-section {
     margin-top: 15px;
 }
@@ -196,7 +192,7 @@
     box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
 }
 
-/* Fix 8: Responsive Improvements */
+/* Responsive Improvements */
 @media (max-width: 768px) {
     .schedule-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -239,7 +235,7 @@
     }
 }
 
-/* Fix 9: Hover Effects */
+/* Hover Effects */
 .day-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
@@ -250,7 +246,7 @@
     border-color: #4285f4;
 }
 
-/* Fix 10: Form Buttons */
+/* Form Buttons */
 .form-actions {
     display: flex;
     gap: 10px;
@@ -276,7 +272,7 @@
     box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
 }
 
-/* Fix 11: Loading States */
+/* Loading States */
 .time-input:disabled {
     background-color: #f5f5f5;
     cursor: not-allowed;
