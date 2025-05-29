@@ -258,38 +258,6 @@ nav ul li a {
   white-space: nowrap;
 }
 
-/* Special logout button styling */
-nav ul li a[href*="logout.php"] {
-  color: #ff6b6b !important;
-  background: rgba(255, 107, 107, 0.1) !important;
-  border-color: rgba(255, 107, 107, 0.3) !important;
-  font-weight: 600;
-}
-
-nav ul li a[href*="logout.php"]:hover {
-  color: white !important;
-  background: #ff6b6b !important;
-  border-color: #ff6b6b !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-}
-
-/* Regular navigation hover states (not logout) */
-nav ul li a:not([href*="logout.php"]):hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-nav ul li a:not([href*="logout.php"]).active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary-light);
-  box-shadow: 0 2px 10px rgba(78, 115, 223, 0.4);
-}
-
 /* Landing page navigation */
 .landing-nav {
   display: flex;
@@ -498,14 +466,7 @@ nav ul li a:not([href*="logout.php"]).active {
     height: 18px;
     font-size: 9px;
   }
-}
-
-/* Logout button focus state */
-nav ul li a[href*="logout.php"]:focus {
-  outline: 2px solid #ff6b6b;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2);
-}
+} 
 
 /* Prevent text wrapping */
 header * {

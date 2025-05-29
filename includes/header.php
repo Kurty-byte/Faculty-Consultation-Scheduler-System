@@ -68,8 +68,6 @@
                                     <li><a href="<?php echo BASE_URL; ?>pages/student/view_faculty.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_faculty.php') !== false || strpos($_SERVER['REQUEST_URI'], '/faculty_schedule.php') !== false || strpos($_SERVER['REQUEST_URI'], '/book_appointment.php') !== false) ? 'class="active"' : ''; ?>>Book Appointment</a></li>
                                     <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
                                 <?php endif; ?>
-                                <!-- Logout button -->
-                                <!-- <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li> -->
                             </ul>
                         </nav>
                     </div>
@@ -95,7 +93,7 @@
                                     <?php endif; ?>
                                 </a>
                             </div>
-                        <span class="user-role-badge"><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></span>
+                        <span class="user-role-badge logout-button"><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></span>
                     </div>
                 </div>
             <?php else: ?>
@@ -158,6 +156,18 @@
         <?php else: ?>
             <?php displayFlashMessage(); ?>
         <?php endif; ?>
+
+<style>
+span.user-role-badge a[href*="logout.php"] {
+    color: white !important;
+    text-decoration: none !important;
+    transition: color 0.3s ease !important;
+}
+
+span.user-role-badge:has(a[href*="logout.php"]):hover a {
+    color: #dc3545 !important;
+}
+</style>
 
 <script>
 // Enhanced mobile navigation and landing page effects
