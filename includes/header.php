@@ -69,7 +69,7 @@
                                     <li><a href="<?php echo BASE_URL; ?>pages/student/view_appointments.php" <?php echo (strpos($_SERVER['REQUEST_URI'], '/view_appointments.php') !== false || strpos($_SERVER['REQUEST_URI'], '/appointment_details.php') !== false) ? 'class="active"' : ''; ?>>My Appointments</a></li>
                                 <?php endif; ?>
                                 <!-- Logout button -->
-                                <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li>
+                                <!-- <li><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></li> -->
                             </ul>
                         </nav>
                     </div>
@@ -90,11 +90,12 @@
                                     $unreadCount = countUnreadNotifications($_SESSION['user_id']);
                                 }
                                 if ($unreadCount > 0): 
-                                ?>
+                                    ?>
                                     <span class="notification-badge" id="notificationBadge"><?php echo $unreadCount; ?></span>
-                                <?php endif; ?>
-                            </a>
-                        </div>
+                                    <?php endif; ?>
+                                </a>
+                            </div>
+                        <span class="user-role-badge"><a href="<?php echo BASE_URL; ?>pages/auth/logout.php">Logout</a></span>
                     </div>
                 </div>
             <?php else: ?>
@@ -398,6 +399,101 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 3000);
         }
     }
+});
+
+/**
+ * Logout Confirmation Handler
+ * Adds a confirmation dialog before logging out without changing button appearance
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Find the logout link and add confirmation
+    const logoutLinks = document.querySelectorAll('a[href*="logout.php"]');
+    
+    // Alternative: Custom modal confirmation (optional enhancement)
+    function createLogoutModal() {
+        const modal = document.createElement('div');
+        modal.id = 'logoutModal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        modal.innerHTML = `
+            <div style="
+                background: white;
+                padding: 2rem;
+                border-radius: 8px;
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            ">
+                <h3 style="margin-top: 0; color: #2c3e50;">Confirm Logout</h3>
+                <p style="margin: 1rem 0; color: #6c757d;">
+                    Are you sure you want to log out?<br>
+                    You will need to log in again to access the system.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button id="confirmLogout" style="
+                        background-color: #dc3545;
+                        color: white;
+                        border: none;
+                        padding: 0.5rem 1.5rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-weight: 500;
+                    ">Yes, Log Out</button>
+                    <button id="cancelLogout" style="
+                        background-color: #6c757d;
+                        color: white;
+                        border: none;
+                        padding: 0.5rem 1.5rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-weight: 500;
+                    ">Cancel</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        return modal;
+    }
+    
+    const modal = createLogoutModal();
+    const confirmBtn = modal.querySelector('#confirmLogout');
+    const cancelBtn = modal.querySelector('#cancelLogout');
+    
+    logoutLinks.forEach(function(logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'flex';
+            
+            confirmBtn.onclick = () => {
+                window.location.href = this.href;
+            };
+            
+            cancelBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    });
+    
 });
 </script>
 
